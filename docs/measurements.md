@@ -23,3 +23,26 @@ and redaction work against the live service. Twenty short English lines with an 
 are an easy case; it is not an accuracy figure for real, longer or non-English items. The one
 middle-band row was also the entry the labeller considered borderline, which is the band doing its
 job rather than an error.
+
+## Live check through the published skill (2026-10-01, package 0.2.1, model `jev-1.13.0`)
+
+The plugin was installed from GitHub into an empty Claude Code configuration directory, and the
+four command lines of its `SKILL.md` were run verbatim (`uvx --from 'btx-skill-jev-judge>=0.2.0'
+jev-judge ...`, which resolved to 0.2.1). Input: twenty new synthetic one-line changelog entries,
+labelled by hand (ten bug fixes) and written to a file before the run; one `noul` question; one
+entry carried a fake GitHub token.
+
+| Measured                   | Value                                                                 |
+|----------------------------|-----------------------------------------------------------------------|
+| exit codes                 | 0 for `check-key`, the pilot `run`, the full `run` and `summarize`    |
+| answered                   | 10 of 10 in the pilot, 20 of 20 in the full run, all on the first try |
+| agreement with hand labels | 20 of 20 at a 0.5 cut                                                 |
+| in the 0.2-0.8 band        | 0                                                                     |
+| clear answers              | yes rows 0.94-0.98; no rows 0.02-0.05                                 |
+| latency per request        | p50 263 ms, max 420 ms (measured from this host)                      |
+| wall time                  | 1.23 s for 20 items                                                   |
+| input tokens               | 7,273 total, about $0.0003                                            |
+| redaction                  | the planted token was replaced (1 redaction, on that row only)        |
+
+The same caveat as above applies: short English lines with a clear rubric are an easy case, so
+this proves the published install path and the request flow, not accuracy on real data.
