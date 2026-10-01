@@ -18,8 +18,10 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from lib_layered_config import Config
+    from pydantic import JsonValue
 
     from ..domain.enums import DeployTarget, OutputFormat
+    from ..domain.models import Outcome, Question
 
 
 class GetConfig(Protocol):
@@ -66,10 +68,24 @@ class InitLogging(Protocol):
     def __call__(self, config: Config) -> None: ...
 
 
+class JudgeClient(Protocol):
+    """Ask the judge model one batch of questions about one (already redacted) state."""
+
+    def ask(self, state: Mapping[str, JsonValue], questions: Sequence[Question]) -> Outcome: ...
+
+
+class KeySource(Protocol):
+    """Find the API key: ``(key, source)`` when found, ``(None, reason)`` when not."""
+
+    def __call__(self) -> tuple[str | None, str]: ...
+
+
 __all__ = [
     "DeployConfiguration",
     "DisplayConfig",
     "GetConfig",
     "GetDefaultConfigPath",
     "InitLogging",
+    "JudgeClient",
+    "KeySource",
 ]
