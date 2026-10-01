@@ -6,8 +6,8 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 ## [0.2.0] 2026-10-01
 
 ### Added
-- The Python package `btx-jev-judge` (import `btx_jev_judge`) with the console scripts
-  `jev-judge`, `btx-jev-judge` and `btx_jev_judge`. It carries the batch-judging logic of the `jev-judge` skill as
+- The Python package `btx-skill-jev-judge` (import `btx_skill_jev_judge`) with the console scripts
+  `jev-judge`, `btx-skill-jev-judge` and `btx_skill_jev_judge`. It carries the batch-judging logic of the `jev-judge` skill as
   a tested command-line tool.
 - `jev-judge run`: asks the same questions about every item of a JSONL file and writes one result
   row per item as it arrives. `--pilot N` judges only the first N items; `--rate`, `--workers`,
@@ -21,7 +21,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 - Exit codes: 0 yes, 1 no (a failed row, a flat question, no key), 2 usage or input/IO error,
   78 broken configuration.
 - `[judge]` and `[summary]` configuration sections, overridable through configuration files, `.env`,
-  `BTX_JEV_JUDGE___JUDGE__RATE`-style environment variables, `--set` and command-line flags.
+  `BTX_SKILL_JEV_JUDGE___JUDGE__RATE`-style environment variables, `--set` and command-line flags.
 - Key lookup from `TYPESAFE_API_KEY`, else `~/.credentials/typesafe.key`. The key file must have
   mode 600 on POSIX, be non-empty and be printable ASCII. A `judge.api_key` configuration entry is
   refused.

@@ -1,14 +1,14 @@
 {
-  "name": "btx-skill-jev",
+  "name": "btx-skill-jev-judge",
   "owner": {
     "name": "bitranox"
   },
   "metadata": {
-    "description": "btx-skill-jev delivered as a single Claude Code plugin: the jev-judge skill for batch typed judgments with TypeSafe's Jev."
+    "description": "btx-skill-jev-judge delivered as a single Claude Code plugin: the jev-judge skill for batch typed judgments with TypeSafe's Jev."
   },
   "plugins": [
     {
-      "name": "btx-skill-jev",
+      "name": "btx-skill-jev-judge",
       "source": ".",
       "description": "Batch typed judgments over many items with TypeSafe's Jev: a tested uv-run jig plus the question design, pilot and band decisions around it."
     }

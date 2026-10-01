@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 
-from btx_jev_judge.adapters import cli as cli_mod
+from btx_skill_jev_judge.adapters import cli as cli_mod
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping

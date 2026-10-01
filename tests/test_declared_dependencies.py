@@ -18,7 +18,7 @@ import pytest
 import rtoml
 
 _ROOT = Path(__file__).parent.parent
-_PACKAGE = "btx_jev_judge"
+_PACKAGE = "btx_skill_jev_judge"
 _SOURCE = _ROOT / "src" / _PACKAGE
 
 

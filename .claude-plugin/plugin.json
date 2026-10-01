@@ -1,11 +1,11 @@
 {
-  "name": "btx-skill-jev",
+  "name": "btx-skill-jev-judge",
   "description": "Hand a bounded judgment repeated over many items (label, triage, match, score, yes/no) to TypeSafe's Jev from a tested script instead of reading every item into context or looping an LLM per item. Ships the jev-judge skill and its uv-run batch jig: redaction before sending, a request-rate limit, rate-limit retries, a pilot mode and a flat-question check.",
   "version": "0.1.0",
   "author": {
     "name": "bitranox"
   },
-  "homepage": "https://github.com/bitranox/btx-skill-jev",
-  "repository": "https://github.com/bitranox/btx-skill-jev",
+  "homepage": "https://github.com/bitranox/btx-skill-jev-judge",
+  "repository": "https://github.com/bitranox/btx-skill-jev-judge",
   "license": "MIT"
 }

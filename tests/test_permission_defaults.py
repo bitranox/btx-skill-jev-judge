@@ -26,11 +26,11 @@ from typing import TYPE_CHECKING, Any
 import pytest
 from lib_layered_config import Config
 
-from btx_jev_judge import __init__conf__
-from btx_jev_judge.adapters import cli as cli_mod
-from btx_jev_judge.adapters.config.deploy import deploy_configuration
-from btx_jev_judge.adapters.config.loader import get_default_config_path
-from btx_jev_judge.composition import AppServices, build_testing
+from btx_skill_jev_judge import __init__conf__
+from btx_skill_jev_judge.adapters import cli as cli_mod
+from btx_skill_jev_judge.adapters.config.deploy import deploy_configuration
+from btx_skill_jev_judge.adapters.config.loader import get_default_config_path
+from btx_skill_jev_judge.composition import AppServices, build_testing
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -328,7 +328,7 @@ def _show_layered_config(tmp_path: Path) -> subprocess.CompletedProcess[bytes]:
         [
             sys.executable,
             "-m",
-            "btx_jev_judge",
+            "btx_skill_jev_judge",
             "config",
             "--format",
             "json",
@@ -345,7 +345,7 @@ def _show_layered_config(tmp_path: Path) -> subprocess.CompletedProcess[bytes]:
 def _deploy_user(tmp_path: Path, extra_env: dict[str, str] | None = None) -> subprocess.CompletedProcess[bytes]:
     """``config-deploy --target user`` from ``tmp_path``, without options."""
     return subprocess.run(
-        [sys.executable, "-m", "btx_jev_judge", "config-deploy", "--target", "user"],
+        [sys.executable, "-m", "btx_skill_jev_judge", "config-deploy", "--target", "user"],
         capture_output=True,
         check=False,
         cwd=tmp_path,
@@ -360,7 +360,7 @@ def test_a_quoted_set_mode_is_applied_on_disk(tmp_path: Path) -> None:
         [
             sys.executable,
             "-m",
-            "btx_jev_judge",
+            "btx_skill_jev_judge",
             "--set",
             'lib_layered_config.default_permissions.user_directory="0o750"',
             "--set",
@@ -385,7 +385,7 @@ def test_an_unquoted_set_mode_is_applied_on_disk(tmp_path: Path) -> None:
         [
             sys.executable,
             "-m",
-            "btx_jev_judge",
+            "btx_skill_jev_judge",
             "--set",
             "lib_layered_config.default_permissions.user_directory=0o750",
             "--set",
@@ -410,7 +410,7 @@ def test_a_decimal_set_mode_is_refused_and_nothing_is_written(tmp_path: Path) ->
         [
             sys.executable,
             "-m",
-            "btx_jev_judge",
+            "btx_skill_jev_judge",
             "--set",
             "lib_layered_config.default_permissions.user_file=640",
             "config-deploy",
@@ -456,7 +456,7 @@ def test_a_set_enabled_false_turns_permission_setting_off(tmp_path: Path) -> Non
         [
             sys.executable,
             "-m",
-            "btx_jev_judge",
+            "btx_skill_jev_judge",
             "--set",
             "lib_layered_config.default_permissions.enabled=false",
             "config-deploy",
@@ -516,7 +516,7 @@ def test_a_dotenv_mode_does_not_decide_the_deployed_mode_beside_a_set(tmp_path: 
         [
             sys.executable,
             "-m",
-            "btx_jev_judge",
+            "btx_skill_jev_judge",
             "--set",
             'lib_layered_config.default_permissions.user_directory="0o750"',
             "config-deploy",
@@ -557,7 +557,7 @@ def test_a_malformed_dotenv_does_not_block_the_deploy(tmp_path: Path) -> None:
 
 def _force_deploy_user(tmp_path: Path) -> subprocess.CompletedProcess[bytes]:
     return subprocess.run(
-        [sys.executable, "-m", "btx_jev_judge", "config-deploy", "--target", "user", "--force"],
+        [sys.executable, "-m", "btx_skill_jev_judge", "config-deploy", "--target", "user", "--force"],
         capture_output=True,
         check=False,
         cwd=tmp_path,

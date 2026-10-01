@@ -6,16 +6,16 @@ import threading
 import time
 from typing import TYPE_CHECKING
 
-from btx_jev_judge.application.judge import JudgeSettings, iter_judged, judge_all
-from btx_jev_judge.domain.enums import QuestionType
-from btx_jev_judge.domain.models import Answer, Item, Outcome, parse_questions
+from btx_skill_jev_judge.application.judge import JudgeSettings, iter_judged, judge_all
+from btx_skill_jev_judge.domain.enums import QuestionType
+from btx_skill_jev_judge.domain.models import Answer, Item, Outcome, parse_questions
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
 
     from pydantic import JsonValue
 
-    from btx_jev_judge.domain.models import Question
+    from btx_skill_jev_judge.domain.models import Question
 
 KEY = "tk_" + "a" * 40
 GITHUB_TOKEN = "ghp_" + "B" * 36

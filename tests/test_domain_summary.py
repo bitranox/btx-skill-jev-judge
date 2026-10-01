@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from btx_jev_judge.domain.enums import QuestionType
-from btx_jev_judge.domain.models import Answer, Row
-from btx_jev_judge.domain.summary import summarize
+from btx_skill_jev_judge.domain.enums import QuestionType
+from btx_skill_jev_judge.domain.models import Answer, Row
+from btx_skill_jev_judge.domain.summary import summarize
 
 
 def _row(

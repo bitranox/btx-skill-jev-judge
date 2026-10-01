@@ -43,24 +43,24 @@ def _get_package_dir() -> Path:
 @pytest.mark.os_agnostic
 def test_when_print_info_runs_it_outputs_metadata(capsys: pytest.CaptureFixture[str]) -> None:
     """Verify print_info outputs package metadata."""
-    from btx_jev_judge import print_info
+    from btx_skill_jev_judge import print_info
 
     print_info()
 
     captured = capsys.readouterr().out
-    assert "btx_jev_judge" in captured
+    assert "btx_skill_jev_judge" in captured
     assert "version" in captured
 
 
 @pytest.mark.os_agnostic
 def test_metadata_constants_are_set() -> None:
     """Verify static metadata constants are properly set."""
-    from btx_jev_judge import __init__conf__
+    from btx_skill_jev_judge import __init__conf__
 
     # These should be non-empty when package is installed
-    assert __init__conf__.name == "btx_jev_judge"
+    assert __init__conf__.name == "btx_skill_jev_judge"
     assert __init__conf__.version  # Should have a version
-    assert __init__conf__.shell_command == "btx-jev-judge"
+    assert __init__conf__.shell_command == "btx-skill-jev-judge"
 
 
 @pytest.mark.os_agnostic

@@ -11,7 +11,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from btx_jev_judge.adapters.config.overrides import (
+from btx_skill_jev_judge.adapters.config.overrides import (
     coerce_value,
     parse_override,
 )

@@ -1,7 +1,7 @@
 # Installation Guide
 
-`btx-jev-judge` is a Python 3.10+ command-line tool published on PyPI. It installs three command names
-for one program: `jev-judge`, `btx-jev-judge` and `btx_jev_judge`. You also need a
+`btx-skill-jev-judge` is a Python 3.10+ command-line tool published on PyPI. It installs three command names
+for one program: `jev-judge`, `btx-skill-jev-judge` and `btx_skill_jev_judge`. You also need a
 TypeSafe API key; see [Provide the key](#provide-the-key).
 
 Using the Claude Code plugin instead? See "Install in Claude Code" in [README.md](README.md).
@@ -21,7 +21,7 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 ### Run once, nothing installed
 
 ```bash
-uvx --from btx-jev-judge jev-judge --help
+uvx --from btx-skill-jev-judge jev-judge --help
 ```
 
 The package name and the command differ, so `--from` is needed.
@@ -29,15 +29,15 @@ The package name and the command differ, so `--from` is needed.
 ### Install on your PATH
 
 ```bash
-uv tool install btx-jev-judge
-uv tool upgrade btx-jev-judge
+uv tool install btx-skill-jev-judge
+uv tool upgrade btx-skill-jev-judge
 ```
 
 ### As a project dependency
 
 ```bash
 uv venv && source .venv/bin/activate   # Windows: .venv\Scripts\Activate.ps1
-uv pip install btx-jev-judge
+uv pip install btx-skill-jev-judge
 ```
 
 ## pip
@@ -45,13 +45,13 @@ uv pip install btx-jev-judge
 ```bash
 python -m venv .venv
 source .venv/bin/activate              # Windows: .venv\Scripts\activate
-pip install btx-jev-judge
+pip install btx-skill-jev-judge
 ```
 
 Per-user install without a virtual environment:
 
 ```bash
-pip install --user btx-jev-judge
+pip install --user btx-skill-jev-judge
 ```
 
 This respects PEP 668: avoid it on a system Python marked "externally managed", and make sure
@@ -60,14 +60,14 @@ This respects PEP 668: avoid it on a system Python marked "externally managed", 
 ## pipx
 
 ```bash
-pipx install btx-jev-judge
-pipx upgrade btx-jev-judge
+pipx install btx-skill-jev-judge
+pipx upgrade btx-skill-jev-judge
 ```
 
 ## From Git or a local clone
 
 ```bash
-pip install "git+https://github.com/bitranox/btx-skill-jev"
+pip install "git+https://github.com/bitranox/btx-skill-jev-judge"
 pip install .                 # from a clone, runtime only
 pip install -e ".[dev]"       # from a clone, with the development tools
 ```
@@ -76,7 +76,7 @@ pip install -e ".[dev]"       # from a clone, with the development tools
 
 ```bash
 python -m build
-pip install dist/btx_jev_judge-*.whl
+pip install dist/btx_skill_jev_judge-*.whl
 ```
 
 ## Provide the key

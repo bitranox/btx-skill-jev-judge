@@ -17,7 +17,7 @@ class TestGetDefaultConfigPath:
 
     def test_returns_toml_path(self) -> None:
         """The returned path points to a .toml file."""
-        from btx_jev_judge.adapters.config.loader import get_default_config_path
+        from btx_skill_jev_judge.adapters.config.loader import get_default_config_path
 
         result = get_default_config_path()
 
@@ -25,7 +25,7 @@ class TestGetDefaultConfigPath:
 
     def test_repeated_calls_return_equal_paths(self) -> None:
         """Repeated calls return equal Path values."""
-        from btx_jev_judge.adapters.config.loader import get_default_config_path
+        from btx_skill_jev_judge.adapters.config.loader import get_default_config_path
 
         first = get_default_config_path()
         second = get_default_config_path()
@@ -39,7 +39,7 @@ class TestGetConfig:
 
     def test_returns_config_with_dict(self) -> None:
         """get_config() returns a Config with a valid dict."""
-        from btx_jev_judge.adapters.config.loader import get_config
+        from btx_skill_jev_judge.adapters.config.loader import get_config
 
         config = get_config()
 
@@ -47,7 +47,7 @@ class TestGetConfig:
 
     def test_repeated_calls_return_equivalent_data(self) -> None:
         """Repeated calls return Config with equivalent data."""
-        from btx_jev_judge.adapters.config.loader import get_config
+        from btx_skill_jev_judge.adapters.config.loader import get_config
 
         first = get_config()
         second = get_config()
@@ -65,7 +65,7 @@ class TestConcurrentAccess:
 
     def test_concurrent_get_config_returns_equivalent_results(self) -> None:
         """All threads receive equivalent Config data."""
-        from btx_jev_judge.adapters.config.loader import get_config
+        from btx_skill_jev_judge.adapters.config.loader import get_config
 
         with ThreadPoolExecutor(max_workers=4) as pool:
             futures = [pool.submit(get_config) for _ in range(10)]
@@ -76,7 +76,7 @@ class TestConcurrentAccess:
 
     def test_concurrent_get_default_config_path_returns_equal_results(self) -> None:
         """All threads receive equal Path values."""
-        from btx_jev_judge.adapters.config.loader import get_default_config_path
+        from btx_skill_jev_judge.adapters.config.loader import get_default_config_path
 
         with ThreadPoolExecutor(max_workers=4) as pool:
             futures = [pool.submit(get_default_config_path) for _ in range(10)]
@@ -91,7 +91,7 @@ class TestConcurrentAccess:
         This tests that calling cache_clear() while other threads read
         the cache does not raise exceptions or return corrupt data.
         """
-        from btx_jev_judge.adapters.config.loader import get_config
+        from btx_skill_jev_judge.adapters.config.loader import get_config
 
         errors: list[Exception] = []
 
@@ -129,7 +129,7 @@ class TestConcurrentAccess:
         The LRU cache keys on (profile, start_dir), so different profiles
         should each get their own cached entry.
         """
-        from btx_jev_judge.adapters.config.loader import get_config
+        from btx_skill_jev_judge.adapters.config.loader import get_config
 
         # Use None profile (default) - we just verify concurrent access works
         # Real profile testing requires actual profile files on disk

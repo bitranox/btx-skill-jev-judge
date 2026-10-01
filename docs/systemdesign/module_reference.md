@@ -9,28 +9,28 @@ Complete (v0.2.0)
 ## Related Files
 
 ### Domain Layer
-- `src/btx_jev_judge/domain/models.py`  -  Questions, items, answers, rows and outcomes
-- `src/btx_jev_judge/domain/redaction.py`  -  Secret redaction and string capping
-- `src/btx_jev_judge/domain/summary.py`  -  Run summary: distribution, uncertain rows, flat questions
-- `src/btx_jev_judge/domain/enums.py`  -  Type-safe enums (QuestionType, OutputFormat, DeployTarget)
-- `src/btx_jev_judge/domain/errors.py`  -  InputError and ConfigurationError
+- `src/btx_skill_jev_judge/domain/models.py`  -  Questions, items, answers, rows and outcomes
+- `src/btx_skill_jev_judge/domain/redaction.py`  -  Secret redaction and string capping
+- `src/btx_skill_jev_judge/domain/summary.py`  -  Run summary: distribution, uncertain rows, flat questions
+- `src/btx_skill_jev_judge/domain/enums.py`  -  Type-safe enums (QuestionType, OutputFormat, DeployTarget)
+- `src/btx_skill_jev_judge/domain/errors.py`  -  InputError and ConfigurationError
 
 ### Application Layer
-- `src/btx_jev_judge/application/judge.py`  -  The judge use case: redact each state, ask the client, collect one row per item
-- `src/btx_jev_judge/application/ports.py`  -  Callable Protocol definitions for adapter functions
+- `src/btx_skill_jev_judge/application/judge.py`  -  The judge use case: redact each state, ask the client, collect one row per item
+- `src/btx_skill_jev_judge/application/ports.py`  -  Callable Protocol definitions for adapter functions
 
 ### Adapters Layer
-- `src/btx_jev_judge/adapters/jev/client.py`  -  Pooled, rate-limited, retrying Jev HTTP client; loopback-only base URL override
-- `src/btx_jev_judge/adapters/jev/limiter.py`  -  Request spacing shared by every worker thread
-- `src/btx_jev_judge/adapters/key/lookup.py`  -  API key from `TYPESAFE_API_KEY` or `~/.credentials/typesafe.key`
-- `src/btx_jev_judge/adapters/files/`  -  JSONL items, JSON questions and JSONL result rows on disk
-- `src/btx_jev_judge/adapters/config/loader.py`  -  Configuration loading with LRU caching
-- `src/btx_jev_judge/adapters/config/judge_settings.py`  -  Typed `[judge]` and `[summary]` sections
-- `src/btx_jev_judge/adapters/config/deploy.py`  -  Configuration deployment
-- `src/btx_jev_judge/adapters/config/display.py`  -  Configuration display (TOML/JSON output, redaction)
-- `src/btx_jev_judge/adapters/config/overrides.py`  -  CLI `--set` override parsing and deep-merge
-- `src/btx_jev_judge/adapters/logging/setup.py`  -  lib_log_rich initialization
-- `src/btx_jev_judge/adapters/cli/`  -  CLI adapter package:
+- `src/btx_skill_jev_judge/adapters/jev/client.py`  -  Pooled, rate-limited, retrying Jev HTTP client; loopback-only base URL override
+- `src/btx_skill_jev_judge/adapters/jev/limiter.py`  -  Request spacing shared by every worker thread
+- `src/btx_skill_jev_judge/adapters/key/lookup.py`  -  API key from `TYPESAFE_API_KEY` or `~/.credentials/typesafe.key`
+- `src/btx_skill_jev_judge/adapters/files/`  -  JSONL items, JSON questions and JSONL result rows on disk
+- `src/btx_skill_jev_judge/adapters/config/loader.py`  -  Configuration loading with LRU caching
+- `src/btx_skill_jev_judge/adapters/config/judge_settings.py`  -  Typed `[judge]` and `[summary]` sections
+- `src/btx_skill_jev_judge/adapters/config/deploy.py`  -  Configuration deployment
+- `src/btx_skill_jev_judge/adapters/config/display.py`  -  Configuration display (TOML/JSON output, redaction)
+- `src/btx_skill_jev_judge/adapters/config/overrides.py`  -  CLI `--set` override parsing and deep-merge
+- `src/btx_skill_jev_judge/adapters/logging/setup.py`  -  lib_log_rich initialization
+- `src/btx_skill_jev_judge/adapters/cli/`  -  CLI adapter package:
   - `__init__.py`  -  Public facade
   - `constants.py`  -  Shared constants
   - `safe_console.py`  -  Encode-safe terminal output; use `safe_console.echo` instead of `click.echo`
@@ -47,24 +47,24 @@ Complete (v0.2.0)
   - `commands/logging.py`  -  logdemo command
 
 ### Adapters Layer (In-Memory / Testing)
-- `src/btx_jev_judge/adapters/memory/__init__.py`  -  Public facade + Protocol conformance assertions
-- `src/btx_jev_judge/adapters/memory/config.py`  -  In-memory config adapters
-- `src/btx_jev_judge/adapters/memory/logging.py`  -  In-memory logging (a quiet lib_log_rich runtime for tests)
+- `src/btx_skill_jev_judge/adapters/memory/__init__.py`  -  Public facade + Protocol conformance assertions
+- `src/btx_skill_jev_judge/adapters/memory/config.py`  -  In-memory config adapters
+- `src/btx_skill_jev_judge/adapters/memory/logging.py`  -  In-memory logging (a quiet lib_log_rich runtime for tests)
 
 ### Composition Layer
-- `src/btx_jev_judge/composition/__init__.py`  -  Wires adapters to ports (`build_production`, `build_testing`)
+- `src/btx_skill_jev_judge/composition/__init__.py`  -  Wires adapters to ports (`build_production`, `build_testing`)
 
 ### Entry Points
-- `src/btx_jev_judge/entry.py`  -  Console-script entry point (`jev-judge`, `btx-jev-judge`)
-- `src/btx_jev_judge/__main__.py`  -  Thin shim for `python -m`
-- `src/btx_jev_judge/__init__.py`  -  Public API exports
-- `src/btx_jev_judge/__init__conf__.py`  -  Package metadata constants
+- `src/btx_skill_jev_judge/entry.py`  -  Console-script entry point (`jev-judge`, `btx-skill-jev-judge`)
+- `src/btx_skill_jev_judge/__main__.py`  -  Thin shim for `python -m`
+- `src/btx_skill_jev_judge/__init__.py`  -  Public API exports
+- `src/btx_skill_jev_judge/__init__conf__.py`  -  Package metadata constants
 
 ### Configuration Defaults
-- `src/btx_jev_judge/adapters/config/defaultconfig.toml`  -  Base defaults and layer documentation
-- `src/btx_jev_judge/adapters/config/defaultconfig.d/40-layered-config.toml`  -  lib_layered_config integration docs
-- `src/btx_jev_judge/adapters/config/defaultconfig.d/60-judge.toml`  -  `[judge]` and `[summary]` defaults
-- `src/btx_jev_judge/adapters/config/defaultconfig.d/90-logging.toml`  -  Logging defaults
+- `src/btx_skill_jev_judge/adapters/config/defaultconfig.toml`  -  Base defaults and layer documentation
+- `src/btx_skill_jev_judge/adapters/config/defaultconfig.d/40-layered-config.toml`  -  lib_layered_config integration docs
+- `src/btx_skill_jev_judge/adapters/config/defaultconfig.d/60-judge.toml`  -  `[judge]` and `[summary]` defaults
+- `src/btx_skill_jev_judge/adapters/config/defaultconfig.d/90-logging.toml`  -  Logging defaults
 
 ### Tests
 - `tests/test_application_judge.py`  -  The use case with a fake client
@@ -137,7 +137,7 @@ and the signal codes (130, 141, 143) used by the framework.
 
 ### Root Command
 
-**Command:** `jev-judge` (also `btx-jev-judge`)
+**Command:** `jev-judge` (also `btx-skill-jev-judge`)
 
 | Option                         | Description                                 |
 |--------------------------------|---------------------------------------------|

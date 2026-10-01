@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from btx_jev_judge.adapters.key import KEY_ENV, KEYFILE, KEYFILE_FORBIDDEN_BITS, load_key
+from btx_skill_jev_judge.adapters.key import KEY_ENV, KEYFILE, KEYFILE_FORBIDDEN_BITS, load_key
 
 if TYPE_CHECKING:
     from pathlib import Path

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import pytest
 
-from btx_jev_judge.adapters.logging.setup import LoggingConfigModel
+from btx_skill_jev_judge.adapters.logging.setup import LoggingConfigModel
 
 
 @pytest.mark.os_agnostic

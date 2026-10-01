@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from btx_jev_judge.domain.enums import DeployTarget, OutputFormat
+from btx_skill_jev_judge.domain.enums import DeployTarget, OutputFormat
 
 # ======================== OutputFormat ========================
 

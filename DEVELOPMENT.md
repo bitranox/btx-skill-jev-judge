@@ -1,6 +1,6 @@
 # Development
 
-The repository is two things at once: the Python package `btx_jev_judge` (PyPI `btx-jev-judge`)
+The repository is two things at once: the Python package `btx_skill_jev_judge` (PyPI `btx-skill-jev-judge`)
 and a Claude Code plugin marketplace (`.claude-plugin/`, `skills/jev-judge/`). Its build, test and
 release tasks are run by [bmk](https://pypi.org/project/bmk/) through a generated `Makefile`.
 
@@ -35,7 +35,7 @@ through `make testintegration`.
 ## Layout and layering
 
 ```text
-src/btx_jev_judge/
+src/btx_skill_jev_judge/
   domain/        questions, items, answers, rows, redaction, summary (no I/O)
   application/   the judge use case and the port protocols
   adapters/      cli, jev (HTTP client), key, files, config, logging, memory
@@ -61,7 +61,7 @@ Tests drive real seams instead of patching internals:
 
 ## Metadata
 
-`pyproject.toml` is the source of truth. `src/btx_jev_judge/__init__conf__.py` holds static copies
+`pyproject.toml` is the source of truth. `src/btx_skill_jev_judge/__init__conf__.py` holds static copies
 that a test keeps in sync, so runtime code never queries packaging metadata. Bump versions with
 `make bump-*`; it also updates `.claude-plugin/plugin.json`.
 

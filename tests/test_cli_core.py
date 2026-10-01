@@ -7,9 +7,9 @@ from typing import TYPE_CHECKING, Any
 import lib_cli_exit_tools
 import pytest
 
-from btx_jev_judge import __init__conf__
-from btx_jev_judge.adapters import cli as cli_mod
-from btx_jev_judge.composition import build_production
+from btx_skill_jev_judge import __init__conf__
+from btx_skill_jev_judge.adapters import cli as cli_mod
+from btx_skill_jev_judge.composition import build_production
 
 if TYPE_CHECKING:
     from collections.abc import Callable

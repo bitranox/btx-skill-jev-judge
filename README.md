@@ -1,7 +1,7 @@
-# btx-skill-jev
+# btx-skill-jev-judge
 
 A Claude Code plugin with one skill, `jev-judge`, and the Python package behind it,
-`btx-jev-judge`. When the same judgment repeats over many items, such as labeling 600 support
+`btx-skill-jev-judge`. When the same judgment repeats over many items, such as labeling 600 support
 tickets, Claude hands it to [TypeSafe's Jev](https://docs.typesafe.ai) through a tested
 command-line tool. That beats reading every item into its own context or calling a large model
 once per item.
@@ -19,8 +19,8 @@ marketplace once, then install the plugin from it. Set up the [prerequisites](#p
 ### In a Claude Code session
 
 ```text
-/plugin marketplace add bitranox/btx-skill-jev
-/plugin install btx-skill-jev@btx-skill-jev
+/plugin marketplace add bitranox/btx-skill-jev-judge
+/plugin install btx-skill-jev-judge@btx-skill-jev-judge
 ```
 
 `/plugin install` opens the plugin panel, where you choose the scope:
@@ -42,18 +42,18 @@ Closing the panel loads the plugin into the open session. If it does not appear,
 Useful in a setup script:
 
 ```bash
-claude plugin marketplace add bitranox/btx-skill-jev
-claude plugin install btx-skill-jev@btx-skill-jev                  # user scope
-claude plugin install btx-skill-jev@btx-skill-jev --scope project  # or project scope
+claude plugin marketplace add bitranox/btx-skill-jev-judge
+claude plugin install btx-skill-jev-judge@btx-skill-jev-judge                  # user scope
+claude plugin install btx-skill-jev-judge@btx-skill-jev-judge --scope project  # or project scope
 ```
 
 Plugins installed this way load in the next session, or after `/reload-plugins` in an open one.
 
 ### Check that it works
 
-`claude plugin list` shows `btx-skill-jev@btx-skill-jev`. In a session, describe a matching task
+`claude plugin list` shows `btx-skill-jev-judge@btx-skill-jev-judge`. In a session, describe a matching task
 ("tag these 600 support tickets by product area") and Claude loads the skill, or invoke it
-directly with `/btx-skill-jev:jev-judge`. Its first step runs `check-key`,
+directly with `/btx-skill-jev-judge:jev-judge`. Its first step runs `check-key`,
 which tells you whether the TypeSafe key is usable without printing it.
 
 ### Updates
@@ -61,8 +61,8 @@ which tells you whether the TypeSafe key is usable without printing it.
 Auto-update is off by default for marketplaces other than Anthropic's own. Update by hand:
 
 ```bash
-claude plugin marketplace update btx-skill-jev
-claude plugin update btx-skill-jev@btx-skill-jev
+claude plugin marketplace update btx-skill-jev-judge
+claude plugin update btx-skill-jev-judge@btx-skill-jev-judge
 ```
 
 or turn auto-update on in `/plugin`, on the **Marketplaces** tab. An open session keeps the version
@@ -71,8 +71,8 @@ it loaded until you run `/reload-plugins`.
 ### Uninstall
 
 ```bash
-claude plugin uninstall btx-skill-jev@btx-skill-jev  # add --scope project for a project install
-claude plugin marketplace remove btx-skill-jev       # also uninstalls its plugins
+claude plugin uninstall btx-skill-jev-judge@btx-skill-jev-judge  # add --scope project for a project install
+claude plugin marketplace remove btx-skill-jev-judge       # also uninstalls its plugins
 ```
 
 ### From a local clone
@@ -81,8 +81,8 @@ To try a change before it is pushed, register the directory instead of the GitHu
 Start a relative path with `./`, or Claude Code reads it as `owner/repo`:
 
 ```text
-/plugin marketplace add ./btx-skill-jev
-/plugin install btx-skill-jev@btx-skill-jev
+/plugin marketplace add ./btx-skill-jev-judge
+/plugin install btx-skill-jev-judge@btx-skill-jev-judge
 ```
 
 ## Prerequisites
@@ -99,12 +99,12 @@ Start a relative path with `./`, or Claude Code reads it as `owner/repo`:
 
 ## Installation
 
-The command-line tool is the PyPI package `btx-jev-judge`. It installs three command names for
-one program: `jev-judge`, `btx-jev-judge` and `btx_jev_judge`.
+The command-line tool is the PyPI package `btx-skill-jev-judge`. It installs three command names for
+one program: `jev-judge`, `btx-skill-jev-judge` and `btx_skill_jev_judge`.
 
 ```bash
-uvx --from btx-jev-judge jev-judge --help   # run once, nothing installed
-uv tool install btx-jev-judge               # or install it on your PATH
+uvx --from btx-skill-jev-judge jev-judge --help   # run once, nothing installed
+uv tool install btx-skill-jev-judge               # or install it on your PATH
 jev-judge --version
 ```
 
@@ -167,7 +167,7 @@ Defaults for `run` and `summarize` live in the `[judge]` and `[summary]` section
 configuration (files, `.env`, environment variables). A command-line flag always wins. The API key
 (exported `TYPESAFE_API_KEY`, else a `.env` in the current directory or a parent, else
 `~/.credentials/typesafe.key`; see [SECURITY.md](SECURITY.md)) is never a configuration value: a
-`judge.api_key` entry is refused with exit 78. Environment variables look like `BTX_JEV_JUDGE___JUDGE__RATE=5`. Every key, default and layer is in
+`judge.api_key` entry is refused with exit 78. Environment variables look like `BTX_SKILL_JEV_JUDGE___JUDGE__RATE=5`. Every key, default and layer is in
 [CONFIG.md](CONFIG.md).
 
 ## Architecture

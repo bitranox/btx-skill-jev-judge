@@ -11,9 +11,9 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 
-from btx_jev_judge.adapters import cli as cli_mod
-from btx_jev_judge.composition import AppServices, build_production, build_testing
-from btx_jev_judge.domain.enums import DeployTarget
+from btx_skill_jev_judge.adapters import cli as cli_mod
+from btx_skill_jev_judge.composition import AppServices, build_production, build_testing
+from btx_skill_jev_judge.domain.enums import DeployTarget
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping
@@ -311,7 +311,7 @@ def test_deploy_configuration_passes_set_permissions_to_library(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """deploy_configuration passes set_permissions to deploy_config."""
-    from btx_jev_judge.adapters.config import deploy as deploy_mod
+    from btx_skill_jev_judge.adapters.config import deploy as deploy_mod
 
     captured_kwargs: list[dict[str, Any]] = []
 
@@ -336,7 +336,7 @@ def test_deploy_configuration_passes_permission_overrides_to_library(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """deploy_configuration hands permission_overrides to deploy_config unchanged."""
-    from btx_jev_judge.adapters.config import deploy as deploy_mod
+    from btx_skill_jev_judge.adapters.config import deploy as deploy_mod
 
     captured_kwargs: list[dict[str, Any]] = []
 
@@ -358,7 +358,7 @@ def test_deploy_configuration_passes_mode_overrides_to_library(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """deploy_configuration passes dir_mode and file_mode to deploy_config."""
-    from btx_jev_judge.adapters.config import deploy as deploy_mod
+    from btx_skill_jev_judge.adapters.config import deploy as deploy_mod
 
     captured_kwargs: list[dict[str, Any]] = []
 

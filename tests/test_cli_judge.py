@@ -17,11 +17,11 @@ import pytest
 from click.testing import CliRunner, Result
 from lib_layered_config import ConfigError
 
-from btx_jev_judge.adapters.cli.root import cli
-from btx_jev_judge.adapters.config.judge_settings import RunConfig
-from btx_jev_judge.composition import AppServices, build_testing
-from btx_jev_judge.domain.enums import QuestionType
-from btx_jev_judge.domain.models import Answer, Row
+from btx_skill_jev_judge.adapters.cli.root import cli
+from btx_skill_jev_judge.adapters.config.judge_settings import RunConfig
+from btx_skill_jev_judge.composition import AppServices, build_testing
+from btx_skill_jev_judge.domain.enums import QuestionType
+from btx_skill_jev_judge.domain.models import Answer, Row
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping, Sequence
@@ -30,8 +30,8 @@ if TYPE_CHECKING:
     from conftest import JevStub
     from pydantic import JsonValue
 
-    from btx_jev_judge.application.ports import JudgeClient
-    from btx_jev_judge.domain.models import Outcome, Question
+    from btx_skill_jev_judge.application.ports import JudgeClient
+    from btx_skill_jev_judge.domain.models import Outcome, Question
 
 KEY = "tk_" + "c" * 40
 QUESTION = {"id": "dup", "type": "noul", "instructions": "Is `title` a duplicate?"}

@@ -12,14 +12,14 @@ from typing import TYPE_CHECKING
 import pytest
 from lib_layered_config import Config
 
-from btx_jev_judge.adapters.memory import (
+from btx_skill_jev_judge.adapters.memory import (
     get_config_in_memory,
     get_default_config_path_in_memory,
     init_logging_in_memory,
 )
 
 if TYPE_CHECKING:
-    from btx_jev_judge.application.ports import (
+    from btx_skill_jev_judge.application.ports import (
         GetConfig,
         GetDefaultConfigPath,
         InitLogging,
@@ -80,7 +80,7 @@ def test_init_logging_does_not_raise(init_logging_impl: InitLogging) -> None:
 @pytest.mark.os_agnostic
 def test_build_production_returns_fully_populated_app_services() -> None:
     """build_production() must return AppServices with all fields populated."""
-    from btx_jev_judge.composition import AppServices, build_production
+    from btx_skill_jev_judge.composition import AppServices, build_production
 
     services = build_production()
     assert isinstance(services, AppServices)
@@ -91,7 +91,7 @@ def test_build_production_returns_fully_populated_app_services() -> None:
 @pytest.mark.os_agnostic
 def test_build_testing_returns_fully_populated_app_services() -> None:
     """build_testing() must return AppServices with all in-memory implementations."""
-    from btx_jev_judge.composition import AppServices, build_testing
+    from btx_skill_jev_judge.composition import AppServices, build_testing
 
     services = build_testing()
     assert isinstance(services, AppServices)
@@ -102,7 +102,7 @@ def test_build_testing_returns_fully_populated_app_services() -> None:
 @pytest.mark.os_agnostic
 def test_build_production_services_are_callable() -> None:
     """All services from build_production() must be callable."""
-    from btx_jev_judge.composition import build_production
+    from btx_skill_jev_judge.composition import build_production
 
     services = build_production()
     for field_name in services.__dataclass_fields__.keys() - _DATA_FIELDS:
@@ -112,7 +112,7 @@ def test_build_production_services_are_callable() -> None:
 @pytest.mark.os_agnostic
 def test_build_testing_services_are_callable() -> None:
     """All services from build_testing() must be callable."""
-    from btx_jev_judge.composition import build_testing
+    from btx_skill_jev_judge.composition import build_testing
 
     services = build_testing()
     for field_name in services.__dataclass_fields__.keys() - _DATA_FIELDS:

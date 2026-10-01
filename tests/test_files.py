@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from btx_jev_judge.adapters.files import load_items, load_questions, read_rows, write_rows
-from btx_jev_judge.domain import Answer, InputError, QuestionType, Row
+from btx_skill_jev_judge.adapters.files import load_items, load_questions, read_rows, write_rows
+from btx_skill_jev_judge.domain import Answer, InputError, QuestionType, Row
 
 if TYPE_CHECKING:
     from collections.abc import Iterator

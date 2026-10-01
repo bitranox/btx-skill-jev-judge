@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from btx_jev_judge.domain.redaction import REDACTED, prepare_state, redact
+from btx_skill_jev_judge.domain.redaction import REDACTED, prepare_state, redact
 
 KEY = "tk_" + "a" * 40
 GITHUB_TOKEN = "ghp_" + "B" * 36

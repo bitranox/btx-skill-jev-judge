@@ -7,12 +7,12 @@
 Testing the application requires in-memory implementations of adapter
 interfaces (e.g. configuration loaders, logging initializers) that avoid real
 I/O. The question is whether these belong under `tests/` or under the
-production source tree in `src/btx_jev_judge/adapters/memory/`.
+production source tree in `src/btx_skill_jev_judge/adapters/memory/`.
 
 ## Decision
 
 Place in-memory adapter implementations in
-`src/btx_jev_judge/adapters/memory/` rather than in the test
+`src/btx_skill_jev_judge/adapters/memory/` rather than in the test
 tree.
 
 ## Consequences

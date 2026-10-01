@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 import rtoml
 
-from btx_jev_judge import __init__conf__
+from btx_skill_jev_judge import __init__conf__
 
 _PYPROJECT_PATH = Path(__file__).parent.parent / "pyproject.toml"
 

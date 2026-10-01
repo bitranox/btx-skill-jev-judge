@@ -12,8 +12,8 @@ from typing import TYPE_CHECKING, Any
 import pytest
 from lib_layered_config import Config
 
-from btx_jev_judge.adapters.config.display import display_config
-from btx_jev_judge.domain.enums import OutputFormat
+from btx_skill_jev_judge.adapters.config.display import display_config
+from btx_skill_jev_judge.domain.enums import OutputFormat
 
 if TYPE_CHECKING:
     from collections.abc import Callable

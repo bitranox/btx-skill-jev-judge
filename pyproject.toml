@@ -1,5 +1,5 @@
 [project]
-name = "btx_jev_judge"
+name = "btx_skill_jev_judge"
 version = "0.2.0"
 description = "Batch-judge items with the TypeSafe Jev API: run, summarize and check-key from the command line"
 readme = "README.md"
@@ -42,9 +42,9 @@ system-dependencies-windows-choco = []
 os = ["ubuntu-latest", "windows-latest", "macos-latest"]
 
 [project.urls]
-Homepage = "https://github.com/bitranox/btx-skill-jev"
-Repository = "https://github.com/bitranox/btx-skill-jev.git"
-Issues = "https://github.com/bitranox/btx-skill-jev/issues"
+Homepage = "https://github.com/bitranox/btx-skill-jev-judge"
+Repository = "https://github.com/bitranox/btx-skill-jev-judge.git"
+Issues = "https://github.com/bitranox/btx-skill-jev-judge/issues"
 
 [project.optional-dependencies]
 dev = [
@@ -79,9 +79,9 @@ dev = [
 ]
 
 [project.scripts]
-btx_jev_judge = "btx_jev_judge.entry:main"
-btx-jev-judge = "btx_jev_judge.entry:main"
-jev-judge = "btx_jev_judge.entry:main"
+btx_skill_jev_judge = "btx_skill_jev_judge.entry:main"
+btx-skill-jev-judge = "btx_skill_jev_judge.entry:main"
+jev-judge = "btx_skill_jev_judge.entry:main"
 
 [build-system]
 requires = ["hatchling>=1.32.4"]
@@ -91,11 +91,11 @@ build-backend = "hatchling.build"
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/btx_jev_judge"]
+packages = ["src/btx_skill_jev_judge"]
 include = [
-    "src/btx_jev_judge/py.typed",
-    "src/btx_jev_judge/adapters/config/defaultconfig.toml",
-    "src/btx_jev_judge/adapters/config/defaultconfig.d/*.toml",
+    "src/btx_skill_jev_judge/py.typed",
+    "src/btx_skill_jev_judge/adapters/config/defaultconfig.toml",
+    "src/btx_skill_jev_judge/adapters/config/defaultconfig.d/*.toml",
 ]
 
 [tool.ruff]
@@ -148,11 +148,11 @@ runtime-evaluated-base-classes = ["pydantic.BaseModel"]
 # body to exercise import-time and cache behaviour, so moving them to module top would defeat intent.
 "tests/*.py" = ["T20", "S101", "S105", "S106", "S108", "FBT001", "FBT003", "PLR0913", "PLR2004", "PLC0415"]
 # CLI: Click framework injects boolean params; commands have many options
-"src/btx_jev_judge/adapters/cli/**/*.py" = ["FBT001", "FBT002", "PLR0913"]
+"src/btx_skill_jev_judge/adapters/cli/**/*.py" = ["FBT001", "FBT002", "PLR0913"]
 # Protocols/adapters: many-param signatures by design
-"src/btx_jev_judge/application/*.py" = ["PLR0913"]
-"src/btx_jev_judge/adapters/config/*.py" = ["PLR0913"]
-"src/btx_jev_judge/adapters/memory/*.py" = ["PLR0913"]
+"src/btx_skill_jev_judge/application/*.py" = ["PLR0913"]
+"src/btx_skill_jev_judge/adapters/config/*.py" = ["PLR0913"]
+"src/btx_skill_jev_judge/adapters/memory/*.py" = ["PLR0913"]
 
 [tool.pyright]
 typeCheckingMode = "strict"
@@ -187,8 +187,8 @@ parallel = false
 # For local development, the pytest hook automatically redirects to
 # tempfile.gettempdir() before pytest-cov creates its Coverage() object.
 # This static fallback catches edge cases where coverage is run directly.
-data_file = "/tmp/.coverage.btx_jev_judge"
-source = ["src/btx_jev_judge"]
+data_file = "/tmp/.coverage.btx_skill_jev_judge"
+source = ["src/btx_skill_jev_judge"]
 
 [tool.coverage.report]
 omit = [
@@ -237,18 +237,18 @@ coverage-report-file = "coverage.xml"
 src-path = "src"
 
 [tool.importlinter]
-root_package = "btx_jev_judge"
+root_package = "btx_skill_jev_judge"
 exclude_type_checking_imports = true
 
 [[tool.importlinter.contracts]]
 name = "Domain is pure (no adapter dependencies)"
 type = "forbidden"
 source_modules = [
-  "btx_jev_judge.domain",
+  "btx_skill_jev_judge.domain",
 ]
 forbidden_modules = [
-  "btx_jev_judge.adapters",
-  "btx_jev_judge.composition",
+  "btx_skill_jev_judge.adapters",
+  "btx_skill_jev_judge.composition",
 ]
 
 [[tool.importlinter.contracts]]
@@ -256,13 +256,13 @@ name = "Clean Architecture layers"
 type = "layers"
 layers = [
   # Composition wires adapters - can import everything
-  "btx_jev_judge.composition",
+  "btx_skill_jev_judge.composition",
   # Adapters implement ports - can import application and domain
-  "btx_jev_judge.adapters",
+  "btx_skill_jev_judge.adapters",
   # Application defines ports - can import domain
-  "btx_jev_judge.application",
+  "btx_skill_jev_judge.application",
   # Domain is pure - bottom layer
-  "btx_jev_judge.domain",
+  "btx_skill_jev_judge.domain",
 ]
 
 [tool.pip-audit]

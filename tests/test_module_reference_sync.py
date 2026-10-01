@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, get_args
 
 import pytest
 
-from btx_jev_judge.adapters.config.judge_settings import RunConfig, SummaryConfig
+from btx_skill_jev_judge.adapters.config.judge_settings import RunConfig, SummaryConfig
 
 if TYPE_CHECKING:
     from pydantic import BaseModel

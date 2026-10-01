@@ -16,8 +16,8 @@ import click
 import pytest
 from lib_layered_config import Config
 
-from btx_jev_judge.adapters.cli.main import main
-from btx_jev_judge.composition import AppServices, build_testing
+from btx_skill_jev_judge.adapters.cli.main import main
+from btx_skill_jev_judge.composition import AppServices, build_testing
 
 if TYPE_CHECKING:
     from collections.abc import Callable

@@ -33,9 +33,9 @@ if TYPE_CHECKING:
 
     from lib_layered_config.domain.config import SourceInfo
 
-    from btx_jev_judge.composition import AppServices
+    from btx_skill_jev_judge.composition import AppServices
 
-_COVERAGE_BASENAME = ".coverage.btx_jev_judge"
+_COVERAGE_BASENAME = ".coverage.btx_skill_jev_judge"
 
 
 def _purge_stale_coverage_files(cov_path: Path) -> None:
@@ -210,7 +210,7 @@ def production_factory() -> Callable[[], AppServices]:
             result = cli_runner.invoke(cli, ["info"], obj=production_factory)
             assert result.exit_code == 0
     """
-    from btx_jev_judge.composition import build_production
+    from btx_skill_jev_judge.composition import build_production
 
     return build_production
 
@@ -280,7 +280,7 @@ def clear_config_cache() -> Iterator[None]:
             config1 = get_config()
             # Cache was cleared, so this is a fresh load
     """
-    from btx_jev_judge.adapters.config import loader as config_mod
+    from btx_skill_jev_judge.adapters.config import loader as config_mod
 
     config_mod.get_config.cache_clear()
     yield
@@ -359,8 +359,8 @@ def inject_config(
             result = cli_runner.invoke(cli, ["config"], obj=factory)
             assert "key" in result.output
     """
-    from btx_jev_judge.adapters.memory import init_logging_in_memory
-    from btx_jev_judge.composition import AppServices, build_production, build_testing
+    from btx_skill_jev_judge.adapters.memory import init_logging_in_memory
+    from btx_skill_jev_judge.composition import AppServices, build_production, build_testing
 
     def _inject(config: Config) -> Callable[[], AppServices]:
         def _fake_get_config(**_kwargs: Any) -> Config:
@@ -414,8 +414,8 @@ def inject_config_with_profile_capture(
             cli_runner.invoke(cli, ["--profile", "staging", "config"], obj=factory)
             assert captured == ["staging"]
     """
-    from btx_jev_judge.adapters.memory import init_logging_in_memory
-    from btx_jev_judge.composition import AppServices, build_production, build_testing
+    from btx_skill_jev_judge.adapters.memory import init_logging_in_memory
+    from btx_skill_jev_judge.composition import AppServices, build_production, build_testing
 
     def _inject(config: Config, captured_profiles: list[str | None]) -> Callable[[], AppServices]:
         def _capturing_get_config(*, profile: str | None = None, **_kwargs: Any) -> Config:
@@ -470,8 +470,8 @@ def inject_deploy_with_profile_capture(
             cli_runner.invoke(cli, ["--profile", "prod", "config-deploy", ...], obj=factory)
             assert captured == ["prod"]
     """
-    from btx_jev_judge.adapters.memory import init_logging_in_memory
-    from btx_jev_judge.composition import AppServices, build_production, build_testing
+    from btx_skill_jev_judge.adapters.memory import init_logging_in_memory
+    from btx_skill_jev_judge.composition import AppServices, build_production, build_testing
 
     def _inject(deployed_path: Path, captured_profiles: list[str | None]) -> Callable[[], AppServices]:
         def _capturing_deploy(
@@ -531,8 +531,8 @@ def inject_deploy_configuration() -> Callable[[Callable[..., list[Path]]], Calla
             cli_runner.invoke(cli, ["config-deploy", "--target", "user"], obj=factory)
             assert len(calls) == 1
     """
-    from btx_jev_judge.adapters.memory import init_logging_in_memory
-    from btx_jev_judge.composition import AppServices, build_production, build_testing
+    from btx_skill_jev_judge.adapters.memory import init_logging_in_memory
+    from btx_skill_jev_judge.composition import AppServices, build_production, build_testing
 
     def _inject(deploy_fn: Callable[..., list[Path]]) -> Callable[[], AppServices]:
         prod, safe = build_production(), build_testing()
@@ -574,7 +574,7 @@ def inject_test_services() -> Callable[[], Callable[[], AppServices]]:
             result = cli_runner.invoke(cli, ["config"], obj=factory)
             # Uses in-memory config, no disk access
     """
-    from btx_jev_judge.composition import build_testing
+    from btx_skill_jev_judge.composition import build_testing
 
     def _inject() -> Callable[[], AppServices]:
         return build_testing
@@ -607,8 +607,8 @@ def config_cli_context(
             result = cli_runner.invoke(cli, ["config"], obj=factory)
             assert "key" in result.output
     """
-    from btx_jev_judge.adapters.memory import init_logging_in_memory
-    from btx_jev_judge.composition import AppServices, build_production, build_testing
+    from btx_skill_jev_judge.adapters.memory import init_logging_in_memory
+    from btx_skill_jev_judge.composition import AppServices, build_production, build_testing
 
     def _create(config_data: dict[str, Any]) -> Callable[[], AppServices]:
         config = Config(config_data, {})
@@ -647,7 +647,7 @@ def failing_command() -> Iterator[str]:
     Yields:
         str: Name of the failing command.
     """
-    from btx_jev_judge.adapters.cli.root import cli
+    from btx_skill_jev_judge.adapters.cli.root import cli
 
     name = "boom"
 

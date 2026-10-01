@@ -9,12 +9,12 @@ import pytest
 import rtoml
 from lib_layered_config import Config
 
-from btx_jev_judge.adapters.config import apply_overrides, get_default_config_path
-from btx_jev_judge.adapters.config.judge_settings import RunConfig, SummaryConfig, run_config, summary_config
-from btx_jev_judge.adapters.jev import DEFAULT_MODEL, DEFAULT_RATE, JevSettings
-from btx_jev_judge.application.judge import JudgeSettings
-from btx_jev_judge.domain.errors import ConfigurationError
-from btx_jev_judge.domain.summary import DEFAULT_BAND, DEFAULT_MIN_CONFIDENCE
+from btx_skill_jev_judge.adapters.config import apply_overrides, get_default_config_path
+from btx_skill_jev_judge.adapters.config.judge_settings import RunConfig, SummaryConfig, run_config, summary_config
+from btx_skill_jev_judge.adapters.jev import DEFAULT_MODEL, DEFAULT_RATE, JevSettings
+from btx_skill_jev_judge.application.judge import JudgeSettings
+from btx_skill_jev_judge.domain.errors import ConfigurationError
+from btx_skill_jev_judge.domain.summary import DEFAULT_BAND, DEFAULT_MIN_CONFIDENCE
 
 ConfigFactory = Callable[[dict[str, Any]], Config]
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from btx_jev_judge.domain.errors import ConfigurationError
+from btx_skill_jev_judge.domain.errors import ConfigurationError
 
 
 @pytest.mark.os_agnostic

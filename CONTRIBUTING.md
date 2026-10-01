@@ -1,6 +1,6 @@
 # Contributing Guide
 
-Thanks for helping improve **btx-jev-judge**. This page covers the day-to-day workflow and the
+Thanks for helping improve **btx-skill-jev-judge**. This page covers the day-to-day workflow and the
 checks a change must pass. The development loop itself is in [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## Workflow

@@ -12,7 +12,7 @@ If you find a security vulnerability in this project, please report it responsib
 
 1. **Do not** open a public GitHub issue for it.
 2. Email the maintainer directly or use
-   [GitHub's private vulnerability reporting](https://github.com/bitranox/btx-skill-jev/security/advisories/new).
+   [GitHub's private vulnerability reporting](https://github.com/bitranox/btx-skill-jev-judge/security/advisories/new).
 3. Include a description, steps to reproduce, and any relevant logs.
 
 You can expect an initial response within 72 hours.

@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import pytest
 
-from btx_jev_judge.domain.enums import QuestionType
-from btx_jev_judge.domain.errors import InputError
-from btx_jev_judge.domain.models import Answer, Row, parse_questions
+from btx_skill_jev_judge.domain.enums import QuestionType
+from btx_skill_jev_judge.domain.errors import InputError
+from btx_skill_jev_judge.domain.models import Answer, Row, parse_questions
 
 
 def test_a_one_option_choice_is_refused() -> None:

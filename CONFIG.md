@@ -60,19 +60,19 @@ exits 2 and names the flag.
 
 ## Environment variables
 
-An environment variable is the prefix `BTX_JEV_JUDGE___` (three underscores), then the section,
+An environment variable is the prefix `BTX_SKILL_JEV_JUDGE___` (three underscores), then the section,
 two underscores, then the key, in upper case:
 
 ```bash
-BTX_JEV_JUDGE___JUDGE__RATE=5
-BTX_JEV_JUDGE___JUDGE__MODEL=jev-1.13.0
-BTX_JEV_JUDGE___SUMMARY__BAND_LOW=0.3
+BTX_SKILL_JEV_JUDGE___JUDGE__RATE=5
+BTX_SKILL_JEV_JUDGE___JUDGE__MODEL=jev-1.13.0
+BTX_SKILL_JEV_JUDGE___SUMMARY__BAND_LOW=0.3
 ```
 
 Check that one takes effect:
 
 ```bash
-BTX_JEV_JUDGE___JUDGE__RATE=5 jev-judge config --section judge --format json
+BTX_SKILL_JEV_JUDGE___JUDGE__RATE=5 jev-judge config --section judge --format json
 ```
 
 Values are coerced: `true`/`false` become booleans, `null`/`none` become null, and numbers become
@@ -102,10 +102,10 @@ source. See [.env.example](.env.example) and [SECURITY.md](SECURITY.md).
 Files are TOML, YAML or JSON, named `config.toml` (and so on), with an optional `config.d/`
 directory beside them whose files are merged in name order.
 
-| Layer       | Linux                      | macOS                                                   |
-|-------------|----------------------------|---------------------------------------------------------|
-| application | `/etc/xdg/btx-jev-judge/`  | `/Library/Application Support/bitranox/btx_jev_judge/`  |
-| user        | `~/.config/btx-jev-judge/` | `~/Library/Application Support/bitranox/btx_jev_judge/` |
+| Layer       | Linux                            | macOS                                                         |
+|-------------|----------------------------------|---------------------------------------------------------------|
+| application | `/etc/xdg/btx-skill-jev-judge/`  | `/Library/Application Support/bitranox/btx_skill_jev_judge/`  |
+| user        | `~/.config/btx-skill-jev-judge/` | `~/Library/Application Support/bitranox/btx_skill_jev_judge/` |
 
 Windows uses the equivalent per-user and machine-wide application-data directories. A file only
 needs the keys it changes:
@@ -150,6 +150,6 @@ broken. Under `--json-bare` these errors still print `{"error": "<reason>"}` on 
   loopback (`localhost`, `127.0.0.1`, `::1`). Any other value is ignored and the public endpoint is
   used. It exists so tests can talk to a local stub; it is not a configuration key.
 - The `[lib_log_rich]` section configures logging. Every key, with its default, is documented in
-  `src/btx_jev_judge/adapters/config/defaultconfig.d/90-logging.toml` and `.env.example`.
+  `src/btx_skill_jev_judge/adapters/config/defaultconfig.d/90-logging.toml` and `.env.example`.
 - The `[lib_layered_config]` section controls the permissions `config-deploy` sets; see
-  `src/btx_jev_judge/adapters/config/defaultconfig.d/40-layered-config.toml`.
+  `src/btx_skill_jev_judge/adapters/config/defaultconfig.d/40-layered-config.toml`.

@@ -11,7 +11,7 @@ from typing import Any
 import pytest
 from lib_layered_config import Config
 
-from btx_jev_judge.adapters.config.overrides import (
+from btx_skill_jev_judge.adapters.config.overrides import (
     ConfigOverride,
     apply_overrides,
     coerce_value,

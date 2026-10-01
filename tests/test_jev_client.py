@@ -9,7 +9,7 @@ from typing import Any
 import pytest
 from conftest import JevStub
 
-from btx_jev_judge.adapters.jev import (
+from btx_skill_jev_judge.adapters.jev import (
     DEFAULT_BASE_URL,
     MAX_RETRY_WAIT,
     JevClient,
@@ -17,9 +17,9 @@ from btx_jev_judge.adapters.jev import (
     RateLimiter,
     resolve_base_url,
 )
-from btx_jev_judge.application.judge import JudgeSettings, judge_all
-from btx_jev_judge.domain.errors import InputError
-from btx_jev_judge.domain.models import Item, Question, Row, parse_questions
+from btx_skill_jev_judge.application.judge import JudgeSettings, judge_all
+from btx_skill_jev_judge.domain.errors import InputError
+from btx_skill_jev_judge.domain.models import Item, Question, Row, parse_questions
 
 KEY = "tk_" + "a" * 40
 

@@ -18,16 +18,16 @@ import lib_log_rich.runtime
 import pytest
 from lib_layered_config import Config
 
-from btx_jev_judge.adapters import cli as cli_mod
-from btx_jev_judge.adapters.logging.setup import init_logging
-from btx_jev_judge.composition import build_testing
+from btx_skill_jev_judge.adapters import cli as cli_mod
+from btx_skill_jev_judge.adapters.logging.setup import init_logging
+from btx_skill_jev_judge.composition import build_testing
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from click.testing import CliRunner
 
-    from btx_jev_judge.composition import AppServices
+    from btx_skill_jev_judge.composition import AppServices
 
 
 @pytest.mark.os_agnostic

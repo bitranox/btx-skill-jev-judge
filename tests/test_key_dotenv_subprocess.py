@@ -46,7 +46,7 @@ def run_check_key(
     env = {k: v for k, v in os.environ.items() if k != "TYPESAFE_API_KEY"}
     env.update({"HOME": str(home), "USERPROFILE": str(home), **(extra_env or {})})
     completed = subprocess.run(  # noqa: S603 - fixed argv, no shell
-        [sys.executable, "-m", "btx_jev_judge", *args, "check-key", "--json"],
+        [sys.executable, "-m", "btx_skill_jev_judge", *args, "check-key", "--json"],
         cwd=cwd,
         env=env,
         capture_output=True,

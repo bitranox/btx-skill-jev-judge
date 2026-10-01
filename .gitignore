@@ -45,7 +45,7 @@ tmp_*
 # __pycache__: compiled .pyc files at any depth
 # *.py[cod]: catches .pyc, .pyo, .pyd
 __pycache__/
-src/btx_jev_judge/__pycache__/
+src/btx_skill_jev_judge/__pycache__/
 *.py[cod]
 *$py.class     # other compiled artifacts
 
