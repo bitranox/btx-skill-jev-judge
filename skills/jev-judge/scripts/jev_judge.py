@@ -404,9 +404,10 @@ def _read_keyfile(path: Path) -> tuple[str, str]:
     if os.name != "nt" and info.st_mode & KEYFILE_FORBIDDEN_BITS:
         return "", f"keyfile permissions: {path} must be mode 600"
     try:
-        return path.read_text(encoding="utf-8-sig").strip(), "keyfile"
+        value = path.read_text(encoding="utf-8-sig").strip()
     except (OSError, UnicodeDecodeError):
         return "", "keyfile unreadable: save it as UTF-8 text"
+    return value, ("keyfile" if value else "keyfile is empty: paste the key into it")
 
 
 def resolve_base_url(env: Mapping[str, str]) -> str:

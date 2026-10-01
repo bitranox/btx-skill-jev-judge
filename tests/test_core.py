@@ -369,3 +369,11 @@ def test_a_key_that_is_not_printable_ascii_is_refused(tmp_path: Path) -> None:
 def test_a_non_loopback_base_url_override_is_ignored() -> None:
     assert jj.resolve_base_url({"JEV_JUDGE_BASE_URL": "https://evil.example"}) == jj.DEFAULT_BASE_URL
     assert jj.resolve_base_url({"JEV_JUDGE_BASE_URL": "http://127.0.0.1:8123"}) == "http://127.0.0.1:8123"
+
+
+def test_an_empty_keyfile_says_it_is_empty(tmp_path: Path) -> None:
+    keyfile = tmp_path / ".credentials" / "typesafe.key"
+    keyfile.parent.mkdir()
+    keyfile.write_text("\n", encoding="utf-8")
+    keyfile.chmod(0o600)
+    assert jj.load_key({}, tmp_path) == (None, "keyfile is empty: paste the key into it")
