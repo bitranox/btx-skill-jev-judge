@@ -1,0 +1,12 @@
+{"id":"item-01","ok":true,"answers":{"is_bug":{"type":"noul","value":0.04},"is_polite":{"type":"noul","value":0.5}},"attempts":1,"latency_ms":121,"input_tokens":200,"model":"jev-1.13"}
+{"id":"item-02","ok":true,"answers":{"is_bug":{"type":"noul","value":0.12},"is_polite":{"type":"noul","value":0.5}},"attempts":1,"latency_ms":122,"input_tokens":200,"model":"jev-1.13"}
+{"id":"item-03","ok":true,"answers":{"is_bug":{"type":"noul","value":0.91},"is_polite":{"type":"noul","value":0.5}},"attempts":1,"latency_ms":123,"input_tokens":200,"model":"jev-1.13"}
+{"id":"item-04","ok":true,"answers":{"is_bug":{"type":"noul","value":0.33},"is_polite":{"type":"noul","value":0.5}},"attempts":1,"latency_ms":124,"input_tokens":200,"model":"jev-1.13"}
+{"id":"item-05","ok":true,"answers":{"is_bug":{"type":"noul","value":0.78},"is_polite":{"type":"noul","value":0.5}},"attempts":1,"latency_ms":125,"input_tokens":200,"model":"jev-1.13"}
+{"id":"item-06","ok":true,"answers":{"is_bug":{"type":"noul","value":0.06},"is_polite":{"type":"noul","value":0.5}},"attempts":1,"latency_ms":126,"input_tokens":200,"model":"jev-1.13"}
+{"id":"item-07","ok":true,"answers":{"is_bug":{"type":"noul","value":0.95},"is_polite":{"type":"noul","value":0.5}},"attempts":1,"latency_ms":127,"input_tokens":200,"model":"jev-1.13"}
+{"id":"item-08","ok":true,"answers":{"is_bug":{"type":"noul","value":0.52},"is_polite":{"type":"noul","value":0.5}},"attempts":1,"latency_ms":128,"input_tokens":200,"model":"jev-1.13"}
+{"id":"item-09","ok":true,"answers":{"is_bug":{"type":"noul","value":0.18},"is_polite":{"type":"noul","value":0.5}},"attempts":1,"latency_ms":129,"input_tokens":200,"model":"jev-1.13"}
+{"id":"item-10","ok":true,"answers":{"is_bug":{"type":"noul","value":0.87},"is_polite":{"type":"noul","value":0.5}},"attempts":1,"latency_ms":130,"input_tokens":200,"model":"jev-1.13"}
+{"id":"item-11","ok":true,"answers":{"is_bug":{"type":"noul","value":0.64},"is_polite":{"type":"noul","value":0.5}},"attempts":1,"latency_ms":131,"input_tokens":200,"model":"jev-1.13"}
+{"id":"item-12","ok":true,"answers":{"is_bug":{"type":"noul","value":0.09},"is_polite":{"type":"noul","value":0.5}},"attempts":1,"latency_ms":132,"input_tokens":200,"model":"jev-1.13"}

@@ -103,8 +103,8 @@ include = [
 [tool.ruff]
 line-length = 120
 target-version = "py310"
-# Pre-package script and its tests, removed once ported; not held to the package gate meanwhile.
-extend-exclude = ["tests/legacy", "skills/jev-judge/scripts"]
+# The pre-package script ships until the skill moves to the CLI; it is not held to the package gate.
+extend-exclude = ["skills/jev-judge/scripts"]
 
 [tool.ruff.lint]
 select = [
@@ -142,8 +142,9 @@ convention = "google"
 runtime-evaluated-base-classes = ["pydantic.BaseModel"]
 
 [tool.ruff.lint.per-file-ignores]
-# Notebooks: unused imports are often intentional for side effects
-"notebooks/*.ipynb" = ["F401"]
+# Notebooks: unused imports are often intentional for side effects; `_exit_code` is injected by IPython
+# after each `!` command (F821) and asserted on (S101) because a failing `!` never raises.
+"notebooks/*.ipynb" = ["F401", "F821", "S101"]
 # Tests: assert is standard, test fixtures have passwords, magic values are clearer inline, temp paths are fine.
 # PLC0415: local/deferred imports are a deliberate test idiom - several tests import inside the test
 # body to exercise import-time and cache behaviour, so moving them to module top would defeat intent.
@@ -157,13 +158,13 @@ runtime-evaluated-base-classes = ["pydantic.BaseModel"]
 
 [tool.pyright]
 typeCheckingMode = "strict"
-exclude = ["tests/legacy", "skills/jev-judge/scripts", "**/.venv*", "**/node_modules"]
+exclude = ["skills/jev-judge/scripts", "**/.venv*", "**/node_modules"]
 extraPaths = [
   "src",
 ]
 
 [tool.pytest.ini_options]
-addopts = ["--doctest-modules", "--ignore=tests/legacy"]
+addopts = ["--doctest-modules"]
 doctest_optionflags = ["ELLIPSIS", "NORMALIZE_WHITESPACE"]
 pythonpath = ["src"]
 markers = [
