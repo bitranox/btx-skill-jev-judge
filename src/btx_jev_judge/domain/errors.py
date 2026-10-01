@@ -18,6 +18,19 @@ class ConfigurationError(Exception):
     """
 
 
+class InputError(Exception):
+    """Input the caller must fix: an unreadable file, a malformed item or question, a bad option.
+
+    The CLI maps it to exit code 2.
+
+    Example:
+        >>> from btx_jev_judge.domain.errors import InputError
+        >>> str(InputError("questions: need a non-empty JSON list"))
+        'questions: need a non-empty JSON list'
+    """
+
+
 __all__ = [
     "ConfigurationError",
+    "InputError",
 ]

@@ -101,7 +101,7 @@ def test_a_generate_examples_failure_exits_1_without_printing_systemexit(
 
 @pytest.mark.os_agnostic
 def test_a_successful_command_exits_0(capsys: pytest.CaptureFixture[str]) -> None:
-    exit_code = main(["hello"], services_factory=_services({}))
+    exit_code = main(["info"], services_factory=_services({}))
 
     assert exit_code == 0
-    assert "Hello World" in capsys.readouterr().out
+    assert "Info for" in capsys.readouterr().out

@@ -133,49 +133,6 @@ def test_when_traceback_is_requested_without_command_help_is_shown(
 
 
 @pytest.mark.os_agnostic
-def test_traceback_flag_displays_full_exception_traceback(
-    managed_traceback_state: None,
-    capsys: pytest.CaptureFixture[str],
-    strip_ansi: Callable[[str], str],
-) -> None:
-    """--traceback prints the complete traceback on failure."""
-    exit_code = cli_mod.main(["--traceback", "fail"], services_factory=build_production)
-
-    plain_err = strip_ansi(capsys.readouterr().err)
-
-    assert exit_code != 0
-    assert "Traceback (most recent call last)" in plain_err
-    assert "RuntimeError: I should fail" in plain_err
-    assert "[TRUNCATED" not in plain_err
-    assert lib_cli_exit_tools.config.traceback is False
-    assert lib_cli_exit_tools.config.traceback_force_color is False
-
-
-@pytest.mark.os_agnostic
-def test_hello_command_outputs_greeting(
-    cli_runner: CliRunner,
-    production_factory: Callable[[], Any],
-) -> None:
-    """hello command outputs Hello World greeting."""
-    result: Result = cli_runner.invoke(cli_mod.cli, ["hello"], obj=production_factory)
-
-    assert result.exit_code == 0
-    assert "Hello World" in result.output
-
-
-@pytest.mark.os_agnostic
-def test_fail_command_raises_runtime_error(
-    cli_runner: CliRunner,
-    production_factory: Callable[[], Any],
-) -> None:
-    """fail command raises RuntimeError."""
-    result: Result = cli_runner.invoke(cli_mod.cli, ["fail"], obj=production_factory)
-
-    assert result.exit_code != 0
-    assert isinstance(result.exception, RuntimeError)
-
-
-@pytest.mark.os_agnostic
 def test_info_command_displays_project_metadata(
     cli_runner: CliRunner,
     production_factory: Callable[[], Any],
@@ -207,7 +164,7 @@ def test_restore_traceback_false_keeps_flags_enabled(
     """restore_traceback=False leaves traceback flags enabled after command."""
     cli_mod.apply_traceback_preferences(False)
 
-    cli_mod.main(["--traceback", "hello"], restore_traceback=False, services_factory=build_production)
+    cli_mod.main(["--traceback", "info"], restore_traceback=False, services_factory=build_production)
 
     assert lib_cli_exit_tools.config.traceback is True
     assert lib_cli_exit_tools.config.traceback_force_color is True

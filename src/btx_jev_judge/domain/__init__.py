@@ -4,27 +4,68 @@ Contains entities, value objects, and domain services that form the core
 business logic of the application.
 
 Contents:
-    * :mod:`.behaviors` - Core domain behaviors (greeting)
-    * :mod:`.enums` - Domain enumerations (OutputFormat, DeployTarget)
+    * :mod:`.enums` - Domain enumerations (OutputFormat, DeployTarget, QuestionType)
     * :mod:`.errors` - Domain exception types
+    * :mod:`.models` - Questions, items, answers, rows and outcomes
+    * :mod:`.redaction` - Secret redaction and string capping for item states
+    * :mod:`.summary` - Per-question summary of a run
 """
 
 from __future__ import annotations
 
-from .behaviors import (
-    CANONICAL_GREETING,
-    build_greeting,
+from .enums import DeployTarget, OutputFormat, QuestionType
+from .errors import ConfigurationError, InputError
+from .models import (
+    QUESTIONS_ADAPTER,
+    Answer,
+    ChoiceQuestion,
+    Item,
+    NoulCriteria,
+    NoulQuestion,
+    Outcome,
+    Question,
+    Row,
+    ScoreQuestion,
+    describe_validation_error,
+    parse_questions,
 )
-from .enums import DeployTarget, OutputFormat
-from .errors import ConfigurationError
+from .redaction import DEFAULT_CAP, REDACTED, cap_text, prepare_state, redact
+from .summary import (
+    DEFAULT_BAND,
+    DEFAULT_MIN_CONFIDENCE,
+    FLAT_MIN_ROWS,
+    FLAT_STDEV,
+    PRICE_PER_MTOK,
+    summarize,
+)
 
 __all__ = [
-    # Behaviors
-    "CANONICAL_GREETING",
-    # Errors
+    "DEFAULT_BAND",
+    "DEFAULT_CAP",
+    "DEFAULT_MIN_CONFIDENCE",
+    "FLAT_MIN_ROWS",
+    "FLAT_STDEV",
+    "PRICE_PER_MTOK",
+    "QUESTIONS_ADAPTER",
+    "REDACTED",
+    "Answer",
+    "ChoiceQuestion",
     "ConfigurationError",
-    # Enums
     "DeployTarget",
+    "InputError",
+    "Item",
+    "NoulCriteria",
+    "NoulQuestion",
+    "Outcome",
     "OutputFormat",
-    "build_greeting",
+    "Question",
+    "QuestionType",
+    "Row",
+    "ScoreQuestion",
+    "cap_text",
+    "describe_validation_error",
+    "parse_questions",
+    "prepare_state",
+    "redact",
+    "summarize",
 ]

@@ -7,16 +7,11 @@ import runpy
 import subprocess
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING
 
-import lib_cli_exit_tools
 import pytest
 
 from btx_jev_judge import __init__conf__, entry
 from btx_jev_judge.adapters import cli as cli_mod
-
-if TYPE_CHECKING:
-    from collections.abc import Callable
 
 # Ensure subprocess can find the package even without editable install.
 _SRC_DIR = str(Path(__file__).resolve().parents[1] / "src")
@@ -47,57 +42,12 @@ def test_module_entry_executes_cli_and_shows_help(
 
 
 @pytest.mark.os_agnostic
-def test_module_entry_formats_exceptions_via_exit_helpers(
-    monkeypatch: pytest.MonkeyPatch,
-    capsys: pytest.CaptureFixture[str],
-    strip_ansi: Callable[[str], str],
-) -> None:
-    """Exceptions during module entry are formatted by lib_cli_exit_tools."""
-    monkeypatch.setattr(sys, "argv", ["btx_jev_judge", "fail"], raising=False)
-    monkeypatch.setattr(lib_cli_exit_tools.config, "traceback", False, raising=False)
-    monkeypatch.setattr(lib_cli_exit_tools.config, "traceback_force_color", False, raising=False)
-
-    with pytest.raises(SystemExit) as exc:
-        runpy.run_module("btx_jev_judge.__main__", run_name="__main__")
-
-    plain_err = strip_ansi(capsys.readouterr().err)
-    assert exc.value.code != 0
-    assert "RuntimeError" in plain_err or "I should fail" in plain_err
-
-
-@pytest.mark.os_agnostic
-def test_module_entry_traceback_flag_prints_full_traceback(
-    monkeypatch: pytest.MonkeyPatch,
-    capsys: pytest.CaptureFixture[str],
-    strip_ansi: Callable[[str], str],
-) -> None:
-    """--traceback via module entry prints complete traceback on error."""
-    monkeypatch.setattr(sys, "argv", ["btx_jev_judge", "--traceback", "fail"])
-    monkeypatch.setattr(lib_cli_exit_tools.config, "traceback", False, raising=False)
-    monkeypatch.setattr(lib_cli_exit_tools.config, "traceback_force_color", False, raising=False)
-
-    with pytest.raises(SystemExit) as exc:
-        runpy.run_module("btx_jev_judge.__main__", run_name="__main__")
-
-    plain_err = strip_ansi(capsys.readouterr().err)
-
-    assert exc.value.code != 0
-    assert "Traceback (most recent call last)" in plain_err
-    assert "RuntimeError: I should fail" in plain_err
-    assert "[TRUNCATED" not in plain_err
-    assert lib_cli_exit_tools.config.traceback is False
-    assert lib_cli_exit_tools.config.traceback_force_color is False
-
-
-@pytest.mark.os_agnostic
 def test_module_entry_cli_exports_all_registered_commands() -> None:
     """CLI facade exports all registered commands."""
     expected_commands = {
         "cli_config",
         "cli_config_deploy",
         "cli_config_generate_examples",
-        "cli_fail",
-        "cli_hello",
         "cli_info",
         "cli_logdemo",
     }
@@ -160,21 +110,3 @@ def test_entry_main_invokes_cli_with_help(
     assert exit_code == 0
     assert "Usage:" in captured.out
     assert __init__conf__.shell_command in captured.out
-
-
-@pytest.mark.os_agnostic
-def test_entry_main_returns_nonzero_on_error(
-    monkeypatch: pytest.MonkeyPatch,
-    capsys: pytest.CaptureFixture[str],
-    strip_ansi: Callable[[str], str],
-) -> None:
-    """entry.main() returns non-zero exit code on CLI errors."""
-    monkeypatch.setattr(sys, "argv", ["btx_jev_judge", "fail"])
-    monkeypatch.setattr(lib_cli_exit_tools.config, "traceback", False)
-    monkeypatch.setattr(lib_cli_exit_tools.config, "traceback_force_color", False)
-
-    exit_code = entry.main()
-
-    plain_err = strip_ansi(capsys.readouterr().err)
-    assert exit_code != 0
-    assert "RuntimeError" in plain_err or "I should fail" in plain_err

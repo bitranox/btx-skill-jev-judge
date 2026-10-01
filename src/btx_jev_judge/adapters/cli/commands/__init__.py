@@ -12,15 +12,13 @@ Contents:
 from __future__ import annotations
 
 from .config import cli_config, cli_config_deploy, cli_config_generate_examples
-from .info import cli_fail, cli_hello, cli_info
+from .info import cli_info
 from .logging import cli_logdemo
 
 __all__ = [
     "cli_config",
     "cli_config_deploy",
     "cli_config_generate_examples",
-    "cli_fail",
-    "cli_hello",
     "cli_info",
     "cli_logdemo",
 ]

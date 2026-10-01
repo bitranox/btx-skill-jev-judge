@@ -73,7 +73,7 @@ def test_env_file_passes_dotenv_path_to_get_config(
 
     factory = inject_config_with_dotenv_capture(config, captured)
 
-    result: Result = cli_runner.invoke(cli_mod.cli, ["--env-file", str(env_file), "hello"], obj=factory)
+    result: Result = cli_runner.invoke(cli_mod.cli, ["--env-file", str(env_file), "info"], obj=factory)
 
     assert result.exit_code == 0
     assert len(captured) == 1
@@ -92,7 +92,7 @@ def test_env_file_not_specified_passes_none_dotenv_path(
 
     factory = inject_config_with_dotenv_capture(config, captured)
 
-    result: Result = cli_runner.invoke(cli_mod.cli, ["hello"], obj=factory)
+    result: Result = cli_runner.invoke(cli_mod.cli, ["info"], obj=factory)
 
     assert result.exit_code == 0
     assert len(captured) == 1
@@ -115,7 +115,7 @@ def test_env_file_combined_with_profile(
     factory = inject_config_with_dotenv_capture(config, captured)
 
     result: Result = cli_runner.invoke(
-        cli_mod.cli, ["--env-file", str(env_file), "--profile", "staging", "hello"], obj=factory
+        cli_mod.cli, ["--env-file", str(env_file), "--profile", "staging", "info"], obj=factory
     )
 
     assert result.exit_code == 0
@@ -134,7 +134,7 @@ def test_env_file_nonexistent_path_rejected(
 ) -> None:
     """--env-file with nonexistent path is rejected by Click."""
     result: Result = cli_runner.invoke(
-        cli_mod.cli, ["--env-file", "/tmp/nonexistent_env_file_xyz.env", "hello"], obj=production_factory
+        cli_mod.cli, ["--env-file", "/tmp/nonexistent_env_file_xyz.env", "info"], obj=production_factory
     )
 
     assert result.exit_code != 0
@@ -148,7 +148,7 @@ def test_env_file_directory_rejected(
     production_factory: Callable[[], AppServices],
 ) -> None:
     """--env-file with a directory path is rejected by Click."""
-    result: Result = cli_runner.invoke(cli_mod.cli, ["--env-file", str(tmp_path), "hello"], obj=production_factory)
+    result: Result = cli_runner.invoke(cli_mod.cli, ["--env-file", str(tmp_path), "info"], obj=production_factory)
 
     assert result.exit_code != 0
 

@@ -9,7 +9,9 @@ Complete (v1.1.2+)
 ## Related Files
 
 ### Domain Layer
-- `src/btx_jev_judge/domain/behaviors.py`  -  Pure domain functions (greeting)
+- `src/btx_jev_judge/domain/models.py`  -  Questions, items, answers, rows
+- `src/btx_jev_judge/domain/redaction.py`  -  Secret redaction and string capping
+- `src/btx_jev_judge/domain/summary.py`  -  Run summary
 - `src/btx_jev_judge/domain/enums.py`  -  Type-safe enums (OutputFormat, DeployTarget)
 
 ### Application Layer
@@ -33,7 +35,7 @@ Complete (v1.1.2+)
   - `config_load.py`  -  Configuration load for the CLI; records a load failure, `require_config` refuses with exit 78
   - `root.py`  -  Root command group
   - `main.py`  -  Entry point
-  - `commands/info.py`  -  info, hello, fail commands
+  - `commands/info.py`  -  info command
   - `commands/config.py`  -  config, config-deploy, config-generate-examples commands
   - `commands/email.py`  -  send-email, send-notification commands
   - `commands/logging.py`  -  logdemo command
@@ -59,7 +61,6 @@ Complete (v1.1.2+)
 - `src/btx_jev_judge/adapters/config/defaultconfig.d/90-logging.toml`  -  Logging defaults
 
 ### Tests
-- `tests/test_behaviors.py`  -  Domain function tests
 - `tests/test_cache_effectiveness.py`  -  LRU cache behavior tests
 - `tests/test_cli.py`  -  CLI command tests
 - `tests/test_cli_main_exit.py`  -  Exit codes and stderr through the real `main()` entry point
@@ -145,18 +146,6 @@ POSIX-conventional exit codes defined in `adapters/cli/exit_codes.py`:
 Print resolved package metadata.
 
 **Exit codes:** 0
-
-### hello
-
-Emit canonical greeting (`"Hello World"`).
-
-**Exit codes:** 0
-
-### fail
-
-Trigger intentional `RuntimeError` for testing error handling.
-
-**Exit codes:** 1
 
 ### config
 

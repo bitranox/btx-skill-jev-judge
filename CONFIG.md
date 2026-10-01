@@ -445,8 +445,8 @@ Configuration can be overridden via environment variables using two methods:
 For logging configuration, use the native `LOG_*` variables (highest precedence):
 
 ```bash
-LOG_CONSOLE_LEVEL=DEBUG btx-jev-judge hello
-LOG_ENABLE_GRAYLOG=true LOG_GRAYLOG_ENDPOINT="logs.example.com:12201" btx-jev-judge hello
+LOG_CONSOLE_LEVEL=DEBUG btx-jev-judge info
+LOG_ENABLE_GRAYLOG=true LOG_GRAYLOG_ENDPOINT="logs.example.com:12201" btx-jev-judge info
 ```
 
 ### Method 2: Application-Prefixed Variables
@@ -454,8 +454,8 @@ LOG_ENABLE_GRAYLOG=true LOG_GRAYLOG_ENDPOINT="logs.example.com:12201" btx-jev-ju
 For any configuration section, use the format: `<PREFIX>___<SECTION>__<KEY>=value`
 
 ```bash
-BTX_JEV_JUDGE___LIB_LOG_RICH__CONSOLE_LEVEL=DEBUG btx-jev-judge hello
-BTX_JEV_JUDGE___EMAIL__SMTP_HOSTS='["smtp.example.com:587"]' btx-jev-judge hello
+BTX_JEV_JUDGE___LIB_LOG_RICH__CONSOLE_LEVEL=DEBUG btx-jev-judge info
+BTX_JEV_JUDGE___EMAIL__SMTP_HOSTS='["smtp.example.com:587"]' btx-jev-judge info
 ```
 
 **Separator reference:**

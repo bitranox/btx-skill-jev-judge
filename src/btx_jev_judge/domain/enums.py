@@ -1,4 +1,4 @@
-"""Type-safe domain enums for output formats and deployment targets."""
+"""Type-safe domain enums for output formats, deployment targets and question types."""
 
 from __future__ import annotations
 
@@ -49,7 +49,26 @@ class DeployTarget(str, Enum):
     USER = "user"
 
 
+class QuestionType(str, Enum):
+    """The three Jev primitives.
+
+    Attributes:
+        NOUL: A yes/no question; the answer is the probability of yes.
+        CHOICE: Pick one of several named options.
+        SCORE: A position on a few ordered levels.
+
+    Example:
+        >>> QuestionType("noul") is QuestionType.NOUL
+        True
+    """
+
+    NOUL = "noul"
+    CHOICE = "choice"
+    SCORE = "score"
+
+
 __all__ = [
     "DeployTarget",
     "OutputFormat",
+    "QuestionType",
 ]
