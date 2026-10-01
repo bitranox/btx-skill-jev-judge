@@ -82,8 +82,9 @@ pip install dist/btx_skill_jev_judge-*.whl
 ## Provide the key
 
 The key comes from an exported `TYPESAFE_API_KEY`, else from a `.env` in the current directory or a
-parent, else from `~/.credentials/typesafe.key` (see [SECURITY.md](SECURITY.md)). Get one at https://console.typesafe.ai/keys. To create the file
-(mode 600, which is required on POSIX), run this and paste the key in with an editor:
+parent, else from `~/.credentials/typesafe.key` (see [SECURITY.md](SECURITY.md)). Get one at
+https://console.typesafe.ai/keys. To create the file (mode 600, which is required on POSIX), run
+this and paste the key in with an editor:
 
 ```bash
 mkdir -p -m 700 ~/.credentials && install -m 600 /dev/null ~/.credentials/typesafe.key

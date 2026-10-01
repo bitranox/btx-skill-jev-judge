@@ -148,7 +148,7 @@ jev-judge summarize --rows rows.jsonl
 | 0         | Yes: every item answered, no flat question, a key is present                            |
 | 1         | No: some row failed, a question looks flat, or `check-key` found no key                 |
 | 2         | Usage, input or IO error (also an out-of-range flag); stderr says `jev-judge: <reason>` |
-| 78        | Broken configuration; stderr says `Error: <reason>`                                     |
+| 78        | Broken configuration, such as `attempts` above 10; stderr says `Error: <reason>`        |
 
 A click usage error (a bad option type, an unknown option, `--json` together with `--json-bare`)
 exits 2 and prints no JSON, even under `--json-bare`.
@@ -167,8 +167,8 @@ Defaults for `run` and `summarize` live in the `[judge]` and `[summary]` section
 configuration (files, `.env`, environment variables). A command-line flag always wins. The API key
 (exported `TYPESAFE_API_KEY`, else a `.env` in the current directory or a parent, else
 `~/.credentials/typesafe.key`; see [SECURITY.md](SECURITY.md)) is never a configuration value: a
-`judge.api_key` entry is refused with exit 78. Environment variables look like `BTX_SKILL_JEV_JUDGE___JUDGE__RATE=5`. Every key, default and layer is in
-[CONFIG.md](CONFIG.md).
+`judge.api_key` entry is refused with exit 78. Environment variables look like
+`BTX_SKILL_JEV_JUDGE___JUDGE__RATE=5`. Every key, default and layer is in [CONFIG.md](CONFIG.md).
 
 ## Architecture
 

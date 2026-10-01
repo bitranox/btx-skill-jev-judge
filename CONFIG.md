@@ -49,8 +49,9 @@ Settings of `jev-judge summarize`.
 ## The API key is not a setting
 
 The key comes from an exported `TYPESAFE_API_KEY` variable, else from a `.env` file in the current
-directory or a parent (see [`.env` files](#env-files)), else from `~/.credentials/typesafe.key`. Both models behind these sections reject unknown keys, so an entry
-such as `judge.api_key`, or any other key not listed above, is refused with exit code 78 and
+directory or a parent (see [`.env` files](#env-files)), else from `~/.credentials/typesafe.key`.
+Both models behind these sections reject unknown keys, so an entry such as `judge.api_key`, or any
+other key not listed above, is refused with exit code 78 and
 `Error: judge.api_key: Extra inputs are not permitted`. This is deliberate: it keeps the key out of
 files that are copied, committed and deployed. See [SECURITY.md](SECURITY.md).
 

@@ -42,7 +42,7 @@ def _read_keyfile(path: Path) -> tuple[str, str]:
     try:
         info = path.stat()
     except FileNotFoundError:
-        return "", f"no {KEY_ENV} and no keyfile"
+        return "", f"no {KEY_ENV} in the environment or a .env, and no keyfile"
     except OSError as exc:
         return "", f"keyfile unreadable: {exc.strerror or exc}"
     if os.name != "nt" and info.st_mode & KEYFILE_FORBIDDEN_BITS:

@@ -49,7 +49,10 @@ if TYPE_CHECKING:
     from btx_skill_jev_judge.domain.models import Row
 
 #: Where the key is looked for, named in the "no usable key" message.
-_KEY_HINT = "set TYPESAFE_API_KEY, or put the key in ~/.credentials/typesafe.key with mode 600"
+_KEY_HINT = (
+    "export TYPESAFE_API_KEY or set it in a .env in this directory or a parent, "
+    "or put the key in ~/.credentials/typesafe.key with mode 600"
+)
 
 
 def _output(as_json: bool, as_json_bare: bool) -> Output:

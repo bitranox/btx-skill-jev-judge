@@ -42,7 +42,7 @@ def test_a_group_readable_keyfile_is_refused(tmp_path: Path) -> None:
 
 
 def test_no_key_anywhere_says_so(tmp_path: Path) -> None:
-    assert load_key({}, tmp_path) == (None, "no TYPESAFE_API_KEY and no keyfile")
+    assert load_key({}, tmp_path) == (None, "no TYPESAFE_API_KEY in the environment or a .env, and no keyfile")
 
 
 def test_a_key_that_is_not_printable_ascii_is_refused(tmp_path: Path) -> None:
