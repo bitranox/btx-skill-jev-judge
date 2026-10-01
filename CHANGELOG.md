@@ -5,6 +5,17 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+## [0.2.2] 2026-10-01
+
+### Fixed
+- `run` no longer prints one `HTTP Request: POST ...` line per item on stderr. The `httpx2`
+  request loggers now sit at WARNING unless the console level is DEBUG, so a run of hundreds of
+  items leaves a summary on stderr rather than a line per item in the agent's context.
+
+### Changed
+- Every "no usable key" message names the `.env` source as well as the environment variable and
+  the keyfile.
+
 ## [0.2.1] 2026-10-01
 
 ### Changed

@@ -7,6 +7,7 @@ eliminating duplication between module entry (__main__.py) and console script
 Contents:
     * :func:`init_logging` - idempotent logging initialization with layered config.
     * :func:`_build_runtime_config` - constructs RuntimeConfig from layered sources.
+    * :func:`_quiet_http_loggers` - keeps httpx2's one-line-per-request INFO log off the console.
 
 System Role:
     Lives in the adapters/platform layer. All entry points (module execution,
@@ -16,6 +17,7 @@ System Role:
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, cast
 
 import lib_log_rich.config
@@ -87,6 +89,46 @@ def _build_runtime_config(config: Config) -> lib_log_rich.runtime.RuntimeConfig:
     )
 
 
+#: The loggers of the ``httpx2`` dependency, which writes one INFO line per HTTP request. ``run``
+#: sends one request per item, and the agent driving the command reads its stderr, so at INFO a
+#: large run would put a line per item back into the context the command exists to keep it out of.
+#: The names are httpx2's own (``logging.getLogger("httpx2")``), not the classic ``httpx``.
+_PER_REQUEST_LOGGERS = ("httpx2", "httpcore2")
+
+
+def _asks_for_debug(console_level: object) -> bool:
+    """Whether a ``console_level``, given as a name or a lib_log_rich level, is DEBUG or lower.
+
+    Args:
+        console_level: ``"DEBUG"``-style name, a stdlib number, or a ``LogLevel`` member.
+
+    Returns:
+        True for DEBUG and anything more verbose.
+
+    Example:
+        >>> _asks_for_debug("debug"), _asks_for_debug("INFO"), _asks_for_debug(10)
+        (True, False, True)
+    """
+    value: object = getattr(console_level, "value", console_level)
+    if isinstance(value, int):
+        return value <= logging.DEBUG
+    return str(value).strip().upper() == "DEBUG"
+
+
+def _quiet_http_loggers(console_level: object) -> None:
+    """Raise the per-request HTTP loggers to WARNING unless the console asks for DEBUG.
+
+    At DEBUG the request lines are what someone diagnosing the connection wants, so they stay.
+
+    Args:
+        console_level: The configured console level, as lib_log_rich holds it.
+    """
+    if _asks_for_debug(console_level):
+        return
+    for name in _PER_REQUEST_LOGGERS:
+        logging.getLogger(name).setLevel(logging.WARNING)
+
+
 def init_logging(config: Config) -> None:
     """Initialize lib_log_rich runtime with the provided configuration.
 
@@ -126,6 +168,7 @@ def init_logging(config: Config) -> None:
     runtime_config = _build_runtime_config(config)
     lib_log_rich.runtime.init(runtime_config)
     lib_log_rich.runtime.attach_std_logging()
+    _quiet_http_loggers(runtime_config.console_level)
 
 
 __all__ = [
