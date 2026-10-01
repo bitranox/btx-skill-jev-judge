@@ -9,15 +9,80 @@ Jev returns typed answers with probabilities (yes/no, one of a set of options, o
 scale) in about 100 ms. Input costs $0.042 per million tokens and output is free, so a run over a
 few hundred items usually costs less than a cent.
 
-## Install
+## Install in Claude Code
+
+The repository is its own plugin marketplace, so installing takes two steps: register the
+marketplace once, then install the plugin from it. Set up the [prerequisites](#prerequisites)
+(uv and a TypeSafe key) first; the plugin installs without them, but the skill cannot run.
+
+### In a Claude Code session
 
 ```text
 /plugin marketplace add bitranox/btx-skill-jev
 /plugin install btx-skill-jev@btx-skill-jev
 ```
 
-Claude Code then loads the skill whenever the task fits. You can also invoke it as
-`/btx-skill-jev:jev-judge`.
+`/plugin install` opens the plugin panel, where you choose the scope:
+
+| Scope   | Who gets it                   | Recorded in                         |
+|---------|-------------------------------|-------------------------------------|
+| user    | you, in every project         | `~/.claude/settings.json`           |
+| project | everyone working in this repo | `.claude/settings.json` (commit it) |
+| local   | you, in this repo only        | `.claude/settings.local.json`       |
+
+With project scope, committing the settings file turns the plugin on for your collaborators but
+does not download it: each of them runs the install command once.
+
+Closing the panel loads the plugin into the open session. If it does not appear, run
+`/reload-plugins`.
+
+### From your shell
+
+Useful in a setup script:
+
+```bash
+claude plugin marketplace add bitranox/btx-skill-jev
+claude plugin install btx-skill-jev@btx-skill-jev                  # user scope
+claude plugin install btx-skill-jev@btx-skill-jev --scope project  # or project scope
+```
+
+Plugins installed this way load in the next session, or after `/reload-plugins` in an open one.
+
+### Check that it works
+
+`claude plugin list` shows `btx-skill-jev@btx-skill-jev`. In a session, describe a matching task
+("tag these 600 support tickets by product area") and Claude loads the skill, or invoke it
+directly with `/btx-skill-jev:jev-judge`. Its first step runs `check-key`,
+which tells you whether the TypeSafe key is usable without printing it.
+
+### Updates
+
+Auto-update is off by default for marketplaces other than Anthropic's own. Update by hand:
+
+```bash
+claude plugin marketplace update btx-skill-jev
+claude plugin update btx-skill-jev@btx-skill-jev
+```
+
+or turn auto-update on in `/plugin`, on the **Marketplaces** tab. An open session keeps the version
+it loaded until you run `/reload-plugins`.
+
+### Uninstall
+
+```bash
+claude plugin uninstall btx-skill-jev@btx-skill-jev  # add --scope project for a project install
+claude plugin marketplace remove btx-skill-jev       # also uninstalls its plugins
+```
+
+### From a local clone
+
+To try a change before it is pushed, register the directory instead of the GitHub repository.
+Start a relative path with `./`, or Claude Code reads it as `owner/repo`:
+
+```text
+/plugin marketplace add ./btx-skill-jev
+/plugin install btx-skill-jev@btx-skill-jev
+```
 
 ## Prerequisites
 
