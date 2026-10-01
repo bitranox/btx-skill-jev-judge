@@ -180,3 +180,23 @@ def test_when_logdemo_is_invoked_it_completes_successfully(
 
     assert result.exit_code == 0
     assert "Log demo completed" in result.output
+
+
+@pytest.mark.os_agnostic
+def test_traceback_flag_displays_full_exception_traceback(
+    managed_traceback_state: None,
+    failing_command: str,
+    capsys: pytest.CaptureFixture[str],
+    strip_ansi: Callable[[str], str],
+) -> None:
+    """--traceback prints the complete traceback on failure."""
+    exit_code = cli_mod.main(["--traceback", failing_command], services_factory=build_production)
+
+    plain_err = strip_ansi(capsys.readouterr().err)
+
+    assert exit_code != 0
+    assert "Traceback (most recent call last)" in plain_err
+    assert "RuntimeError: I should fail" in plain_err
+    assert "[TRUNCATED" not in plain_err
+    assert lib_cli_exit_tools.config.traceback is False
+    assert lib_cli_exit_tools.config.traceback_force_color is False

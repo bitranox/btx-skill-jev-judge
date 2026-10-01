@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING, Any
 import lib_cli_exit_tools
 import lib_log_rich.runtime
 import pytest
+import rich_click
 import rich_click.rich_click
 from click.testing import CliRunner
 from lib_layered_config import Config
@@ -609,3 +610,30 @@ def config_cli_context(
         return lambda: test_services
 
     return _create
+
+
+@pytest.fixture
+def failing_command() -> Iterator[str]:
+    """Attach a command that raises an unexpected error to the real root group.
+
+    The production CLI has no command that fails on purpose, yet the
+    unexpected-exception path (message formatting, ``--traceback``, flag
+    restoration) must stay covered. The command is added to the real root group
+    for the duration of one test and removed afterwards.
+
+    Yields:
+        str: Name of the failing command.
+    """
+    from btx_jev_judge.adapters.cli.root import cli
+
+    name = "boom"
+
+    @rich_click.command(name=name)
+    def _boom() -> None:
+        raise RuntimeError("I should fail")
+
+    cli.add_command(_boom)
+    try:
+        yield name
+    finally:
+        cli.commands.pop(name, None)

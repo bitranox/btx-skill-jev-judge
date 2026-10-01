@@ -7,11 +7,13 @@ from btx_jev_judge.domain.models import Answer, Row
 from btx_jev_judge.domain.summary import summarize
 
 
-def _row(item_id: str, value: float | str, qtype: str = "noul", confidence: float | None = None) -> Row:
+def _row(
+    item_id: str, value: float | str, qtype: QuestionType = QuestionType.NOUL, confidence: float | None = None
+) -> Row:
     return Row(
         id=item_id,
         ok=True,
-        answers={"q": Answer(type=QuestionType(qtype), value=value, confidence=confidence)},
+        answers={"q": Answer(type=qtype, value=value, confidence=confidence)},
     )
 
 
@@ -28,8 +30,8 @@ def test_summarize_passes_a_noul_that_separates_and_lists_the_middle_band() -> N
 
 
 def test_summarize_lists_low_confidence_choices_as_uncertain() -> None:
-    rows = [_row(str(i), "a" if i % 2 else "b", "choice", 0.9) for i in range(10)]
-    rows.append(_row("unsure", "a", "choice", 0.3))
+    rows = [_row(str(i), "a" if i % 2 else "b", QuestionType.CHOICE, 0.9) for i in range(10)]
+    rows.append(_row("unsure", "a", QuestionType.CHOICE, 0.3))
     summary = summarize(rows)
     assert summary["flat"] == [] and summary["questions"]["q"]["uncertain"] == ["unsure"]
     assert summary["questions"]["q"]["counts"] == {"a": 6, "b": 5}
@@ -40,7 +42,7 @@ def test_summarize_does_not_call_a_handful_of_rows_flat() -> None:
 
 
 def test_summarize_flags_a_choice_that_always_answers_the_same() -> None:
-    assert summarize([_row(str(i), "a", "choice", 0.9) for i in range(12)])["flat"] == ["q"]
+    assert summarize([_row(str(i), "a", QuestionType.CHOICE, 0.9) for i in range(12)])["flat"] == ["q"]
 
 
 def test_summarize_counts_failed_rows_without_describing_them() -> None:
