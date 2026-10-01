@@ -235,7 +235,9 @@ def _backoff(attempt: int) -> float:
 
 def _http_reason(response: httpx2.Response, key: str) -> str:
     # The server may echo the request back, so what is quoted passes the same scrubber as the state.
-    detail = redact(response.text.strip().replace("\n", " ")[:REASON_DETAIL_CHARS], key)[0]
+    # Redact before cutting: a secret straddling the cut no longer matches its pattern, so its head
+    # would be quoted verbatim.
+    detail = redact(response.text.strip().replace("\n", " "), key)[0][:REASON_DETAIL_CHARS]
     return f"http {response.status_code}" + (
         f": {detail}" if detail and response.status_code not in RETRY_STATUSES else ""
     )

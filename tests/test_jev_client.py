@@ -228,6 +228,17 @@ def test_an_error_body_quoted_in_the_reason_is_redacted(jev: JevStub) -> None:
     assert KEY not in row.reason and token not in row.reason
 
 
+@pytest.mark.parametrize("secret", [KEY, "ghp_" + "b" * 36], ids=["api-key", "github-token"])
+def test_a_secret_straddling_the_quote_limit_leaks_no_prefix(jev: JevStub, secret: str) -> None:
+    # Starts inside the quoted 200 characters and ends past them: cut first, the remaining head
+    # no longer matches the full pattern and would be quoted verbatim.
+    body = ("x" * 189 + " " + secret + " tail").encode()
+    jev.reply = lambda _body, _n: (400, body, {})
+    row = _judge(jev, [("a", {"title": "x"})])[0]
+    assert row.reason is not None and row.reason.startswith("http 400: ")
+    assert secret[:8] not in row.reason
+
+
 def test_a_request_timeout_is_reported_as_timeout_and_retried(jev: JevStub) -> None:
     def slow_once(body: dict[str, Any], n: int) -> tuple[int, Any, dict[str, str]]:
         if n == 1:
