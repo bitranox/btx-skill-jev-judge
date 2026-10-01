@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING, Any
 
 import lib_cli_exit_tools
@@ -143,6 +144,18 @@ def test_info_command_displays_project_metadata(
     assert result.exit_code == 0
     assert f"Info for {__init__conf__.name}:" in result.output
     assert __init__conf__.version in result.output
+
+
+@pytest.mark.os_agnostic
+def test_the_production_factory_never_finds_the_developers_key(
+    cli_runner: CliRunner,
+    production_factory: Callable[[], Any],
+) -> None:
+    """Through the production wiring, check-key sees the pinned empty environment and home."""
+    result: Result = cli_runner.invoke(cli_mod.cli, ["check-key", "--json-bare"], obj=production_factory)
+
+    assert result.exit_code == 1
+    assert json.loads(result.stdout)["present"] is False
 
 
 @pytest.mark.os_agnostic

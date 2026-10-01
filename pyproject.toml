@@ -165,10 +165,6 @@ doctest_optionflags = ["ELLIPSIS", "NORMALIZE_WHITESPACE"]
 pythonpath = ["src"]
 markers = [
   "os_agnostic: test runs on every supported operating system",
-  "os_windows: test exercises Windows-only behavior",
-  "os_macos: test exercises macOS-only behavior",
-  "os_posix: test exercises behavior requiring POSIX semantics",
-  "os_linux: test exercises Linux-only behavior",
   "local_only: tests that require the local dev environment (external resources, script composition); skipped in CI",
   "integration: tests requiring external resources (databases, APIs); run via 'bmk ti' or 'mktesti.sh'",
 ]

@@ -26,10 +26,6 @@ if TYPE_CHECKING:
     )
 
 
-#: AppServices fields that hold data, not a service: the environment the key lookup and client read.
-_DATA_FIELDS = frozenset({"env"})
-
-
 # ======================== In-Memory Adapter Contract Tests ========================
 
 
@@ -105,7 +101,7 @@ def test_build_production_services_are_callable() -> None:
     from btx_skill_jev_judge.composition import build_production
 
     services = build_production()
-    for field_name in services.__dataclass_fields__.keys() - _DATA_FIELDS:
+    for field_name in services.__dataclass_fields__:
         assert callable(getattr(services, field_name))
 
 
@@ -115,5 +111,5 @@ def test_build_testing_services_are_callable() -> None:
     from btx_skill_jev_judge.composition import build_testing
 
     services = build_testing()
-    for field_name in services.__dataclass_fields__.keys() - _DATA_FIELDS:
+    for field_name in services.__dataclass_fields__:
         assert callable(getattr(services, field_name))

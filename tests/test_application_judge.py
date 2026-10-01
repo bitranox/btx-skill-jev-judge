@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import inspect
 import threading
 import time
 from typing import TYPE_CHECKING
@@ -25,19 +26,24 @@ SLOWEST_FIRST_MS = 5
 
 
 class FakeClient:
-    """A real JudgeClient: records each state it is asked about, answers from a script."""
+    """A real JudgeClient: records each state it is asked about, answers from a script.
 
-    def __init__(self, fail_ids: frozenset[str] = frozenset(), *, slow_first: bool = False) -> None:
+    The client sees only the state, so it identifies an item by the state's ``id`` (``"0"``,
+    ``"1"``, ...), not by the row id ``_items`` gives it (``"i0"``, ``"i1"``, ...).
+    """
+
+    def __init__(self, fail_ids: frozenset[str] = frozenset(), *, slow_first_of: int = 0) -> None:
         self.states: list[Mapping[str, JsonValue]] = []
         self._lock = threading.Lock()
         self._fail_ids = fail_ids
-        self._slow_first = slow_first
+        self._slow_first_of = slow_first_of
 
     def ask(self, state: Mapping[str, JsonValue], questions: Sequence[Question]) -> Outcome:
         """Record the state, then answer or fail as scripted."""
         item_id = str(state["id"])
-        if self._slow_first:
-            time.sleep(SLOWEST_FIRST_MS / 1000 * (10 - int(item_id)))
+        if self._slow_first_of:
+            # Earlier items answer later, so rows arriving in input order prove the reordering.
+            time.sleep(SLOWEST_FIRST_MS / 1000 * (self._slow_first_of - int(item_id)))
         with self._lock:
             self.states.append(state)
         if item_id in self._fail_ids:
@@ -50,15 +56,21 @@ def _items(n: int) -> list[Item]:
 
 
 def test_rows_keep_input_order_with_several_workers() -> None:
-    client = FakeClient(slow_first=True)
+    client = FakeClient(slow_first_of=6)
     rows = judge_all(_items(6), QUESTIONS, client=client, key=None, settings=JudgeSettings(workers=3))
     assert [r.id for r in rows] == [f"i{i}" for i in range(6)]
 
 
 def test_iter_judged_is_a_generator_that_hands_over_one_row_at_a_time() -> None:
+    assert inspect.isgeneratorfunction(iter_judged)
     rows = iter_judged(_items(3), QUESTIONS, client=FakeClient(), key=None, settings=JudgeSettings())
     assert next(rows).id == "i0"
     assert [r.id for r in rows] == ["i1", "i2"]
+
+
+def test_zero_workers_still_judges_with_one() -> None:
+    rows = judge_all(_items(2), QUESTIONS, client=FakeClient(), key=None, settings=JudgeSettings(workers=0))
+    assert [r.id for r in rows] == ["i0", "i1"]
 
 
 def test_a_failed_outcome_becomes_a_failed_row() -> None:

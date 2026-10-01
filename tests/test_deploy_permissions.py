@@ -77,7 +77,6 @@ def inject_deploy_with_permission_capture(
             # Bound to an empty environment and a home that does not exist, never to the real ones.
             load_key=safe.load_key,
             make_client=safe.make_client,
-            env=safe.env,
         )
         return lambda: test_services
 

@@ -196,11 +196,21 @@ def deterministic_cli_output(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.fixture
-def production_factory() -> Callable[[], AppServices]:
+def production_factory(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Callable[[], AppServices]:
     """Provide the production services factory for tests.
 
     Use this when invoking CLI commands that don't need custom injection.
     Returns the ``build_production`` factory which wires real adapters.
+
+    The real adapters read the process environment and home directory, so both are pinned
+    first: the key variable is set EMPTY (a ``.env`` loaded later never overrides a variable
+    that exists, and the lookup treats empty as unset), the Jev base URL is removed, and the
+    home directory is an empty temporary one. A test that reaches ``run`` or ``check-key``
+    through this factory therefore finds no key instead of the developer's real one.
+
+    Args:
+        monkeypatch: Restores the environment after the test.
+        tmp_path: Becomes the home directory, holding no keyfile.
 
     Returns:
         Callable[[], AppServices]: Factory returning production-wired AppServices.
@@ -210,8 +220,14 @@ def production_factory() -> Callable[[], AppServices]:
             result = cli_runner.invoke(cli, ["info"], obj=production_factory)
             assert result.exit_code == 0
     """
+    from btx_skill_jev_judge.adapters.jev.client import BASE_URL_ENV
+    from btx_skill_jev_judge.adapters.key import KEY_ENV
     from btx_skill_jev_judge.composition import build_production
 
+    monkeypatch.setenv(KEY_ENV, "")
+    monkeypatch.delenv(BASE_URL_ENV, raising=False)
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("USERPROFILE", str(tmp_path))
     return build_production
 
 
@@ -378,7 +394,6 @@ def inject_config(
             # Bound to an empty environment and a home that does not exist, never to the real ones.
             load_key=safe.load_key,
             make_client=safe.make_client,
-            env=safe.env,
         )
         return lambda: test_services
 
@@ -434,7 +449,6 @@ def inject_config_with_profile_capture(
             # Bound to an empty environment and a home that does not exist, never to the real ones.
             load_key=safe.load_key,
             make_client=safe.make_client,
-            env=safe.env,
         )
         return lambda: test_services
 
@@ -499,7 +513,6 @@ def inject_deploy_with_profile_capture(
             # Bound to an empty environment and a home that does not exist, never to the real ones.
             load_key=safe.load_key,
             make_client=safe.make_client,
-            env=safe.env,
         )
         return lambda: test_services
 
@@ -547,7 +560,6 @@ def inject_deploy_configuration() -> Callable[[Callable[..., list[Path]]], Calla
             # Bound to an empty environment and a home that does not exist, never to the real ones.
             load_key=safe.load_key,
             make_client=safe.make_client,
-            env=safe.env,
         )
         return lambda: test_services
 
@@ -628,7 +640,6 @@ def config_cli_context(
             # Bound to an empty environment and a home that does not exist, never to the real ones.
             load_key=safe.load_key,
             make_client=safe.make_client,
-            env=safe.env,
         )
         return lambda: test_services
 

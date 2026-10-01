@@ -61,7 +61,6 @@ class AppServices:
     init_logging: InitLogging
     load_key: KeySource
     make_client: MakeClient
-    env: Mapping[str, str]
 
 
 def _key_source(env: Mapping[str, str], home: Path) -> KeySource:
@@ -111,7 +110,6 @@ def build_production() -> AppServices:
         init_logging=init_logging,
         load_key=_key_source(os.environ, Path.home()),
         make_client=_client_factory(os.environ, time.sleep),
-        env=os.environ,
     )
 
 
@@ -166,7 +164,6 @@ def build_testing(
         init_logging=init_logging_in_memory,
         load_key=_key_source(environment, home_dir),
         make_client=_client_factory(environment, sleep),
-        env=environment,
     )
 
 

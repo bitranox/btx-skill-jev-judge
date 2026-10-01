@@ -28,9 +28,10 @@ behind it.
 `import-linter`, and pytest with branch coverage. It must pass before every push. Unset a stray
 `VIRTUAL_ENV` first (`env -u VIRTUAL_ENV make test`) so bmk uses the project `.venv`.
 
-Pytest markers: `os_agnostic`, `os_windows`, `os_macos`, `os_posix`, `os_linux` say where a test
-runs; `local_only` tests are skipped in CI; `integration` tests need external resources and run
-through `make testintegration`.
+Pytest markers: `os_agnostic` is a label only and skips nothing; a test that needs one platform
+uses `pytest.mark.skipif` with a condition that exists everywhere (`os.name`, `sys.platform`).
+`local_only` tests are skipped in CI; `integration` tests need external resources and run through
+`make testintegration`.
 
 ## Layout and layering
 
