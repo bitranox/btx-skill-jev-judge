@@ -2,12 +2,21 @@
 
 from __future__ import annotations
 
+import threading
+import time
 from typing import Any
 
 import pytest
 from conftest import JevStub
 
-from btx_jev_judge.adapters.jev import DEFAULT_BASE_URL, JevClient, RateLimiter, resolve_base_url
+from btx_jev_judge.adapters.jev import (
+    DEFAULT_BASE_URL,
+    MAX_RETRY_WAIT,
+    JevClient,
+    JevSettings,
+    RateLimiter,
+    resolve_base_url,
+)
 from btx_jev_judge.application.judge import JudgeSettings, judge_all
 from btx_jev_judge.domain.errors import InputError
 from btx_jev_judge.domain.models import Item, Question, Row, parse_questions
@@ -33,7 +42,9 @@ def _questions() -> list[Question]:
     )
 
 
-def _client(stub: JevStub, waits: list[float] | None = None, attempts: int = 4) -> JevClient:
+def _client(
+    stub: JevStub, waits: list[float] | None = None, attempts: int = 4, timeout: float = 5.0, workers: int = 8
+) -> JevClient:
     def sleep(seconds: float) -> None:
         if waits is not None:
             waits.append(seconds)
@@ -41,8 +52,7 @@ def _client(stub: JevStub, waits: list[float] | None = None, attempts: int = 4) 
     return JevClient(
         key=KEY,
         base_url=stub.url,
-        timeout=5.0,
-        attempts=attempts,
+        settings=JevSettings(timeout=timeout, attempts=attempts, workers=workers),
         limiter=RateLimiter(rate=1000.0, sleep=sleep),
         sleep=sleep,
     )
@@ -51,7 +61,8 @@ def _client(stub: JevStub, waits: list[float] | None = None, attempts: int = 4) 
 def _judge(stub: JevStub, items: list[tuple[str, dict[str, Any]]], **kw: Any) -> list[Row]:
     waits = kw.pop("waits", None)
     attempts = kw.pop("attempts", 4)
-    with _client(stub, waits, attempts) as client:
+    timeout = kw.pop("timeout", 5.0)
+    with _client(stub, waits, attempts, timeout) as client:
         return judge_all(
             [Item(id=i, state=s) for i, s in items],
             _questions(),
@@ -169,6 +180,53 @@ def test_an_overload_without_retry_after_backs_off_exponentially(jev: JevStub) -
     assert [w for w in waits if w >= 1] == [2.0, 4.0]
 
 
+def test_a_retry_after_above_the_ceiling_is_clamped(jev: JevStub) -> None:
+    jev.reply = lambda body, n: (429, {}, {"Retry-After": "3600"}) if n == 1 else (200, _noul(0.5), {})
+    waits: list[float] = []
+    row = _judge(jev, [("a", {"title": "x"})], waits=waits)[0]
+    assert row.ok and row.attempts == 2
+    assert [w for w in waits if w >= 1] == [MAX_RETRY_WAIT]
+
+
+def test_a_non_numeric_retry_after_falls_back_to_exponential_backoff(jev: JevStub) -> None:
+    jev.reply = lambda body, n: (
+        (503, {}, {"Retry-After": "Wed, 21 Oct 2026 07:28:00 GMT"})
+        if n == 1
+        else (
+            200,
+            _noul(0.5),
+            {},
+        )
+    )
+    waits: list[float] = []
+    row = _judge(jev, [("a", {"title": "x"})], waits=waits)[0]
+    assert row.ok and row.attempts == 2
+    assert [w for w in waits if w >= 1] == [2.0]
+
+
+def test_a_request_timeout_is_reported_as_timeout_and_retried(jev: JevStub) -> None:
+    def slow_once(body: dict[str, Any], n: int) -> tuple[int, Any, dict[str, str]]:
+        if n == 1:
+            time.sleep(0.6)  # outlasts the 0.1 s client timeout; the stub thread, not the client, waits
+        return 200, _noul(0.5), {}
+
+    jev.reply = slow_once
+    waits: list[float] = []
+    row = _judge(jev, [("a", {"title": "x"})], waits=waits, timeout=0.1)[0]
+    assert row.ok and row.attempts == 2 and len(jev.seen) == 2
+    assert [w for w in waits if w >= 1] == [2.0]
+
+
+def test_a_timeout_on_every_attempt_is_a_failed_row_with_reason_timeout(jev: JevStub) -> None:
+    def always_slow(body: dict[str, Any], n: int) -> tuple[int, Any, dict[str, str]]:
+        time.sleep(0.4)
+        return 200, _noul(0.5), {}
+
+    jev.reply = always_slow
+    row = _judge(jev, [("a", {"title": "x"})], attempts=2, timeout=0.1)[0]
+    assert row.ok is False and row.reason == "timeout" and row.attempts == 2
+
+
 def test_retries_give_up_with_the_last_reason(jev: JevStub) -> None:
     jev.reply = lambda body, n: (529, {}, {})
     row = _judge(jev, [("a", {"title": "x"})], attempts=3)[0]
@@ -202,11 +260,60 @@ def test_the_limiter_spaces_requests_at_the_configured_rate() -> None:
     assert waits == pytest.approx([0.1, 0.2, 0.3])
 
 
+def test_the_limiter_spaces_requests_across_worker_threads() -> None:
+    spacing: list[float] = []
+    limiter = RateLimiter(rate=10.0, clock=lambda: 100.0, sleep=spacing.append)
+    threads = [threading.Thread(target=limiter.acquire) for _ in range(4)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    assert sorted(spacing) == pytest.approx([0.1, 0.2, 0.3])
+
+
+def test_a_shared_limiter_spaces_every_worker_of_a_batch(jev: JevStub) -> None:
+    jev.reply = _dup_by_title
+    spacing: list[float] = []
+    client = JevClient(
+        key=KEY,
+        base_url=jev.url,
+        settings=JevSettings(timeout=5.0, workers=3),
+        limiter=RateLimiter(rate=10.0, clock=lambda: 100.0, sleep=spacing.append),
+    )
+    with client:
+        rows = judge_all(
+            [Item(id=str(i), state={"title": "x"}) for i in range(6)],
+            _questions(),
+            client=client,
+            key=KEY,
+            settings=JudgeSettings(workers=3),
+        )
+    assert all(r.ok for r in rows)
+    assert sorted(spacing) == pytest.approx([0.1, 0.2, 0.3, 0.4, 0.5])
+
+
 def test_a_non_positive_rate_is_refused() -> None:
     with pytest.raises(InputError, match="rate must be positive"):
         RateLimiter(rate=0.0)
 
 
-def test_a_non_loopback_base_url_override_is_ignored() -> None:
-    assert resolve_base_url({"JEV_JUDGE_BASE_URL": "https://evil.example"}) == DEFAULT_BASE_URL
-    assert resolve_base_url({"JEV_JUDGE_BASE_URL": "http://127.0.0.1:8123"}) == "http://127.0.0.1:8123"
+@pytest.mark.parametrize(
+    ("override", "expected"),
+    [
+        ("http://127.0.0.1:8123", "http://127.0.0.1:8123"),
+        ("http://127.0.0.1:8123/", "http://127.0.0.1:8123"),
+        ("http://localhost:8123", "http://localhost:8123"),
+        ("http://[::1]:8123", "http://[::1]:8123"),
+        ("https://evil.example", DEFAULT_BASE_URL),
+        ("http://127.0.0.1.evil.example", DEFAULT_BASE_URL),
+        ("ftp://127.0.0.1", DEFAULT_BASE_URL),
+        ("", DEFAULT_BASE_URL),
+        ("   ", DEFAULT_BASE_URL),
+    ],
+)
+def test_the_base_url_override_is_honoured_only_for_loopback(override: str, expected: str) -> None:
+    assert resolve_base_url({"JEV_JUDGE_BASE_URL": override}) == expected
+
+
+def test_an_absent_base_url_override_is_the_default() -> None:
+    assert resolve_base_url({}) == DEFAULT_BASE_URL

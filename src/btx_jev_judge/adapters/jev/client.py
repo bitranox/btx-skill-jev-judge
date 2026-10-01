@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ipaddress
 import time
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Annotated, Any, Literal
 from urllib.parse import urlsplit
 
@@ -21,7 +22,8 @@ DEFAULT_BASE_URL = "https://api.typesafe.ai"
 ENDPOINT = "/v1/systemone"
 DEFAULT_MODEL = "jev-latest"
 BASE_URL_ENV = "JEV_JUDGE_BASE_URL"
-# Jev's documented limit is 40 requests/s; stay well under it unless the caller says otherwise.
+# Jev's documented limit is 40 requests/s (what RateLimiter exists to respect); stay well under it
+# unless the caller says otherwise.
 DEFAULT_RATE = 20.0
 # Throttling and transient server or network trouble: worth asking again, since a judgment is a
 # read-only request and re-sending it costs a fraction of a cent. Anything else (401, 422) would
@@ -107,6 +109,23 @@ def _is_loopback(url: str) -> bool:
         return False
 
 
+@dataclass(frozen=True)
+class JevSettings:
+    """The per-batch knobs of a :class:`JevClient`.
+
+    Args:
+        model: Model name sent with every request.
+        timeout: Seconds before one request is abandoned.
+        attempts: Tries per judgment; values below one are treated as one.
+        workers: Connection pool size; match the batch's worker count.
+    """
+
+    model: str = DEFAULT_MODEL
+    timeout: float = 30.0
+    attempts: int = 4
+    workers: int = 8
+
+
 class JevClient:
     """A pooled, rate-limited Jev client whose failures are reasons, never exceptions.
 
@@ -116,12 +135,9 @@ class JevClient:
     Args:
         key: The API key, sent as a bearer token.
         base_url: API root; the default is the public endpoint.
-        model: Model name sent with every request.
-        timeout: Seconds before one request is abandoned.
-        attempts: Tries per judgment, at least one.
+        settings: Model, timeout, attempts and pool size.
         limiter: Shared request spacing; one at ``DEFAULT_RATE`` when omitted.
         sleep: Blocking sleep between retries (injectable for tests).
-        workers: Connection pool size; match the batch's worker count.
     """
 
     def __init__(
@@ -129,22 +145,19 @@ class JevClient:
         *,
         key: str,
         base_url: str = DEFAULT_BASE_URL,
-        model: str = DEFAULT_MODEL,
-        timeout: float = 30.0,
-        attempts: int = 4,
+        settings: JevSettings,
         limiter: RateLimiter | None = None,
         sleep: Callable[[float], object] = time.sleep,
-        workers: int = 8,
     ) -> None:
-        self._model = model
-        self._attempts = max(1, attempts)
+        self._model = settings.model
+        self._attempts = max(1, settings.attempts)
         self._limiter = limiter or RateLimiter(DEFAULT_RATE)
         self._sleep = sleep
         self._http = httpx2.Client(
             base_url=base_url,
-            timeout=httpx2.Timeout(timeout),
+            timeout=httpx2.Timeout(settings.timeout),
             headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-            limits=httpx2.Limits(max_connections=workers, max_keepalive_connections=workers),
+            limits=httpx2.Limits(max_connections=settings.workers, max_keepalive_connections=settings.workers),
             trust_env=False,
         )
 
@@ -173,15 +186,16 @@ class JevClient:
             "state": dict(state),
             "questions": {q.id: q.to_api() for q in questions},
         }
-        reason = "no attempt made"
-        for attempt in range(1, self._attempts + 1):
+        for attempt in range(1, self._attempts):
             self._limiter.acquire()
             outcome, wait = self._attempt(body, questions, attempt)
-            if outcome.answers is not None or wait is None or attempt == self._attempts:
+            if wait is None:
                 return outcome
-            reason = outcome.reason or reason
             self._sleep(wait)
-        return Outcome(None, reason, self._attempts)
+        # The last attempt is outside the loop: its wait would never be slept, and every path of
+        # the function returns an Outcome.
+        self._limiter.acquire()
+        return self._attempt(body, questions, self._attempts)[0]
 
     def _attempt(
         self, body: dict[str, Any], questions: Sequence[Question], attempt: int
@@ -254,5 +268,6 @@ __all__ = [
     "MAX_RETRY_WAIT",
     "RETRY_STATUSES",
     "JevClient",
+    "JevSettings",
     "resolve_base_url",
 ]

@@ -16,6 +16,7 @@ from .client import (
     MAX_RETRY_WAIT,
     RETRY_STATUSES,
     JevClient,
+    JevSettings,
     resolve_base_url,
 )
 from .limiter import RateLimiter
@@ -29,6 +30,7 @@ __all__ = [
     "MAX_RETRY_WAIT",
     "RETRY_STATUSES",
     "JevClient",
+    "JevSettings",
     "RateLimiter",
     "resolve_base_url",
 ]

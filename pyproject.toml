@@ -154,8 +154,6 @@ runtime-evaluated-base-classes = ["pydantic.BaseModel"]
 "src/btx_jev_judge/application/*.py" = ["PLR0913"]
 "src/btx_jev_judge/adapters/config/*.py" = ["PLR0913"]
 "src/btx_jev_judge/adapters/memory/*.py" = ["PLR0913"]
-# JevClient takes its eight knobs keyword-only, one per config key, so a caller names each one.
-"src/btx_jev_judge/adapters/jev/client.py" = ["PLR0913"]
 
 [tool.pyright]
 typeCheckingMode = "strict"

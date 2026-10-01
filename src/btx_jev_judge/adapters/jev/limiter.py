@@ -16,8 +16,8 @@ if TYPE_CHECKING:
 class RateLimiter:
     """Spaces request starts at most ``rate`` per second across every thread that shares it.
 
-    Jev's documented limit is 40 requests/s and a thread pool alone would exceed it, so one
-    limiter is shared by all workers.
+    A thread pool alone would exceed Jev's documented limit (see ``DEFAULT_RATE``), so one limiter
+    is shared by all workers.
 
     Args:
         rate: Request starts allowed per second; must be positive.

@@ -677,9 +677,13 @@ def _handler_for(stub: JevStub) -> type[BaseHTTPRequestHandler]:
             for name, value in extra.items():
                 self.send_header(name, value)
             self.end_headers()
-            self.wfile.write(data)
+            # A client that timed out has already hung up; its answer has nowhere to go.
+            with contextlib.suppress(BrokenPipeError, ConnectionResetError):
+                self.wfile.write(data)
 
-        def log_message(self, format: str, *args: object) -> None:  # noqa: A002 - must keep the stdlib override's parameter name
+        # Silences the per-request stderr line. The parameter must stay named "format": a keyword
+        # parameter of the stdlib base, so any other signature is an incompatible override (pyright).
+        def log_message(self, format: str, *args: object) -> None:  # noqa: A002
             pass
 
     return Handler
