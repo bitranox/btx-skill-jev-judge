@@ -156,3 +156,27 @@ Nothing the RED or the earlier GREEN runs produced went missing.
   `config --section judge`; a `judge.api_key` setting makes `run` exit 78.
 - `config-deploy --target user` in an empty home writes `config.d/60-judge.toml` with `[judge]`
   and `[summary]`.
+
+## Re-check for the version sync (0.2.3)
+
+The only text change is the floor: all five `uvx --from 'btx-skill-jev-judge>=X'` lines move from
+`0.2.0` to `0.2.3`, the release version, which `tests/test_metadata_sync.py` now enforces. With
+0.2.1 cached, `uvx --from 'btx-skill-jev-judge>=0.2.0' jev-judge --version` printed `0.2.1` after
+0.2.2 was on PyPI: uvx keeps a cached install that satisfies the floor, so the old floor withheld
+the 0.2.2 stderr fix from every earlier user. No wording changed, so no new RED or GREEN probe
+was run; the check is the four command lines executed verbatim once PyPI served 0.2.3.
+
+### Executed
+
+The four lines of the Commands block, extracted from SKILL.md with `sed` and run unchanged against
+126 public items (Python stdlib modules and their docstrings, one `noul` question):
+
+| Line              | Exit | stderr lines | Per-request log lines |
+|-------------------|------|--------------|-----------------------|
+| `check-key`       | 0    | 1 (uv)       | 0                     |
+| `run --pilot 10`  | 0    | 0            | 0                     |
+| `run` (126 items) | 0    | 1 (progress) | 0                     |
+| `summarize`       | 0    | 0            | 0                     |
+
+The same full run on 0.2.1 left 253 lines on stderr, 126 of them one per request. `--version`
+through the new floor prints `0.2.3`.
