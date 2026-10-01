@@ -1,14 +1,14 @@
 # btx-skill-jev
 
 A Claude Code plugin with one skill, `jev-judge`, and the Python package behind it,
-`btx-jev-judge`. It lets Claude hand a judgment that repeats over many items (label these 600
-tickets, which of these 400 issues duplicate a known bug, match 250 supplier names to a catalog)
-to [TypeSafe's Jev](https://docs.typesafe.ai) through a tested command-line tool, instead of
-reading every item into its own context or calling a large model once per item.
+`btx-jev-judge`. When the same judgment repeats over many items, such as labeling 600 support
+tickets, Claude hands it to [TypeSafe's Jev](https://docs.typesafe.ai) through a tested
+command-line tool. That beats reading every item into its own context or calling a large model
+once per item.
 
-Jev returns typed answers with probabilities (yes/no, one of a set of options, or a position on a
-scale) in about 100 ms. Input costs $0.042 per million tokens and output is free, so a run over a
-few hundred items usually costs less than a cent.
+Jev returns typed answers with probabilities: yes/no, one of a set of options, or a position on a
+scale. Input is billed per token and output is free; `summarize` estimates a run's cost from the
+per-million-token price set in the code (`PRICE_PER_MTOK` in `domain/summary.py`).
 
 ## Install in Claude Code
 
@@ -98,8 +98,8 @@ Start a relative path with `./`, or Claude Code reads it as `owner/repo`:
 
 ## Installation
 
-The command-line tool is the PyPI package `btx-jev-judge`. It installs two commands, `jev-judge`
-and `btx-jev-judge`, which are the same program.
+The command-line tool is the PyPI package `btx-jev-judge`. It installs three command names for
+one program: `jev-judge`, `btx-jev-judge` and `btx_jev_judge`.
 
 ```bash
 uvx --from btx-jev-judge jev-judge --help   # run once, nothing installed
@@ -153,11 +153,11 @@ A click usage error (a bad option type, an unknown option, `--json` together wit
 exits 2 and prints no JSON, even under `--json-bare`.
 
 Before any item leaves the machine, every string in its state is redacted: common secret formats
-(tokens, private keys, `KEY=value` lines, passwords in URLs) and the API key itself. Requests share
-one rate limiter that stays under Jev's documented 40 requests per second. Rate limits, overloads,
-5xx errors, timeouts and dropped connections are retried with backoff and the `Retry-After`
-header is respected. Any other failure becomes a row that records the reason. `<command> --help`
-lists every option.
+such as tokens, private keys and passwords in URLs, plus the API key itself. Requests share one
+rate limiter that stays under Jev's documented 40 requests per second. Transient failures (rate
+limits, overloads, 5xx errors, timeouts, dropped connections) are retried with backoff, and
+`Retry-After` is respected. Any other failure becomes a row that records the reason.
+`<command> --help` lists every option.
 
 ## Configuration
 
@@ -179,11 +179,10 @@ test run:
 | Application | `application/` | The judge use case and the port protocols                       |
 | Domain      | `domain/`      | Questions, items, rows, redaction, summary; no I/O              |
 
-Two contracts in `pyproject.toml` hold it together. "Clean Architecture layers" lets each layer
-import only the layers below it (composition, then adapters, then application, then domain).
-"Domain is pure" forbids the domain from importing adapters or composition. Tests drive real
-seams: a loopback HTTP stub stands in for Jev, `CliRunner` drives the CLI, and a fake client
-drives the use case. See [docs/systemdesign/module_reference.md](docs/systemdesign/module_reference.md).
+`pyproject.toml` defines two contracts. "Clean Architecture layers" lets each layer import only
+the layers below it, in the order composition, adapters, application, domain. "Domain is pure"
+also keeps the domain from importing adapters or composition. Tests use real seams: a loopback
+HTTP stub stands in for Jev, `CliRunner` drives the CLI, and a fake client drives the use case. See [docs/systemdesign/module_reference.md](docs/systemdesign/module_reference.md).
 
 ## Further Documentation
 
@@ -194,8 +193,8 @@ drives the use case. See [docs/systemdesign/module_reference.md](docs/systemdesi
 - [SECURITY.md](SECURITY.md): key handling, redaction and reporting a vulnerability
 - [docs/systemdesign/module_reference.md](docs/systemdesign/module_reference.md): module map
 - [docs/measurements.md](docs/measurements.md): one live check against the real API
-- [CHANGELOG.md](CHANGELOG.md)
-- [ai-stance.md](ai-stance.md) and [ai-transparency.md](ai-transparency.md): how AI was used here
+- [CHANGELOG.md](CHANGELOG.md): what changed in each release
+- [ai-stance.md](ai-stance.md) and [ai-transparency.md](ai-transparency.md): why and where AI was used here
 
 ## License
 

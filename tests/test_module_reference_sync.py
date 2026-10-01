@@ -2,7 +2,8 @@
 
 A reader of ``docs/systemdesign/module_reference.md`` learns the configuration fields, their types
 and their defaults from it; a table that drifted from ``judge_settings.py`` (a default changed, a
-field renamed) tells them something the code no longer does.
+field renamed) tells them something the code no longer does. The test compares field names,
+types and defaults only; it does not check the Constraint column or ``CONFIG.md``.
 """
 
 from __future__ import annotations

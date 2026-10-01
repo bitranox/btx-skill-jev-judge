@@ -9,8 +9,8 @@ work on its merits. The reasoning behind working this way is in [ai-stance.md](a
 ## The human's work
 
 - The problem is theirs: a judgment that repeats over hundreds of items should not be read into an
-  agent's context or looped through a large model, when a small typed model answers it in about
-  100 ms for a fraction of a cent.
+  agent's context or looped through a large model, when a small typed model can answer it
+  per item.
 - The shape is theirs: a skill that tells an agent when not to use Jev, a tested command-line tool
   behind it instead of a throwaway script, redaction of secrets before anything is sent, a request
   rate limiter, a pilot mode, and a check that flags a question whose answers never move.
