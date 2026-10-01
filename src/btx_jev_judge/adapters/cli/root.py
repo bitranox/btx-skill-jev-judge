@@ -60,7 +60,7 @@ if TYPE_CHECKING:
     "env_file",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
     default=None,
-    help="Explicit .env file path (skips upward directory search).",
+    help="Explicit .env file for configuration values (replaces their upward search; not used for TYPESAFE_API_KEY).",
 )
 @click.pass_context
 def cli(

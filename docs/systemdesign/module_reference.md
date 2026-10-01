@@ -145,7 +145,7 @@ and the signal codes (130, 141, 143) used by the framework.
 | `--traceback / --no-traceback` | Show full Python traceback on errors        |
 | `--profile NAME`               | Load configuration from a named profile     |
 | `--set SECTION.KEY=VALUE`      | Override configuration setting (repeatable) |
-| `--env-file FILE`              | Explicit `.env` file (skips upward search)  |
+| `--env-file FILE`              | Explicit `.env` for configuration values    |
 | `-h, --help`                   | Show help and exit                          |
 
 ### run

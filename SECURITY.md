@@ -19,14 +19,21 @@ You can expect an initial response within 72 hours.
 
 ## How the tool handles secrets
 
-- **The API key** comes only from the `TYPESAFE_API_KEY` environment variable or from
-  `~/.credentials/typesafe.key`. It is never a configuration value: a `judge.api_key` entry in any
+- **The API key** is looked up in this order: an exported `TYPESAFE_API_KEY` variable, then a `.env`
+  file in the current directory or any parent (loaded at startup; it never overrides a variable
+  that is already exported), then `~/.credentials/typesafe.key`. `--env-file` does not feed this
+  lookup. It is never a configuration value: a `judge.api_key` entry in any
   configuration layer is refused with exit 78.
 - **The key file** is refused when its group or other permission bits are set (POSIX; the check is
   skipped on Windows), when it is empty, and when its content is not printable ASCII. The refusal
   names the reason, never the key.
 - **The key is never printed, logged or put on a command line.** `check-key` reports only whether a
-  key exists and where it came from (`env` or `keyfile`).
+  key exists and where it came from (`env`, which includes a key supplied by a `.env` file, or
+  `keyfile`).
+- **Caution: a `.env` in the working tree is trusted.** Running `jev-judge` inside someone else's
+  checkout whose `.env` sets `TYPESAFE_API_KEY` sends your items under that key, not yours. Run
+  `jev-judge check-key` first to see which source is in use. `JEV_JUDGE_BASE_URL` arrives the same
+  way and is still honoured only for a loopback host.
 - **Redaction before sending.** Every string in an item's state is scrubbed before it leaves the
   machine: the key literal, private-key blocks, GitHub, Slack, AWS, Google and `sk-` style tokens,
   JWTs, `KEY=`, `TOKEN=`, `SECRET=`, `PASSWORD=` style assignments, `Authorization` headers and

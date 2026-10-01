@@ -88,8 +88,9 @@ Start a relative path with `./`, or Claude Code reads it as `owner/repo`:
 ## Prerequisites
 
 - [uv](https://docs.astral.sh/uv/). It fetches Python and the CLI's dependencies on first use.
-- A TypeSafe API key from https://console.typesafe.ai/keys. Put it in the `TYPESAFE_API_KEY`
-  environment variable, or in `~/.credentials/typesafe.key` with mode 600. To create the file,
+- A TypeSafe API key from https://console.typesafe.ai/keys. Lookup order: an exported
+  `TYPESAFE_API_KEY`, then a `.env` in the current directory or a parent, then
+  `~/.credentials/typesafe.key` with mode 600 (see [SECURITY.md](SECURITY.md)). To create the file,
   run this, then paste the key in with an editor:
 
   ```bash
@@ -164,8 +165,9 @@ limits, overloads, 5xx errors, timeouts, dropped connections) are retried with b
 
 Defaults for `run` and `summarize` live in the `[judge]` and `[summary]` sections of a layered
 configuration (files, `.env`, environment variables). A command-line flag always wins. The API key
-is never a configuration value: a `judge.api_key` entry is refused with exit 78. Environment
-variables look like `BTX_JEV_JUDGE___JUDGE__RATE=5`. Every key, default and layer is in
+(exported `TYPESAFE_API_KEY`, else a `.env` in the current directory or a parent, else
+`~/.credentials/typesafe.key`; see [SECURITY.md](SECURITY.md)) is never a configuration value: a
+`judge.api_key` entry is refused with exit 78. Environment variables look like `BTX_JEV_JUDGE___JUDGE__RATE=5`. Every key, default and layer is in
 [CONFIG.md](CONFIG.md).
 
 ## Architecture

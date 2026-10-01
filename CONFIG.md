@@ -22,14 +22,14 @@ Layers 2 to 5 are the ones `lib_layered_config` merges, in the order
 
 Settings of `jev-judge run`.
 
-| Key        | Type    | Default        | Constraint | Flag         | Meaning                                 |
-|------------|---------|----------------|------------|--------------|-----------------------------------------|
-| `rate`     | `float` | `20.0`         | `> 0`      | `--rate`     | Requests per second across all workers  |
-| `workers`  | `int`   | `8`            | `>= 1`     | `--workers`  | Items judged concurrently               |
-| `attempts` | `int`   | `4`            | `>= 1`     | `--attempts` | Tries per judgment                      |
-| `timeout`  | `float` | `30.0`         | `> 0`      | `--timeout`  | Seconds before one request is abandoned |
-| `cap`      | `int`   | `60000`        | `>= 100`   | `--cap`      | Longest string, in characters, sent     |
-| `model`    | `str`   | `"jev-latest"` | non-empty  | `--model`    | `jev-latest`, or a pinned `jev-x.y.z`   |
+| Key        | Type    | Default        | Constraint  | Flag         | Meaning                                                                                   |
+|------------|---------|----------------|-------------|--------------|-------------------------------------------------------------------------------------------|
+| `rate`     | `float` | `20.0`         | `> 0`       | `--rate`     | Requests per second across all workers                                                    |
+| `workers`  | `int`   | `8`            | `>= 1`      | `--workers`  | Items judged concurrently                                                                 |
+| `attempts` | `int`   | `4`            | `1` to `10` | `--attempts` | Tries per judgment                                                                        |
+| `timeout`  | `float` | `30.0`         | `> 0`       | `--timeout`  | Seconds per request phase (connect, read, write, pool wait), not a whole-request deadline |
+| `cap`      | `int`   | `60000`        | `>= 100`    | `--cap`      | Longest string, in characters, sent                                                       |
+| `model`    | `str`   | `"jev-latest"` | non-empty   | `--model`    | `jev-latest`, or a pinned `jev-x.y.z`                                                     |
 
 Jev's documented limit is 40 requests per second; the default stays well under it. A string longer
 than `cap` keeps its head and tail with a marker in between.
@@ -48,8 +48,8 @@ Settings of `jev-judge summarize`.
 
 ## The API key is not a setting
 
-The key comes from the `TYPESAFE_API_KEY` environment variable, else from
-`~/.credentials/typesafe.key`. Both models behind these sections reject unknown keys, so an entry
+The key comes from an exported `TYPESAFE_API_KEY` variable, else from a `.env` file in the current
+directory or a parent (see [`.env` files](#env-files)), else from `~/.credentials/typesafe.key`. Both models behind these sections reject unknown keys, so an entry
 such as `judge.api_key`, or any other key not listed above, is refused with exit code 78 and
 `Error: judge.api_key: Extra inputs are not permitted`. This is deliberate: it keeps the key out of
 files that are copied, committed and deployed. See [SECURITY.md](SECURITY.md).
@@ -88,8 +88,14 @@ JUDGE__WORKERS=3
 SUMMARY__MIN_CONFIDENCE=0.7
 ```
 
-`--env-file FILE` names one `.env` file instead of searching upward. The same file may hold
-`TYPESAFE_API_KEY`; see [.env.example](.env.example).
+`--env-file FILE` names one `.env` file for the configuration values above, instead of searching
+upward for them. It does not apply to `TYPESAFE_API_KEY` or `JEV_JUDGE_BASE_URL`: at startup the
+logging setup separately loads a `.env` from the current directory or any parent into the process
+environment, without overriding variables that are already exported, and the key lookup reads that
+environment. So a `.env` there can supply the key even when `--env-file` is given, an exported
+`TYPESAFE_API_KEY` wins over the `.env` value, and a key that sits only in the `--env-file` file is
+not found. A key from a `.env` beats `~/.credentials/typesafe.key`; `jev-judge check-key` shows the
+source. See [.env.example](.env.example) and [SECURITY.md](SECURITY.md).
 
 ## Configuration files
 
