@@ -116,11 +116,14 @@ def cli(
 # modules import from package ancestors. This is the standard Click pattern.
 def _register_commands() -> None:
     from .commands import (  # noqa: PLC0415 - deferred: breaks the root<->commands circular import (see above)
+        cli_check_key,
         cli_config,
         cli_config_deploy,
         cli_config_generate_examples,
         cli_info,
         cli_logdemo,
+        cli_run,
+        cli_summarize,
     )
 
     for cmd in (
@@ -129,6 +132,9 @@ def _register_commands() -> None:
         cli_config_deploy,
         cli_config_generate_examples,
         cli_logdemo,
+        cli_run,
+        cli_summarize,
+        cli_check_key,
     ):
         cli.add_command(cmd)
 

@@ -51,14 +51,16 @@ UNREADABLE = PermissionError(13, "Permission denied", "/etc/xdg/app/config.toml"
 #: that silently reads an empty configuration after a load failure.
 NEEDS_CONFIG: dict[str, list[str]] = {
     "config": ["config"],
+    "run": ["run", "--items", "items.jsonl", "--questions", "q.json", "--out", "rows.jsonl"],
+    "summarize": ["summarize", "--rows", "rows.jsonl"],
 }
 RUNS_WITHOUT_CONFIG: dict[str, list[str]] = {
     "config-deploy": ["config-deploy", "--target", "user"],
     "info": ["info"],
 }
-#: Covered by their own tests below: one writes into a directory, one
-#: replaces the logging runtime.
-OTHER = ("config-generate-examples", "logdemo")
+#: Covered by their own tests: one writes into a directory, one replaces the logging runtime, and
+#: check-key reads no configuration but exits 1 without a key (tests/test_cli_judge.py).
+OTHER = ("check-key", "config-generate-examples", "logdemo")
 
 
 def _failing_config(error: Exception) -> Callable[[], AppServices]:

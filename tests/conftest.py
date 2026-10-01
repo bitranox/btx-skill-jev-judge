@@ -375,6 +375,9 @@ def inject_config(
             # The quiet runtime: production init_logging queues INFO lines that race into
             # CliRunner's stderr, so a stderr assertion would depend on timing.
             init_logging=init_logging_in_memory,
+            load_key=prod.load_key,
+            make_client=prod.make_client,
+            env=prod.env,
         )
         return lambda: test_services
 
@@ -427,6 +430,9 @@ def inject_config_with_profile_capture(
             # The quiet runtime: production init_logging queues INFO lines that race into
             # CliRunner's stderr, so a stderr assertion would depend on timing.
             init_logging=init_logging_in_memory,
+            load_key=prod.load_key,
+            make_client=prod.make_client,
+            env=prod.env,
         )
         return lambda: test_services
 
@@ -488,6 +494,9 @@ def inject_deploy_with_profile_capture(
             # The quiet runtime: production init_logging queues INFO lines that race into
             # CliRunner's stderr, so a stderr assertion would depend on timing.
             init_logging=init_logging_in_memory,
+            load_key=prod.load_key,
+            make_client=prod.make_client,
+            env=prod.env,
         )
         return lambda: test_services
 
@@ -532,6 +541,9 @@ def inject_deploy_configuration() -> Callable[[Callable[..., list[Path]]], Calla
             # The quiet runtime: production init_logging queues INFO lines that race into
             # CliRunner's stderr, so a stderr assertion would depend on timing.
             init_logging=init_logging_in_memory,
+            load_key=prod.load_key,
+            make_client=prod.make_client,
+            env=prod.env,
         )
         return lambda: test_services
 
@@ -609,6 +621,9 @@ def config_cli_context(
             # The quiet runtime: production init_logging queues INFO lines that race into
             # CliRunner's stderr, so a stderr assertion would depend on timing.
             init_logging=init_logging_in_memory,
+            load_key=prod.load_key,
+            make_client=prod.make_client,
+            env=prod.env,
         )
         return lambda: test_services
 
