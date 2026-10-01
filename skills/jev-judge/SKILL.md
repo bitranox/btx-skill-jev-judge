@@ -86,10 +86,10 @@ included: unquoted, the shell reads `>=` as a redirection, and stored in a varia
 reach `uvx` and it refuses the name.
 
 ```bash
-uvx --from 'btx-skill-jev-judge>=0.2.0' jev-judge check-key
-uvx --from 'btx-skill-jev-judge>=0.2.0' jev-judge run --items items.jsonl --questions questions.json --out pilot.jsonl --pilot 10
-uvx --from 'btx-skill-jev-judge>=0.2.0' jev-judge run --items items.jsonl --questions questions.json --out rows.jsonl
-uvx --from 'btx-skill-jev-judge>=0.2.0' jev-judge summarize --rows rows.jsonl
+uvx --from 'btx-skill-jev-judge>=0.2.3' jev-judge check-key
+uvx --from 'btx-skill-jev-judge>=0.2.3' jev-judge run --items items.jsonl --questions questions.json --out pilot.jsonl --pilot 10
+uvx --from 'btx-skill-jev-judge>=0.2.3' jev-judge run --items items.jsonl --questions questions.json --out rows.jsonl
+uvx --from 'btx-skill-jev-judge>=0.2.3' jev-judge summarize --rows rows.jsonl
 ```
 
 `run` overwrites `--out` and reports answered, failed ids and cost. `<command> --help` lists every
@@ -111,7 +111,7 @@ run this, then paste the key in with an editor; never ask for it in chat and nev
 mkdir -p -m 700 ~/.credentials && install -m 600 /dev/null ~/.credentials/typesafe.key
 ```
 
-Per-machine defaults (e.g. a lower `rate`): `uvx --from 'btx-skill-jev-judge>=0.2.0' jev-judge
+Per-machine defaults (e.g. a lower `rate`): `uvx --from 'btx-skill-jev-judge>=0.2.3' jev-judge
 config-deploy --target user` prints the files it writes; edit `[judge]` / `[summary]` in the one
 named `60-judge.toml`. Or set `BTX_SKILL_JEV_JUDGE___JUDGE__RATE=5` in the environment. A flag
 always wins.

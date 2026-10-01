@@ -5,6 +5,15 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+## [0.2.3] 2026-10-01
+
+### Changed
+- The `jev-judge` skill's `uvx --from 'btx-skill-jev-judge>=X.Y.Z'` floor is now the release
+  version itself, so the skill and the package it runs are released as one version. uvx keeps a
+  cached install that still satisfies the floor, so with the old `>=0.2.0` a user who had run the
+  skill before stayed on 0.2.1 and never got the 0.2.2 fix. A test now fails when a floor in a
+  shipped `SKILL.md` or the plugin version differs from the package version.
+
 ## [0.2.2] 2026-10-01
 
 ### Fixed

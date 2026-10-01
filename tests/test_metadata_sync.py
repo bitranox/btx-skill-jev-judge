@@ -7,6 +7,8 @@ actual project metadata.
 
 from __future__ import annotations
 
+import json
+import re
 from pathlib import Path
 
 import pytest
@@ -78,3 +80,35 @@ def test_name_matches_project_name() -> None:
     assert __init__conf__.name.replace("-", "_") == project_name.replace("-", "_"), (
         f"__init__conf__.name '{__init__conf__.name}' does not match project name '{project_name}'"
     )
+
+
+_REPO_ROOT = _PYPROJECT_PATH.parent
+#: The floor a skill names when it runs this package through uvx: ``'btx-skill-jev-judge>=X.Y.Z'``.
+_SKILL_FLOOR = re.compile(r"btx-skill-jev-judge>=([0-9][0-9A-Za-z.+-]*)")
+
+
+def _pyproject_version() -> str:
+    return rtoml.load(_PYPROJECT_PATH)["project"]["version"]
+
+
+@pytest.mark.os_agnostic
+def test_plugin_version_matches_pyproject_version() -> None:
+    """The plugin and the package are released as one version."""
+    plugin = json.loads((_REPO_ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
+    assert plugin["version"] == _pyproject_version()
+
+
+@pytest.mark.os_agnostic
+def test_every_skill_floor_names_the_release_version() -> None:
+    """Every uvx floor in a shipped skill is the version this commit releases.
+
+    A lower floor lets uvx keep a cached older install that still satisfies it, so a fix in this
+    release would never reach anyone who ran the skill before.
+    """
+    floors = {
+        (path.relative_to(_REPO_ROOT).as_posix(), floor)
+        for path in sorted((_REPO_ROOT / "skills").rglob("SKILL.md"))
+        for floor in _SKILL_FLOOR.findall(path.read_text(encoding="utf-8"))
+    }
+    assert floors, "no skill names a btx-skill-jev-judge floor; the pattern no longer matches the skill text"
+    assert {floor for _, floor in floors} == {_pyproject_version()}, sorted(floors)

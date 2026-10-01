@@ -40,7 +40,7 @@ name = "btx_skill_jev_judge"
 #: Human-readable summary shown in CLI help output.
 title = "Batch-judge items with the TypeSafe Jev API: run, summarize and check-key from the command line"
 #: Current release version pulled from ``pyproject.toml`` by automation.
-version = "0.2.2"
+version = "0.2.3"
 #: Repository homepage presented to users.
 homepage = "https://github.com/bitranox/btx-skill-jev-judge"
 #: Author attribution surfaced in CLI output.
