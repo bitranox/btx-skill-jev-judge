@@ -29,7 +29,7 @@ def test_the_env_key_wins_over_the_keyfile(tmp_path: Path) -> None:
 
 
 def test_the_keyfile_is_read_when_no_env_key(tmp_path: Path) -> None:
-    _keyfile(tmp_path, "﻿" + KEY + "\n")
+    _keyfile(tmp_path, "\ufeff" + KEY + "\n")
     assert load_key({}, tmp_path) == (KEY, "keyfile")
 
 
@@ -46,9 +46,19 @@ def test_no_key_anywhere_says_so(tmp_path: Path) -> None:
 
 
 def test_a_key_that_is_not_printable_ascii_is_refused(tmp_path: Path) -> None:
-    key, reason = load_key({KEY_ENV: "tk_éé"}, tmp_path)
+    key, reason = load_key({KEY_ENV: "tk_\u00e9\u00e9"}, tmp_path)
     assert key is None
     assert "printable ascii" in reason
+
+
+@pytest.mark.skipif(os.name == "nt", reason="POSIX permission bits do not exist on Windows")
+def test_a_keyfile_with_non_ascii_text_is_refused(tmp_path: Path) -> None:
+    non_ascii_key = "tk_k\u00e9y"
+    _keyfile(tmp_path, non_ascii_key, mode=0o600)
+    key, reason = load_key({}, tmp_path)
+    assert key is None
+    assert "printable ascii" in reason
+    assert non_ascii_key not in reason
 
 
 def test_an_empty_keyfile_says_it_is_empty(tmp_path: Path) -> None:
@@ -71,7 +81,7 @@ def test_no_message_ever_contains_the_key_literal(tmp_path: Path) -> None:
     keyfile = _keyfile(tmp_path, KEY, mode=0o644)
     messages = [
         load_key({}, tmp_path)[1],
-        load_key({KEY_ENV: KEY + "é"}, tmp_path)[1],
+        load_key({KEY_ENV: KEY + "\u00e9"}, tmp_path)[1],
         load_key({KEY_ENV: KEY}, tmp_path)[1],
     ]
     keyfile.chmod(0o600)

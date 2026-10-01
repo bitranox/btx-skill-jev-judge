@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ...domain.errors import InputError
+from ...domain import InputError
 
 if TYPE_CHECKING:
     from pathlib import Path
