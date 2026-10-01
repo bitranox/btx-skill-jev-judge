@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any
 import pytest
 
 from btx_jev_judge.adapters import cli as cli_mod
-from btx_jev_judge.composition import AppServices, build_production
+from btx_jev_judge.composition import AppServices, build_production, build_testing
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -42,16 +42,17 @@ def inject_config_with_dotenv_capture(
             captured.append(CapturedGetConfigArgs(profile=profile, dotenv_path=dotenv_path))
             return config
 
-        prod = build_production()
+        prod, safe = build_production(), build_testing()
         test_services = AppServices(
             get_config=_capturing_get_config,
             get_default_config_path=prod.get_default_config_path,
             deploy_configuration=prod.deploy_configuration,
             display_config=prod.display_config,
             init_logging=prod.init_logging,
-            load_key=prod.load_key,
-            make_client=prod.make_client,
-            env=prod.env,
+            # Bound to an empty environment and a home that does not exist, never to the real ones.
+            load_key=safe.load_key,
+            make_client=safe.make_client,
+            env=safe.env,
         )
         return lambda: test_services
 

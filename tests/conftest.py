@@ -360,13 +360,13 @@ def inject_config(
             assert "key" in result.output
     """
     from btx_jev_judge.adapters.memory import init_logging_in_memory
-    from btx_jev_judge.composition import AppServices, build_production
+    from btx_jev_judge.composition import AppServices, build_production, build_testing
 
     def _inject(config: Config) -> Callable[[], AppServices]:
         def _fake_get_config(**_kwargs: Any) -> Config:
             return config
 
-        prod = build_production()
+        prod, safe = build_production(), build_testing()
         test_services = AppServices(
             get_config=_fake_get_config,
             get_default_config_path=prod.get_default_config_path,
@@ -375,9 +375,10 @@ def inject_config(
             # The quiet runtime: production init_logging queues INFO lines that race into
             # CliRunner's stderr, so a stderr assertion would depend on timing.
             init_logging=init_logging_in_memory,
-            load_key=prod.load_key,
-            make_client=prod.make_client,
-            env=prod.env,
+            # Bound to an empty environment and a home that does not exist, never to the real ones.
+            load_key=safe.load_key,
+            make_client=safe.make_client,
+            env=safe.env,
         )
         return lambda: test_services
 
@@ -414,14 +415,14 @@ def inject_config_with_profile_capture(
             assert captured == ["staging"]
     """
     from btx_jev_judge.adapters.memory import init_logging_in_memory
-    from btx_jev_judge.composition import AppServices, build_production
+    from btx_jev_judge.composition import AppServices, build_production, build_testing
 
     def _inject(config: Config, captured_profiles: list[str | None]) -> Callable[[], AppServices]:
         def _capturing_get_config(*, profile: str | None = None, **_kwargs: Any) -> Config:
             captured_profiles.append(profile)
             return config
 
-        prod = build_production()
+        prod, safe = build_production(), build_testing()
         test_services = AppServices(
             get_config=_capturing_get_config,
             get_default_config_path=prod.get_default_config_path,
@@ -430,9 +431,10 @@ def inject_config_with_profile_capture(
             # The quiet runtime: production init_logging queues INFO lines that race into
             # CliRunner's stderr, so a stderr assertion would depend on timing.
             init_logging=init_logging_in_memory,
-            load_key=prod.load_key,
-            make_client=prod.make_client,
-            env=prod.env,
+            # Bound to an empty environment and a home that does not exist, never to the real ones.
+            load_key=safe.load_key,
+            make_client=safe.make_client,
+            env=safe.env,
         )
         return lambda: test_services
 
@@ -469,7 +471,7 @@ def inject_deploy_with_profile_capture(
             assert captured == ["prod"]
     """
     from btx_jev_judge.adapters.memory import init_logging_in_memory
-    from btx_jev_judge.composition import AppServices, build_production
+    from btx_jev_judge.composition import AppServices, build_production, build_testing
 
     def _inject(deployed_path: Path, captured_profiles: list[str | None]) -> Callable[[], AppServices]:
         def _capturing_deploy(
@@ -485,7 +487,7 @@ def inject_deploy_with_profile_capture(
             captured_profiles.append(profile)
             return [deployed_path]
 
-        prod = build_production()
+        prod, safe = build_production(), build_testing()
         test_services = AppServices(
             get_config=prod.get_config,
             get_default_config_path=prod.get_default_config_path,
@@ -494,9 +496,10 @@ def inject_deploy_with_profile_capture(
             # The quiet runtime: production init_logging queues INFO lines that race into
             # CliRunner's stderr, so a stderr assertion would depend on timing.
             init_logging=init_logging_in_memory,
-            load_key=prod.load_key,
-            make_client=prod.make_client,
-            env=prod.env,
+            # Bound to an empty environment and a home that does not exist, never to the real ones.
+            load_key=safe.load_key,
+            make_client=safe.make_client,
+            env=safe.env,
         )
         return lambda: test_services
 
@@ -529,10 +532,10 @@ def inject_deploy_configuration() -> Callable[[Callable[..., list[Path]]], Calla
             assert len(calls) == 1
     """
     from btx_jev_judge.adapters.memory import init_logging_in_memory
-    from btx_jev_judge.composition import AppServices, build_production
+    from btx_jev_judge.composition import AppServices, build_production, build_testing
 
     def _inject(deploy_fn: Callable[..., list[Path]]) -> Callable[[], AppServices]:
-        prod = build_production()
+        prod, safe = build_production(), build_testing()
         test_services = AppServices(
             get_config=prod.get_config,
             get_default_config_path=prod.get_default_config_path,
@@ -541,9 +544,10 @@ def inject_deploy_configuration() -> Callable[[Callable[..., list[Path]]], Calla
             # The quiet runtime: production init_logging queues INFO lines that race into
             # CliRunner's stderr, so a stderr assertion would depend on timing.
             init_logging=init_logging_in_memory,
-            load_key=prod.load_key,
-            make_client=prod.make_client,
-            env=prod.env,
+            # Bound to an empty environment and a home that does not exist, never to the real ones.
+            load_key=safe.load_key,
+            make_client=safe.make_client,
+            env=safe.env,
         )
         return lambda: test_services
 
@@ -604,11 +608,11 @@ def config_cli_context(
             assert "key" in result.output
     """
     from btx_jev_judge.adapters.memory import init_logging_in_memory
-    from btx_jev_judge.composition import AppServices, build_production
+    from btx_jev_judge.composition import AppServices, build_production, build_testing
 
     def _create(config_data: dict[str, Any]) -> Callable[[], AppServices]:
         config = Config(config_data, {})
-        prod = build_production()
+        prod, safe = build_production(), build_testing()
 
         def _fake_get_config(**_kwargs: Any) -> Config:
             return config
@@ -621,9 +625,10 @@ def config_cli_context(
             # The quiet runtime: production init_logging queues INFO lines that race into
             # CliRunner's stderr, so a stderr assertion would depend on timing.
             init_logging=init_logging_in_memory,
-            load_key=prod.load_key,
-            make_client=prod.make_client,
-            env=prod.env,
+            # Bound to an empty environment and a home that does not exist, never to the real ones.
+            load_key=safe.load_key,
+            make_client=safe.make_client,
+            env=safe.env,
         )
         return lambda: test_services
 

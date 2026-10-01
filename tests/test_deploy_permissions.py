@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any
 import pytest
 
 from btx_jev_judge.adapters import cli as cli_mod
-from btx_jev_judge.composition import AppServices, build_production
+from btx_jev_judge.composition import AppServices, build_production, build_testing
 from btx_jev_judge.domain.enums import DeployTarget
 
 if TYPE_CHECKING:
@@ -67,16 +67,17 @@ def inject_deploy_with_permission_capture(
             )
             return [deployed_path]
 
-        prod = build_production()
+        prod, safe = build_production(), build_testing()
         test_services = AppServices(
             get_config=prod.get_config,
             get_default_config_path=prod.get_default_config_path,
             deploy_configuration=_capturing_deploy,
             display_config=prod.display_config,
             init_logging=prod.init_logging,
-            load_key=prod.load_key,
-            make_client=prod.make_client,
-            env=prod.env,
+            # Bound to an empty environment and a home that does not exist, never to the real ones.
+            load_key=safe.load_key,
+            make_client=safe.make_client,
+            env=safe.env,
         )
         return lambda: test_services
 

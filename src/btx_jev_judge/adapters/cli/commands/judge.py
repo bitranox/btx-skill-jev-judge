@@ -2,8 +2,9 @@
 
 The commands are thin: each reads its options, asks the use case or a file adapter for the work,
 and hands one :class:`~.judge_output.CommandResult` to the renderer. Failures are mapped here and
-nowhere else: :class:`InputError` is exit 2 and :class:`ConfigurationError` is exit 78, each with
-one ``jev-judge: <reason>`` line on stderr, and ``--json-bare`` still prints JSON.
+nowhere else: :class:`InputError` is exit 2 with one ``jev-judge: <reason>`` line on stderr,
+:class:`ConfigurationError` is exit 78 with one ``Error: <reason>`` line (the line every other
+configuration failure of this CLI prints), and ``--json-bare`` still prints JSON.
 
 A setting comes from the command line when the flag is given, else from the layered
 configuration, else from the model's default.
@@ -17,18 +18,19 @@ Contents:
 from __future__ import annotations
 
 import time
+from contextlib import closing
 from dataclasses import dataclass
 from pathlib import Path
+from types import MappingProxyType
 from typing import TYPE_CHECKING, Any
 
 import rich_click as click
 from pydantic import ValidationError
 
-from btx_jev_judge.adapters.config.judge_settings import RunConfig, run_config, summary_config
+from btx_jev_judge.adapters.config.judge_settings import RunConfig, SummaryConfig, run_config, summary_config
 from btx_jev_judge.adapters.files import load_items, load_questions, read_rows, write_rows
 from btx_jev_judge.application.judge import JudgeSettings, iter_judged
 from btx_jev_judge.domain.errors import ConfigurationError, InputError
-from btx_jev_judge.domain.models import describe_validation_error
 from btx_jev_judge.domain.summary import PRICE_PER_MTOK, summarize
 
 from .. import safe_console
@@ -40,7 +42,7 @@ from ..typed_click import option
 from .judge_output import USAGE_EXIT, CommandResult, Output, emit, failed
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Mapping
 
     from lib_layered_config import Config
 
@@ -75,7 +77,7 @@ def _report(code: int, error: Exception, *, prefix: str) -> CommandResult:
     return failed(code, message)
 
 
-def _finish(ctx: click.Context, command: str, output: Output, work: Callable[[], CommandResult]) -> None:
+def _finish(ctx: click.Context, *, command: str, output: Output, work: Callable[[], CommandResult]) -> None:
     """Run a command's work, map its failures to exit codes, print the result and exit.
 
     Args:
@@ -142,10 +144,33 @@ class _RunOptions:
     questions: Path
     out: Path
     pilot: int
-    overrides: dict[str, Any]
+    overrides: Mapping[str, float | int | str]
 
 
-def _effective_settings(base: RunConfig, overrides: dict[str, Any]) -> RunConfig:
+def _flag_error(error: ValidationError, flags: Mapping[str, str], *, otherwise: str) -> InputError:
+    """One ``<flag>: <reason>`` per problem, so the message names what the user typed.
+
+    Args:
+        error: The validation error of the merged settings.
+        flags: Flag name by model field name.
+        otherwise: The flag blamed for a problem that belongs to no single field (a band whose
+            edges are out of order).
+
+    Returns:
+        The error to raise; the offending value is never part of the message.
+    """
+    parts: list[str] = []
+    for problem in error.errors(include_input=False):
+        field = str(problem["loc"][0]) if problem["loc"] else ""
+        parts.append(f"{flags.get(field, otherwise)}: {problem['msg']}")
+    return InputError("; ".join(parts))
+
+
+_RUN_FLAGS = {name: f"--{name}" for name in RunConfig.model_fields}
+_SUMMARY_FLAGS = {"band_low": "--band", "band_high": "--band", "min_confidence": "--min-confidence"}
+
+
+def _effective_settings(base: RunConfig, overrides: Mapping[str, float | int | str]) -> RunConfig:
     """Apply the flags that were given on top of the configured settings, validated.
 
     Args:
@@ -156,12 +181,12 @@ def _effective_settings(base: RunConfig, overrides: dict[str, Any]) -> RunConfig
         The settings the run uses.
 
     Raises:
-        InputError: A flag is out of range.
+        InputError: A flag is out of range; the message names the flag.
     """
     try:
         return RunConfig.model_validate({**base.model_dump(), **overrides})
     except ValidationError as exc:
-        raise InputError(describe_validation_error(exc)) from exc
+        raise _flag_error(exc, _RUN_FLAGS, otherwise="value") from exc
 
 
 def _run_data(rows_out: Path, rows: list[Row], seconds: float) -> dict[str, Any]:
@@ -206,8 +231,13 @@ def _run(cli_ctx: CLIContext, opts: _RunOptions) -> CommandResult:
     pilot = opts.pilot if opts.pilot > 0 else len(items)
     judge = JudgeSettings(workers=settings.workers, cap=settings.cap)
     started = time.monotonic()
-    with cli_ctx.services.make_client(key, settings) as client:
-        rows = write_rows(opts.out, iter_judged(items[:pilot], questions, client=client, key=key, settings=judge))
+    # The generator is the second context so it closes first: a write failure must not leave queued
+    # judging running against a client whose connection pool is already gone.
+    with (
+        cli_ctx.services.make_client(key, settings) as client,
+        closing(iter_judged(items[:pilot], questions, client=client, key=key, settings=judge)) as judged,
+    ):
+        rows = write_rows(opts.out, judged)
     data = _run_data(opts.out, rows, time.monotonic() - started)
     return CommandResult(code=1 if data["failed"] else 0, data=data, skipped=[item.id for item in items[pilot:]])
 
@@ -263,14 +293,41 @@ def cli_run(
         questions=questions,
         out=out,
         pilot=pilot,
-        overrides={name: value for name, value in given.items() if value is not None},
+        overrides=MappingProxyType({name: value for name, value in given.items() if value is not None}),
     )
     cli_ctx = get_cli_context(ctx)
-    _finish(ctx, "run", output, lambda: _run(cli_ctx, opts))
+    _finish(ctx, command="run", output=output, work=lambda: _run(cli_ctx, opts))
+
+
+def _effective_summary(
+    base: SummaryConfig, *, band: tuple[float, float] | None, min_confidence: float | None
+) -> SummaryConfig:
+    """Apply the summarize flags that were given on top of the configured settings, validated.
+
+    Args:
+        base: Settings from the configuration (or its defaults).
+        band: ``--band`` low and high, or None.
+        min_confidence: ``--min-confidence``, or None.
+
+    Returns:
+        The settings the summary uses.
+
+    Raises:
+        InputError: A flag is out of range or the band is not ordered; the message names the flag.
+    """
+    overrides: dict[str, float] = {}
+    if band is not None:
+        overrides["band_low"], overrides["band_high"] = band
+    if min_confidence is not None:
+        overrides["min_confidence"] = min_confidence
+    try:
+        return SummaryConfig.model_validate({**base.model_dump(), **overrides})
+    except ValidationError as exc:
+        raise _flag_error(exc, _SUMMARY_FLAGS, otherwise="--band") from exc
 
 
 def _summarize(
-    cli_ctx: CLIContext, rows_path: Path, band: tuple[float, float] | None, min_confidence: float | None
+    cli_ctx: CLIContext, *, rows_path: Path, band: tuple[float, float] | None, min_confidence: float | None
 ) -> CommandResult:
     """Summarize a rows file with the flags that were given, else the configured settings.
 
@@ -282,12 +339,15 @@ def _summarize(
 
     Returns:
         Exit 1 when any question looks flat, else 0.
+
+    Raises:
+        InputError: A flag is out of range, or the rows file is unreadable.
     """
-    settings = summary_config(_loaded_config(cli_ctx))
+    settings = _effective_summary(summary_config(_loaded_config(cli_ctx)), band=band, min_confidence=min_confidence)
     summary = summarize(
         read_rows(rows_path),
-        band=band if band is not None else (settings.band_low, settings.band_high),
-        min_confidence=settings.min_confidence if min_confidence is None else min_confidence,
+        band=(settings.band_low, settings.band_high),
+        min_confidence=settings.min_confidence,
     )
     return CommandResult(code=1 if summary["flat"] else 0, data=summary)
 
@@ -328,7 +388,12 @@ def cli_summarize(
     """
     output = _output(as_json, as_json_bare)
     cli_ctx = get_cli_context(ctx)
-    _finish(ctx, "summarize", output, lambda: _summarize(cli_ctx, rows, band, min_confidence))
+    _finish(
+        ctx,
+        command="summarize",
+        output=output,
+        work=lambda: _summarize(cli_ctx, rows_path=rows, band=band, min_confidence=min_confidence),
+    )
 
 
 def _check_key(cli_ctx: CLIContext) -> CommandResult:
@@ -351,7 +416,7 @@ def cli_check_key(ctx: click.Context, as_json: bool, as_json_bare: bool) -> None
     """
     output = _output(as_json, as_json_bare)
     cli_ctx = get_cli_context(ctx)
-    _finish(ctx, "check-key", output, lambda: _check_key(cli_ctx))
+    _finish(ctx, command="check-key", output=output, work=lambda: _check_key(cli_ctx))
 
 
 __all__ = ["cli_check_key", "cli_run", "cli_summarize"]

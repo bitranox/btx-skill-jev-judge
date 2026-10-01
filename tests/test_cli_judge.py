@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import time
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import pytest
@@ -22,13 +24,14 @@ from btx_jev_judge.domain.enums import QuestionType
 from btx_jev_judge.domain.models import Answer, Row
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Mapping, Sequence
     from contextlib import AbstractContextManager
-    from pathlib import Path
 
     from conftest import JevStub
+    from pydantic import JsonValue
 
     from btx_jev_judge.application.ports import JudgeClient
+    from btx_jev_judge.domain.models import Outcome, Question
 
 KEY = "tk_" + "c" * 40
 QUESTION = {"id": "dup", "type": "noul", "instructions": "Is `title` a duplicate?"}
@@ -174,6 +177,17 @@ def test_a_rate_of_zero_is_a_usage_error_not_a_traceback(jev: JevStub, tmp_path:
         home=tmp_path,
     )
     assert result.exit_code == 2 and "rate" in result.stderr and "Traceback" not in result.stderr
+
+
+def test_a_bad_run_flag_is_reported_by_its_flag_name(jev: JevStub, tmp_path: Path) -> None:
+    items_path, questions_path = _one_item(tmp_path)
+    result = _invoke(
+        _run_args(items_path, questions_path, tmp_path / "r.jsonl", "--workers", "0"),
+        env=_stub_env(jev),
+        home=tmp_path,
+    )
+    assert result.exit_code == 2 and "jev-judge: --workers: " in result.stderr
+    assert "workers:" not in result.stderr.replace("--workers:", "")
 
 
 def test_human_output_reports_coverage_and_cost(jev: JevStub, tmp_path: Path) -> None:
@@ -322,6 +336,61 @@ def test_the_client_is_closed_when_the_run_ends(jev: JevStub, tmp_path: Path) ->
     assert result.exit_code == 0 and closed == [True]
 
 
+class _Observed:
+    """A client context manager that notes how many ``ask`` calls were still running when it exited."""
+
+    def __init__(self, inner: AbstractContextManager[JudgeClient], in_flight_at_exit: list[int]) -> None:
+        self._inner, self._log = inner, in_flight_at_exit
+        self.in_flight = 0
+
+    def __enter__(self) -> JudgeClient:
+        return _Spy(self._inner.__enter__(), self)
+
+    def __exit__(self, *exc: Any) -> bool | None:
+        self._log.append(self.in_flight)
+        return self._inner.__exit__(*exc)
+
+
+class _Spy:
+    """Forwards ``ask`` to the real client while counting the calls in progress."""
+
+    def __init__(self, client: JudgeClient, observed: _Observed) -> None:
+        self._client, self._observed = client, observed
+
+    def ask(self, state: Mapping[str, JsonValue], questions: Sequence[Question]) -> Outcome:
+        self._observed.in_flight += 1
+        try:
+            return self._client.ask(state, questions)
+        finally:
+            self._observed.in_flight -= 1
+
+
+@pytest.mark.skipif(not Path("/dev/full").exists(), reason="needs /dev/full, a sink whose every write fails")
+def test_a_write_failure_mid_run_leaves_no_judging_in_flight_when_the_client_closes(
+    jev: JevStub, tmp_path: Path
+) -> None:
+    def slow(body: dict[str, Any], n: int) -> tuple[int, dict[str, Any], dict[str, str]]:
+        time.sleep(0.05)
+        return 200, _noul(0.5), {}
+
+    jev.reply = slow
+    in_flight_at_exit: list[int] = []
+    base = build_testing(env=_stub_env(jev), home=tmp_path, sleep=lambda _s: None)
+
+    def make(key: str, settings: RunConfig) -> AbstractContextManager[JudgeClient]:
+        return _Observed(base.make_client(key, settings), in_flight_at_exit)
+
+    items_path, questions_path = _files(tmp_path, [{"id": i, "state": {"title": f"t{i}"}} for i in range(6)])
+    result = _invoke(
+        _run_args(items_path, questions_path, Path("/dev/full"), "--workers", "1", "--rate", "1000"),
+        env={},
+        home=tmp_path,
+        services=lambda: dataclasses.replace(base, make_client=make),
+    )
+    assert result.exit_code == 2 and "cannot write" in result.stderr
+    assert in_flight_at_exit == [0]
+
+
 # --- check-key -----------------------------------------------------------------------------------
 
 
@@ -336,7 +405,6 @@ def test_check_key_exits_1_when_there_is_none(tmp_path: Path) -> None:
     assert result.exit_code == 1 and json.loads(result.stdout)["data"]["present"] is False
 
 
-@pytest.mark.os_posix
 def test_check_key_names_the_keyfile_as_the_source_and_prints_a_human_line(tmp_path: Path) -> None:
     keyfile = tmp_path / ".credentials" / "typesafe.key"
     keyfile.parent.mkdir()
@@ -428,6 +496,25 @@ def test_summarize_with_a_bad_summary_config_exits_78(tmp_path: Path) -> None:
         home=tmp_path,
     )
     assert result.exit_code == 78 and "summary" in result.stderr and result.stdout == ""
+
+
+def test_summarize_an_unordered_band_flag_exits_2_naming_the_flag(tmp_path: Path) -> None:
+    path = _write(tmp_path / "rows.jsonl", [_row("a", 0.1)])
+    result = _invoke(["summarize", "--rows", str(path), "--band", "0.9", "0.1"], env={}, home=tmp_path)
+    assert result.exit_code == 2 and result.stdout == "" and "jev-judge: --band: " in result.stderr
+
+
+def test_summarize_an_out_of_range_min_confidence_exits_2_naming_the_flag(tmp_path: Path) -> None:
+    path = _write(tmp_path / "rows.jsonl", [_row("a", 0.1)])
+    result = _invoke(["summarize", "--rows", str(path), "--min-confidence", "5"], env={}, home=tmp_path)
+    assert result.exit_code == 2 and result.stdout == "" and "jev-judge: --min-confidence: " in result.stderr
+    assert "min_confidence" not in result.stderr
+
+
+def test_summarize_a_bad_flag_under_json_bare_still_prints_json(tmp_path: Path) -> None:
+    path = _write(tmp_path / "rows.jsonl", [_row("a", 0.1)])
+    result = _invoke(["summarize", "--rows", str(path), "--band", "0.9", "0.1", "--json-bare"], env={}, home=tmp_path)
+    assert result.exit_code == 2 and "--band" in json.loads(result.stdout)["error"]
 
 
 def test_summarize_a_malformed_rows_file_exits_2_with_the_line(tmp_path: Path) -> None:

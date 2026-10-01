@@ -15,7 +15,7 @@ from ..domain.models import Row
 from ..domain.redaction import DEFAULT_CAP, prepare_state
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator, Sequence
+    from collections.abc import Generator, Sequence
 
     from ..domain.models import Item, Outcome, Question
     from .ports import JudgeClient
@@ -55,7 +55,7 @@ def iter_judged(
     client: JudgeClient,
     key: str | None,
     settings: JudgeSettings,
-) -> Iterator[Row]:
+) -> Generator[Row]:
     """Yield rows in input order as each is ready, so a caller can write as it goes.
 
     Args:

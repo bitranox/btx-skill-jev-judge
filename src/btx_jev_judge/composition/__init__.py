@@ -115,6 +115,19 @@ def build_production() -> AppServices:
     )
 
 
+def _nonexistent_home() -> Path:
+    """A home directory that does not exist and whose name nobody could have planted.
+
+    The directory is created only to draw a unique name from the OS, then removed.
+
+    Returns:
+        A path that no keyfile lookup can find anything under.
+    """
+    unique = Path(tempfile.mkdtemp(prefix="btx-jev-judge-no-home-"))
+    unique.rmdir()
+    return unique
+
+
 def build_testing(
     *,
     env: Mapping[str, str] | None = None,
@@ -144,7 +157,7 @@ def build_testing(
     )
 
     environment: Mapping[str, str] = {} if env is None else env
-    home_dir = Path(tempfile.gettempdir()) / "btx-jev-judge-no-home" if home is None else home
+    home_dir = _nonexistent_home() if home is None else home
     return AppServices(
         get_config=get_config_in_memory,
         get_default_config_path=get_default_config_path_in_memory,
