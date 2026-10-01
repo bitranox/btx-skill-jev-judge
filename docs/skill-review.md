@@ -180,3 +180,33 @@ The four lines of the Commands block, extracted from SKILL.md with `sed` and run
 
 The same full run on 0.2.1 left 253 lines on stderr, 126 of them one per request. `--version`
 through the new floor prints `0.2.3`.
+
+## Re-check for the summarize data (0.2.4)
+
+The change adds what `summarize` returns (`rows`, `answered`, `failed`, `flat`, `questions` with
+each question's `uncertain` list) and that `--json-bare` prints the data alone, on exit 1 too.
+
+### RED
+
+Scripting against `summarize --json-bare` with the 0.2.3 text, the reader guessed the
+read-by-hand ids sat under a key such as `read_by_hand` and found nothing: the 0.2.3 text
+described a row but not the summary.
+
+### GREEN
+
+A text-only probe got the Commands section and had to write the Python that prints one
+question's read-by-hand ids and whether any question was flat.
+
+| Text                                          | Code                                      | Open point it raised                        |
+|-----------------------------------------------|-------------------------------------------|---------------------------------------------|
+| First draft (summary keys only)               | Correct: `d["questions"][q]["uncertain"]` | Envelope or bare `data` under `--json-bare` |
+| Final (adds "`--json-bare` the `data` alone") | Correct, reads the bare object            | Whether the data is printed on exit 1       |
+
+The last point is answered in the text: a flat summary exits 1 and `--json-bare` still prints the
+data (`flat: ["q"]`), checked by running it.
+
+### Executed
+
+The four Commands lines, extracted from SKILL.md with `grep` and run unchanged on 62 HTTP status
+items once PyPI served 0.2.4: all exit 0, no per-request line on stderr; `--version` prints
+`0.2.4`; `summarize --json-bare` read as the text says gives 15 uncertain ids and an empty `flat`.
