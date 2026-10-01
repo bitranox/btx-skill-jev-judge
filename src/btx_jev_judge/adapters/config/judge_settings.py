@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
-from btx_jev_judge.adapters.jev import DEFAULT_MODEL, DEFAULT_RATE, JevSettings
+from btx_jev_judge.adapters.jev import DEFAULT_MODEL, DEFAULT_RATE, MAX_ATTEMPTS, JevSettings
 from btx_jev_judge.application.judge import JudgeSettings
 from btx_jev_judge.domain.errors import ConfigurationError
 from btx_jev_judge.domain.summary import DEFAULT_BAND, DEFAULT_MIN_CONFIDENCE
@@ -31,8 +31,8 @@ class RunConfig(BaseModel):
     Attributes:
         rate: Requests per second across all workers.
         workers: Items judged concurrently.
-        attempts: Tries per judgment.
-        timeout: Seconds before one request is abandoned.
+        attempts: Tries per judgment, at most ``MAX_ATTEMPTS``.
+        timeout: httpx per-phase timeout in seconds (connect, read, write and pool wait each).
         cap: Longest string, in characters, that is sent.
         model: Model name sent with every request.
     """
@@ -41,7 +41,7 @@ class RunConfig(BaseModel):
 
     rate: float = Field(default=DEFAULT_RATE, gt=0)
     workers: int = Field(default=_JUDGE_DEFAULTS.workers, ge=1)
-    attempts: int = Field(default=_JEV_DEFAULTS.attempts, ge=1)
+    attempts: int = Field(default=_JEV_DEFAULTS.attempts, ge=1, le=MAX_ATTEMPTS)
     timeout: float = Field(default=_JEV_DEFAULTS.timeout, gt=0)
     cap: int = Field(default=_JUDGE_DEFAULTS.cap, ge=100)
     model: str = Field(default=DEFAULT_MODEL, min_length=1)
@@ -73,7 +73,7 @@ class SummaryConfig(BaseModel):
             ValueError: ``band_low`` is greater than or equal to ``band_high``.
         """
         if self.band_low >= self.band_high:
-            raise ValueError(f"band_low ({self.band_low}) must be below band_high ({self.band_high})")
+            raise ValueError("band_low must be below band_high")
         return self
 
 

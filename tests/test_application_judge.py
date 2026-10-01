@@ -55,9 +55,10 @@ def test_rows_keep_input_order_with_several_workers() -> None:
     assert [r.id for r in rows] == [f"i{i}" for i in range(6)]
 
 
-def test_iter_judged_yields_the_same_rows_lazily() -> None:
-    rows = list(iter_judged(_items(3), QUESTIONS, client=FakeClient(), key=None, settings=JudgeSettings()))
-    assert [r.id for r in rows] == ["i0", "i1", "i2"]
+def test_iter_judged_is_a_generator_that_hands_over_one_row_at_a_time() -> None:
+    rows = iter_judged(_items(3), QUESTIONS, client=FakeClient(), key=None, settings=JudgeSettings())
+    assert next(rows).id == "i0"
+    assert [r.id for r in rows] == ["i1", "i2"]
 
 
 def test_a_failed_outcome_becomes_a_failed_row() -> None:

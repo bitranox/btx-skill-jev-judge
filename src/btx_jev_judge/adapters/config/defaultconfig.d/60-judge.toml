@@ -7,8 +7,8 @@
 [judge]
 rate = 20.0        # requests per second across all workers; Jev's documented limit is 40
 workers = 8
-attempts = 4
-timeout = 30.0     # seconds per request
+attempts = 4         # tries per judgment, 1 to 10
+timeout = 30.0     # seconds per request phase (connect, read, write, pool wait)
 cap = 60000        # characters per string in a state
 model = "jev-latest"
 

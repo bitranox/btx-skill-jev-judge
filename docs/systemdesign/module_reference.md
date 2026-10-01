@@ -285,14 +285,14 @@ Pydantic models that reject unknown keys (which keeps the API key out of configu
 
 ### RunConfig
 
-| Field      | Type    | Default        | Constraint |
-|------------|---------|----------------|------------|
-| `rate`     | `float` | `20.0`         | `> 0`      |
-| `workers`  | `int`   | `8`            | `>= 1`     |
-| `attempts` | `int`   | `4`            | `>= 1`     |
-| `timeout`  | `float` | `30.0`         | `> 0`      |
-| `cap`      | `int`   | `60000`        | `>= 100`   |
-| `model`    | `str`   | `'jev-latest'` | non-empty  |
+| Field      | Type    | Default        | Constraint  |
+|------------|---------|----------------|-------------|
+| `rate`     | `float` | `20.0`         | `> 0`       |
+| `workers`  | `int`   | `8`            | `>= 1`      |
+| `attempts` | `int`   | `4`            | `1` to `10` |
+| `timeout`  | `float` | `30.0`         | `> 0`       |
+| `cap`      | `int`   | `60000`        | `>= 100`    |
+| `model`    | `str`   | `'jev-latest'` | non-empty   |
 
 ### SummaryConfig
 

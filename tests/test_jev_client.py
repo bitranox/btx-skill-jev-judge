@@ -204,6 +204,30 @@ def test_a_non_numeric_retry_after_falls_back_to_exponential_backoff(jev: JevStu
     assert [w for w in waits if w >= 1] == [2.0]
 
 
+def test_the_exponential_backoff_is_capped_at_the_ceiling(jev: JevStub) -> None:
+    jev.reply = lambda body, n: (529, {}, {})
+    waits: list[float] = []
+    row = _judge(jev, [("a", {"title": "x"})], attempts=10, waits=waits)[0]
+    assert row.ok is False and row.attempts == 10
+    assert [w for w in waits if w >= 1] == [2.0, 4.0, 8.0, 16.0, 32.0, 60.0, 60.0, 60.0, 60.0]
+    assert max(waits) == MAX_RETRY_WAIT
+
+
+def test_a_undecodable_response_is_a_failed_row_not_an_exception_and_not_retried(jev: JevStub) -> None:
+    jev.reply = lambda body, n: (200, b"plainly not gzip", {"Content-Encoding": "gzip"})
+    row = _judge(jev, [("a", {"title": "x"})])[0]
+    assert row.ok is False and row.reason is not None and "DecodingError" in row.reason
+    assert len(jev.seen) == 1
+
+
+def test_an_error_body_quoted_in_the_reason_is_redacted(jev: JevStub) -> None:
+    token = "ghp_" + "b" * 36
+    jev.reply = lambda body, n: (400, {"detail": f"bad {KEY} and {token}"}, {})
+    row = _judge(jev, [("a", {"title": "x"})])[0]
+    assert row.ok is False and row.reason is not None and row.reason.startswith("http 400")
+    assert KEY not in row.reason and token not in row.reason
+
+
 def test_a_request_timeout_is_reported_as_timeout_and_retried(jev: JevStub) -> None:
     def slow_once(body: dict[str, Any], n: int) -> tuple[int, Any, dict[str, str]]:
         if n == 1:

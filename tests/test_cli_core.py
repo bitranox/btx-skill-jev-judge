@@ -1,4 +1,4 @@
-"""CLI core stories: traceback, main entry, help, hello, fail, info, unknown command."""
+"""CLI core stories: traceback state, main entry, help, info, logdemo and the unknown command."""
 
 from __future__ import annotations
 

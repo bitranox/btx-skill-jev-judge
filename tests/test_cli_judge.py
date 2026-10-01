@@ -190,6 +190,17 @@ def test_a_bad_run_flag_is_reported_by_its_flag_name(jev: JevStub, tmp_path: Pat
     assert "workers:" not in result.stderr.replace("--workers:", "")
 
 
+@pytest.mark.parametrize("attempts", ["0", "11"])
+def test_an_attempts_flag_outside_the_range_is_a_usage_error(jev: JevStub, tmp_path: Path, attempts: str) -> None:
+    items_path, questions_path = _one_item(tmp_path)
+    result = _invoke(
+        _run_args(items_path, questions_path, tmp_path / "r.jsonl", "--attempts", attempts),
+        env=_stub_env(jev),
+        home=tmp_path,
+    )
+    assert result.exit_code == 2 and "jev-judge: --attempts: " in result.stderr and jev.seen == []
+
+
 def test_human_output_reports_coverage_and_cost(jev: JevStub, tmp_path: Path) -> None:
     jev.reply = lambda body, n: (200, _noul(0.5), {})
     items_path, questions_path = _one_item(tmp_path)
@@ -389,6 +400,7 @@ def test_a_write_failure_mid_run_leaves_no_judging_in_flight_when_the_client_clo
     )
     assert result.exit_code == 2 and "cannot write" in result.stderr
     assert in_flight_at_exit == [0]
+    assert len(jev.seen) < 6  # the run stopped at the failed write instead of judging the rest
 
 
 # --- check-key -----------------------------------------------------------------------------------

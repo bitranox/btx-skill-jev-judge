@@ -249,9 +249,14 @@ def _run(cli_ctx: CLIContext, opts: _RunOptions) -> CommandResult:
 @option("--pilot", type=int, default=0, help="judge only the first N items")
 @option("--rate", type=float, default=None, help="requests per second (config: judge.rate)")
 @option("--workers", type=int, default=None, help="items judged concurrently (config: judge.workers)")
-@option("--attempts", type=int, default=None, help="tries per judgment (config: judge.attempts)")
+@option("--attempts", type=int, default=None, help="tries per judgment, 1 to 10 (config: judge.attempts)")
 @option("--cap", type=int, default=None, help="max characters per string (config: judge.cap)")
-@option("--timeout", type=float, default=None, help="seconds per request (config: judge.timeout)")
+@option(
+    "--timeout",
+    type=float,
+    default=None,
+    help="seconds per request phase: connect, read, write, pool (config: judge.timeout)",
+)
 @option("--model", default=None, help="jev-latest, or a pinned jev-x.y.z (config: judge.model)")
 @option("--json", "as_json", is_flag=True, help="{ok, command, data, skipped}")
 @option("--json-bare", "as_json_bare", is_flag=True, help="data only, also on failure")

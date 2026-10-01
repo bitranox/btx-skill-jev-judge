@@ -7,7 +7,7 @@ command-line tool. That beats reading every item into its own context or calling
 once per item.
 
 Jev returns typed answers with probabilities: yes/no, one of a set of options, or a position on a
-scale. Input is billed per token and output is free; `summarize` estimates a run's cost from the
+scale. Input is billed per token and output is free; `run` reports the run's cost, estimated from the
 per-million-token price set in the code (`PRICE_PER_MTOK` in `domain/summary.py`).
 
 ## Install in Claude Code
@@ -139,7 +139,7 @@ jev-judge summarize --rows rows.jsonl
 | `summarize` | Shows each question's spread, flags questions whose answers never move, lists rows to check |
 | `check-key` | Reports whether a usable key is configured and where it came from, without printing the key |
 
-`run` and `summarize` take `--json` for an `{ok, command, data, skipped}` envelope on stdout, or
+`run`, `summarize` and `check-key` take `--json` for an `{ok, command, data, skipped}` envelope on stdout, or
 `--json-bare` for the data alone (also on failure). Diagnostics always go to stderr.
 
 | Exit code | Meaning                                                                                 |
@@ -154,7 +154,8 @@ exits 2 and prints no JSON, even under `--json-bare`.
 
 Before any item leaves the machine, every string in its state is redacted: common secret formats
 such as tokens, private keys and passwords in URLs, plus the API key itself. Requests share one
-rate limiter that stays under Jev's documented 40 requests per second. Transient failures (rate
+rate limiter; the default 20 requests per second stays under Jev's documented 40, and `rate`
+is configurable. Transient failures (rate
 limits, overloads, 5xx errors, timeouts, dropped connections) are retried with backoff, and
 `Retry-After` is respected. Any other failure becomes a row that records the reason.
 `<command> --help` lists every option.
@@ -182,7 +183,8 @@ test run:
 `pyproject.toml` defines two contracts. "Clean Architecture layers" lets each layer import only
 the layers below it, in the order composition, adapters, application, domain. "Domain is pure"
 also keeps the domain from importing adapters or composition. Tests use real seams: a loopback
-HTTP stub stands in for Jev, `CliRunner` drives the CLI, and a fake client drives the use case. See [docs/systemdesign/module_reference.md](docs/systemdesign/module_reference.md).
+HTTP stub stands in for Jev, `CliRunner` drives the CLI, and a fake client drives the use case. See
+[docs/systemdesign/module_reference.md](docs/systemdesign/module_reference.md).
 
 ## Further Documentation
 

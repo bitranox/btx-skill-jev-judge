@@ -51,7 +51,6 @@ def test_a_key_that_is_not_printable_ascii_is_refused(tmp_path: Path) -> None:
     assert "printable ascii" in reason
 
 
-@pytest.mark.skipif(os.name == "nt", reason="POSIX permission bits do not exist on Windows")
 def test_a_keyfile_with_non_ascii_text_is_refused(tmp_path: Path) -> None:
     non_ascii_key = "tk_k\u00e9y"
     _keyfile(tmp_path, non_ascii_key, mode=0o600)

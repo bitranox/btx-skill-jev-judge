@@ -7,7 +7,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ### Added
 - The Python package `btx-jev-judge` (import `btx_jev_judge`) with the console scripts
-  `jev-judge` and `btx-jev-judge`. It carries the batch-judging logic of the `jev-judge` skill as
+  `jev-judge`, `btx-jev-judge` and `btx_jev_judge`. It carries the batch-judging logic of the `jev-judge` skill as
   a tested command-line tool.
 - `jev-judge run`: asks the same questions about every item of a JSONL file and writes one result
   row per item as it arrives. `--pilot N` judges only the first N items; `--rate`, `--workers`,

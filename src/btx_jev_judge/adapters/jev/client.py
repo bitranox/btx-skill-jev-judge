@@ -13,6 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field, JsonValue, ValidationError
 
 from ...domain.enums import QuestionType
 from ...domain.models import Answer, Outcome, Question, describe_validation_error
+from ...domain.redaction import redact
 from .limiter import RateLimiter
 
 if TYPE_CHECKING:
@@ -31,6 +32,10 @@ DEFAULT_RATE = 20.0
 RETRY_STATUSES = frozenset({429, 500, 502, 503, 504, 529})
 # Never sleep longer than this on one Retry-After; a server asking for more is better reported.
 MAX_RETRY_WAIT = 60.0
+# Most tries per judgment a caller may configure; beyond it a run is better stopped than retried.
+MAX_ATTEMPTS = 10
+# 2**7 already exceeds MAX_RETRY_WAIT; capping the exponent keeps the power from overflowing.
+MAX_BACKOFF_EXPONENT = 7
 HTTP_OK = 200
 # Longest slice of an error body quoted in a failure reason.
 REASON_DETAIL_CHARS = 200
@@ -115,7 +120,7 @@ class JevSettings:
 
     Args:
         model: Model name sent with every request.
-        timeout: Seconds before one request is abandoned.
+        timeout: httpx's per-phase timeout in seconds (connect, read, write and pool wait each).
         attempts: Tries per judgment; values below one are treated as one.
         workers: Connection pool size; match the batch's worker count.
     """
@@ -149,6 +154,7 @@ class JevClient:
         limiter: RateLimiter | None = None,
         sleep: Callable[[float], object] = time.sleep,
     ) -> None:
+        self._key = key
         self._model = settings.model
         self._attempts = max(1, settings.attempts)
         self._limiter = limiter or RateLimiter(DEFAULT_RATE)
@@ -201,7 +207,7 @@ class JevClient:
         self, body: dict[str, Any], questions: Sequence[Question], attempt: int
     ) -> tuple[Outcome, float | None]:
         """One request. Returns the outcome and, when it is worth retrying, how long to wait."""
-        backoff = float(2**attempt)
+        backoff = _backoff(attempt)
         started = time.monotonic()
         try:
             response = self._http.post(ENDPOINT, json=body)
@@ -209,17 +215,27 @@ class JevClient:
             return Outcome(None, "timeout", attempt), backoff
         except httpx2.TransportError as exc:
             return Outcome(None, f"connection error: {type(exc).__name__}", attempt), backoff
+        except httpx2.RequestError as exc:
+            # A bad Content-Encoding or a redirect loop fails the same way on every attempt.
+            return Outcome(None, f"request error: {type(exc).__name__}", attempt), None
         latency = int((time.monotonic() - started) * 1000)
         if response.status_code != HTTP_OK:
-            reason = _http_reason(response)
+            reason = _http_reason(response, self._key)
             if response.status_code in RETRY_STATUSES:
                 return Outcome(None, reason, attempt), _retry_after(response) or backoff
             return Outcome(None, reason, attempt), None
         return _parse_answers(response, questions, attempt=attempt, latency=latency), None
 
 
-def _http_reason(response: httpx2.Response) -> str:
-    detail = response.text.strip().replace("\n", " ")[:REASON_DETAIL_CHARS]
+def _backoff(attempt: int) -> float:
+    """Seconds to wait after a failed try: 2, 4, 8, ... never above ``MAX_RETRY_WAIT``."""
+    exponent = min(attempt, MAX_BACKOFF_EXPONENT)
+    return min(2.0**exponent, MAX_RETRY_WAIT)
+
+
+def _http_reason(response: httpx2.Response, key: str) -> str:
+    # The server may echo the request back, so what is quoted passes the same scrubber as the state.
+    detail = redact(response.text.strip().replace("\n", " ")[:REASON_DETAIL_CHARS], key)[0]
     return f"http {response.status_code}" + (
         f": {detail}" if detail and response.status_code not in RETRY_STATUSES else ""
     )
@@ -265,6 +281,7 @@ __all__ = [
     "DEFAULT_MODEL",
     "DEFAULT_RATE",
     "ENDPOINT",
+    "MAX_ATTEMPTS",
     "MAX_RETRY_WAIT",
     "RETRY_STATUSES",
     "JevClient",

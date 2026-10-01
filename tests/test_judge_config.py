@@ -85,13 +85,14 @@ def test_the_refusal_never_echoes_the_key_value(config_factory: ConfigFactory) -
 @pytest.mark.parametrize(("low", "high"), [(0.8, 0.2), (0.5, 0.5)])
 def test_band_low_must_stay_below_band_high(config_factory: ConfigFactory, low: float, high: float) -> None:
     config = config_factory({"summary": {"band_low": low, "band_high": high}})
-    with pytest.raises(ConfigurationError, match=r"band_low.*band_high"):
+    with pytest.raises(ConfigurationError, match=r"band_low.*band_high") as caught:
         summary_config(config)
+    assert str(low) not in str(caught.value).split("band_high", 1)[1]
 
 
 @pytest.mark.parametrize(
     ("key", "value"),
-    [("rate", 0), ("workers", 0), ("attempts", 0), ("timeout", -1), ("cap", 10), ("model", "")],
+    [("rate", 0), ("workers", 0), ("attempts", 0), ("attempts", 11), ("timeout", -1), ("cap", 10), ("model", "")],
 )
 def test_out_of_range_judge_values_are_refused(config_factory: ConfigFactory, key: str, value: object) -> None:
     with pytest.raises(ConfigurationError, match=rf"judge\.{key}"):
