@@ -5,7 +5,7 @@
 ## Context
 
 Testing the application requires in-memory implementations of adapter
-interfaces (e.g. configuration loaders, email senders) that avoid real
+interfaces (e.g. configuration loaders, logging initializers) that avoid real
 I/O. The question is whether these belong under `tests/` or under the
 production source tree in `src/btx_jev_judge/adapters/memory/`.
 

@@ -1,48 +1,49 @@
 # Contributing Guide
 
-Thanks for helping improve **btx_jev_judge**. The sections below summarise the day-to-day workflow, highlight the repository automation, and list the checks that must pass before a change is merged.
+Thanks for helping improve **btx-jev-judge**. This page covers the day-to-day workflow and the
+checks a change must pass. The development loop itself is in [DEVELOPMENT.md](DEVELOPMENT.md).
 
-## 1. Workflow Overview
+## Workflow
 
-1. Fork and branch -- use short, imperative branch names (`feature/cli-extension`, `fix/codecov-token`).
-2. Make focused commits -- keep unrelated refactors out of the same change.
-3. Run `make test` locally before pushing (see the automation note below).
-4. Update documentation and changelog entries that are affected by the change.
-5. Open a pull request referencing any relevant issues.
+1. Fork and branch with a short, imperative name (`fix/keyfile-mode`, `feature/new-flag`).
+2. Make focused commits; keep unrelated refactors out of the same change.
+3. Run `make test` before pushing.
+4. Update the documentation and `CHANGELOG.md` entries the change affects.
+5. Open a pull request that references the issues it closes.
 
-## 2. Commits & Pushes
+## Commits
 
-- Commit messages should be imperative (`Add rich handler`, `Fix CLI exit codes`).
-- The test harness (`make test`) runs the full lint/type/test pipeline but leaves the repository untouched; create commits yourself before pushing or uploading coverage artifacts.
-- `make push` always performs a commit before pushing. It prompts for a message when run interactively, honours `COMMIT_MESSAGE="..."` when provided, and creates an empty commit if nothing is staged. The Textual menu (`make menu -> push`) exposes the same behaviour via an input field.
+- Write imperative messages (`Add a --timeout flag`, `Fix the keyfile mode check`).
+- `make test` runs the whole gate and leaves your commits alone; create them yourself.
 
-## 3. Coding Standards
+## Coding standards
 
-- Apply the repository's Clean Architecture / SOLID rules (see `CLAUDE.md` and the system prompts listed there).
-- Prefer small, single-purpose modules and functions; avoid mixing orthogonal concerns.
-- Free functions and modules use `snake_case`; classes are `PascalCase`.
-- Keep runtime dependencies minimal. Use the standard library where practical.
+- Keep the layering: `domain` has no I/O, `application` imports only `domain`, `adapters` import
+  both, `composition` wires them. `import-linter` fails the build on a violation.
+- Small, single-purpose functions and modules; type hints everywhere (pyright strict).
+- Free functions and modules use `snake_case`, classes `PascalCase`.
+- Keep runtime dependencies minimal and prefer the standard library.
+- Every tracked text file is ASCII. Write a character that needs it in a test as a `\u` escape.
 
-## 4. Tests & Tooling
+## Tests
 
-- `make test` runs Ruff (lint + format check), Pyright, and Pytest with coverage. Coverage is `on` by default; override with `COVERAGE=off` if you explicitly need a no-coverage run.
-- The harness auto-installs dev tools with `pip install -e .[dev]` when Ruff, Pyright, or Pytest are missing. Skip this by exporting `SKIP_BOOTSTRAP=1`.
-- Codecov uploads require a commit (provided by the automatic commit described above). For private repositories set `CODECOV_TOKEN` in your environment or `.env`.
-- Tests follow a narrative style: prefer names like `test_when_<condition>_<outcome>()`, keep each case laser-focused, and mark OS constraints with the provided markers (`@pytest.mark.os_agnostic`, `@pytest.mark.os_windows`, etc.).
-- Whenever you add a CLI behaviour or change metadata fallbacks, update the relevant story in `tests/test_cli.py` or `tests/test_metadata.py` so the specification remains complete.
+- `make test` runs ruff (lint and format check), pyright, import-linter and pytest with coverage.
+- Tests drive real seams: the loopback HTTP stub for Jev, `CliRunner` for the CLI, a fake client
+  for the use case. Do not monkeypatch the package's own internals.
+- Name tests `test_when_<condition>_<outcome>` and mark OS constraints (`@pytest.mark.os_agnostic`,
+  `@pytest.mark.os_windows`, ...).
+- A change to CLI behaviour or to configuration needs a test in the matching `tests/test_cli_*.py`
+  or `tests/test_judge_config.py`.
 
-## 5. Documentation Checklist
+## Checklist before a pull request
 
-Before opening a PR, confirm the following:
-
-- [ ] `make test` passes locally (and you removed the auto-created Codecov commit if you do not want to keep it).
-- [ ] Relevant documentation (`README.md`, `DEVELOPMENT.md`, `docs/systemdesign/*`) is updated.
+- [ ] `make test` passes locally.
+- [ ] `README.md`, `CONFIG.md` and `docs/systemdesign/module_reference.md` match the change.
 - [ ] No generated artefacts or virtual environments are committed.
-- [ ] Version bumps, when required, touch **only** `pyproject.toml` and `CHANGELOG.md`.
+- [ ] Version bumps happen through `make bump-*`, not by hand.
 
-## 6. Security & Configuration
+## Security
 
-- Never commit secrets. Tokens (Codecov, PyPI) belong in `.env` (ignored by git) or CI secrets.
-- Sanitise any payloads you emit via logging once richer logging features ship.
-
-Happy hacking!
+- Never commit secrets. The TypeSafe key stays in the environment or `~/.credentials/typesafe.key`;
+  tokens for coverage and PyPI belong in an ignored `.env` or in CI secrets.
+- Report a vulnerability as described in [SECURITY.md](SECURITY.md), not in a public issue.

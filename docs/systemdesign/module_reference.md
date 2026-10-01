@@ -2,83 +2,91 @@
 
 ## Status
 
-Complete (v1.1.2+)
+Complete (v0.2.0)
 
 ---
 
 ## Related Files
 
 ### Domain Layer
-- `src/btx_jev_judge/domain/models.py`  -  Questions, items, answers, rows
+- `src/btx_jev_judge/domain/models.py`  -  Questions, items, answers, rows and outcomes
 - `src/btx_jev_judge/domain/redaction.py`  -  Secret redaction and string capping
-- `src/btx_jev_judge/domain/summary.py`  -  Run summary
-- `src/btx_jev_judge/domain/enums.py`  -  Type-safe enums (OutputFormat, DeployTarget)
+- `src/btx_jev_judge/domain/summary.py`  -  Run summary: distribution, uncertain rows, flat questions
+- `src/btx_jev_judge/domain/enums.py`  -  Type-safe enums (QuestionType, OutputFormat, DeployTarget)
+- `src/btx_jev_judge/domain/errors.py`  -  InputError and ConfigurationError
 
 ### Application Layer
+- `src/btx_jev_judge/application/judge.py`  -  The judge use case: redact each state, ask the client, collect one row per item
 - `src/btx_jev_judge/application/ports.py`  -  Callable Protocol definitions for adapter functions
 
 ### Adapters Layer
+- `src/btx_jev_judge/adapters/jev/client.py`  -  Pooled, rate-limited, retrying Jev HTTP client; loopback-only base URL override
+- `src/btx_jev_judge/adapters/jev/limiter.py`  -  Request spacing shared by every worker thread
+- `src/btx_jev_judge/adapters/key/lookup.py`  -  API key from `TYPESAFE_API_KEY` or `~/.credentials/typesafe.key`
+- `src/btx_jev_judge/adapters/files/`  -  JSONL items, JSON questions and JSONL result rows on disk
 - `src/btx_jev_judge/adapters/config/loader.py`  -  Configuration loading with LRU caching
+- `src/btx_jev_judge/adapters/config/judge_settings.py`  -  Typed `[judge]` and `[summary]` sections
 - `src/btx_jev_judge/adapters/config/deploy.py`  -  Configuration deployment
 - `src/btx_jev_judge/adapters/config/display.py`  -  Configuration display (TOML/JSON output, redaction)
 - `src/btx_jev_judge/adapters/config/overrides.py`  -  CLI `--set` override parsing and deep-merge
-- `src/btx_jev_judge/adapters/email/sender.py`  -  SMTP email with EmailConfig (Pydantic)
-- `src/btx_jev_judge/adapters/email/validation.py`  -  Email recipient validation
 - `src/btx_jev_judge/adapters/logging/setup.py`  -  lib_log_rich initialization
 - `src/btx_jev_judge/adapters/cli/`  -  CLI adapter package:
   - `__init__.py`  -  Public facade
   - `constants.py`  -  Shared constants
   - `safe_console.py`  -  Encode-safe terminal output; use `safe_console.echo` instead of `click.echo`
   - `exit_codes.py`  -  POSIX exit codes (ExitCode IntEnum)
-  - `traceback.py`  -  Traceback state management
   - `context.py`  -  Click context helpers
   - `config_load.py`  -  Configuration load for the CLI; records a load failure, `require_config` refuses with exit 78
   - `root.py`  -  Root command group
   - `main.py`  -  Entry point
+  - `typed_click.py`  -  Strictly typed wrappers for rich-click decorators
+  - `commands/judge.py`  -  run, summarize, check-key commands
+  - `commands/judge_output.py`  -  JSON envelope, bare JSON and human rendering
   - `commands/info.py`  -  info command
   - `commands/config.py`  -  config, config-deploy, config-generate-examples commands
-  - `commands/email.py`  -  send-email, send-notification commands
   - `commands/logging.py`  -  logdemo command
 
 ### Adapters Layer (In-Memory / Testing)
 - `src/btx_jev_judge/adapters/memory/__init__.py`  -  Public facade + Protocol conformance assertions
 - `src/btx_jev_judge/adapters/memory/config.py`  -  In-memory config adapters
-- `src/btx_jev_judge/adapters/memory/email.py`  -  In-memory email adapters
 - `src/btx_jev_judge/adapters/memory/logging.py`  -  In-memory logging (a quiet lib_log_rich runtime for tests)
 
 ### Composition Layer
-- `src/btx_jev_judge/composition/__init__.py`  -  Wires adapters to ports
+- `src/btx_jev_judge/composition/__init__.py`  -  Wires adapters to ports (`build_production`, `build_testing`)
 
 ### Entry Points
+- `src/btx_jev_judge/entry.py`  -  Console-script entry point (`jev-judge`, `btx-jev-judge`)
 - `src/btx_jev_judge/__main__.py`  -  Thin shim for `python -m`
 - `src/btx_jev_judge/__init__.py`  -  Public API exports
 - `src/btx_jev_judge/__init__conf__.py`  -  Package metadata constants
 
 ### Configuration Defaults
-- `src/btx_jev_judge/adapters/config/defaultconfig.toml`  -  Base defaults
+- `src/btx_jev_judge/adapters/config/defaultconfig.toml`  -  Base defaults and layer documentation
 - `src/btx_jev_judge/adapters/config/defaultconfig.d/40-layered-config.toml`  -  lib_layered_config integration docs
-- `src/btx_jev_judge/adapters/config/defaultconfig.d/50-mail.toml`  -  Email defaults
+- `src/btx_jev_judge/adapters/config/defaultconfig.d/60-judge.toml`  -  `[judge]` and `[summary]` defaults
 - `src/btx_jev_judge/adapters/config/defaultconfig.d/90-logging.toml`  -  Logging defaults
 
 ### Tests
-- `tests/test_cache_effectiveness.py`  -  LRU cache behavior tests
-- `tests/test_cli.py`  -  CLI command tests
-- `tests/test_cli_main_exit.py`  -  Exit codes and stderr through the real `main()` entry point
+- `tests/test_application_judge.py`  -  The use case with a fake client
+- `tests/test_jev_client.py`  -  The client against a loopback HTTP stub: retries, redaction, base URL
+- `tests/test_key.py`  -  Key lookup, keyfile permissions and secrecy
+- `tests/test_files.py`  -  Items, questions and rows files
+- `tests/test_domain_models.py`, `tests/test_domain_redaction.py`, `tests/test_domain_summary.py`  -  Domain behaviour
+- `tests/test_cli_judge.py`  -  run, summarize and check-key through `CliRunner`
+- `tests/test_cli_validation.py`  -  Flag and input validation
+- `tests/test_cli_exit_codes.py`, `tests/test_cli_main_exit.py`  -  Exit codes and stderr through the real `main()` entry point
+- `tests/test_judge_config.py`  -  `[judge]` and `[summary]` sections, unknown keys, ranges
 - `tests/test_cli_config_errors.py`  -  Which commands refuse and which still run when the configuration cannot be loaded
 - `tests/test_config_overrides.py`  -  `--set` parsing tests
+- `tests/test_deploy_mode_safety.py`  -  `--dir-mode`/`--file-mode` literal, range and safety checks
+- `tests/test_permission_defaults.py`  -  `config-deploy` hands permissions to lib_layered_config
 - `tests/test_safe_console.py`  -  Legacy-codepage output tests, plus the guard forbidding direct `click.echo`
 - `tests/test_display.py`  -  Config display formatting tests
-- `tests/test_deploy_mode_safety.py`  -  `--dir-mode`/`--file-mode` literal, range and safety checks
-- `tests/test_exit_codes.py`  -  ExitCode enum tests
-- `tests/test_mail.py`  -  Email configuration and sending tests
-- `tests/test_cli_email_config_errors.py`  -  An invalid `[email]` section or option value: one `Error:` line per problem
-- `tests/test_email_password_secrecy.py`  -  The SMTP password never reaches an error message, the console or the log
-- `tests/test_permission_defaults.py`  -  `config-deploy` hands permissions to lib_layered_config: `--set` overrides, `.env` and deployed destinations never decide a mode, refusals exit 78
 - `tests/test_memory_logging.py`  -  Testing-composition logging runtime and the per-test logging reset
-- `tests/test_metadata.py`  -  Package metadata tests
+- `tests/test_metadata.py`, `tests/test_metadata_sync.py`  -  Package metadata and its sync with `pyproject.toml`
+- `tests/test_module_reference_sync.py`  -  The field tables below match the models
 - `tests/test_module_entry.py`  -  `python -m` entry tests
 - `tests/test_ports.py`  -  Protocol conformance tests
-- `tests/test_scripts.py`  -  Build script tests
 
 ---
 
@@ -86,22 +94,24 @@ Complete (v1.1.2+)
 
 ### Layer Assignments
 
-| Directory/Module       | Layer       | Responsibility                                |
-|------------------------|-------------|-----------------------------------------------|
-| `domain/`              | Domain      | Pure logic  -  no I/O, logging, or frameworks |
-| `application/ports.py` | Application | Protocol definitions for adapters             |
-| `adapters/config/`     | Adapters    | Configuration loading, deployment, display    |
-| `adapters/email/`      | Adapters    | SMTP email sending                            |
-| `adapters/logging/`    | Adapters    | lib_log_rich initialization                   |
-| `adapters/cli/`        | Adapters    | Click CLI framework integration               |
-| `adapters/memory/`     | Adapters    | In-memory implementations for testing         |
-| `composition/`         | Composition | Wires adapters to ports                       |
+| Directory/Module    | Layer       | Responsibility                                             |
+|---------------------|-------------|------------------------------------------------------------|
+| `domain/`           | Domain      | Pure logic  -  no I/O, logging, or frameworks              |
+| `application/`      | Application | The judge use case and Protocol definitions for adapters   |
+| `adapters/jev/`     | Adapters    | HTTP client for the Jev API                                |
+| `adapters/key/`     | Adapters    | API key lookup                                             |
+| `adapters/files/`   | Adapters    | Items, questions and rows on disk                          |
+| `adapters/config/`  | Adapters    | Configuration loading, deployment, display, typed sections |
+| `adapters/logging/` | Adapters    | lib_log_rich initialization                                |
+| `adapters/cli/`     | Adapters    | Click CLI framework integration                            |
+| `adapters/memory/`  | Adapters    | In-memory implementations for testing                      |
+| `composition/`      | Composition | Wires adapters to ports                                    |
 
 ### Import Enforcement
 
 Layer boundaries enforced via `import-linter` contracts in `pyproject.toml`:
 - **Domain is pure**: Cannot import from adapters or composition
-- **Clean Architecture layers**: Validates dependency direction (composition → adapters → application → domain)
+- **Clean Architecture layers**: Validates dependency direction (composition -> adapters -> application -> domain)
 
 Run `lint-imports` to verify compliance.
 
@@ -109,21 +119,17 @@ Run `lint-imports` to verify compliance.
 
 ## Exit Codes
 
-POSIX-conventional exit codes defined in `adapters/cli/exit_codes.py`:
+| Code | Meaning                                                                                                   |
+|------|-----------------------------------------------------------------------------------------------------------|
+| 0    | Yes: every item answered, no flat question, a key is present                                              |
+| 1    | No: a row failed, a question looks flat, or `check-key` found no key                                      |
+| 2    | Usage, input or IO error, also an out-of-range flag; stderr `jev-judge: <reason>`; click usage errors too |
+| 78   | Broken configuration; stderr `Error: <reason>`                                                            |
 
-| Code | Name                | Usage                                                                                                                  |
-|------|---------------------|------------------------------------------------------------------------------------------------------------------------|
-| 0    | `SUCCESS`           | Command completed successfully                                                                                         |
-| 1    | `GENERAL_ERROR`     | Unhandled exception, general failure                                                                                   |
-| 2    | `FILE_NOT_FOUND`    | Attachment or file not found; also click's usage error (bad option value, malformed `--set`, invalid `--profile` name) |
-| 13   | `PERMISSION_DENIED` | Cannot write to target directory                                                                                       |
-| 22   | `INVALID_ARGUMENT`  | Invalid CLI argument or section not found                                                                              |
-| 69   | `SMTP_FAILURE`      | SMTP delivery failed                                                                                                   |
-| 78   | `CONFIG_ERROR`      | Configuration missing, not loadable or invalid                                                                         |
-| 110  | `TIMEOUT`           | Operation timed out                                                                                                    |
-| 130  | `SIGNAL_INT`        | Interrupted (SIGINT/Ctrl+C)                                                                                            |
-| 141  | `BROKEN_PIPE`       | Output pipe closed                                                                                                     |
-| 143  | `SIGNAL_TERM`       | Terminated (SIGTERM)                                                                                                   |
+Under `--json-bare` an input or configuration error still prints `{"error": "<reason>"}` on stdout;
+a click usage error (bad option type, unknown option, `--json` with `--json-bare`) prints no JSON.
+The `ExitCode` enum in `adapters/cli/exit_codes.py` also names the errno-derived codes (13, 22, 110)
+and the signal codes (130, 141, 143) used by the framework.
 
 ---
 
@@ -131,7 +137,7 @@ POSIX-conventional exit codes defined in `adapters/cli/exit_codes.py`:
 
 ### Root Command
 
-**Command:** `btx-jev-judge`
+**Command:** `jev-judge` (also `btx-jev-judge`)
 
 | Option                         | Description                                 |
 |--------------------------------|---------------------------------------------|
@@ -139,7 +145,47 @@ POSIX-conventional exit codes defined in `adapters/cli/exit_codes.py`:
 | `--traceback / --no-traceback` | Show full Python traceback on errors        |
 | `--profile NAME`               | Load configuration from a named profile     |
 | `--set SECTION.KEY=VALUE`      | Override configuration setting (repeatable) |
+| `--env-file FILE`              | Explicit `.env` file (skips upward search)  |
 | `-h, --help`                   | Show help and exit                          |
+
+### run
+
+Judge every item; one row per item is written to `--out`.
+
+| Option                | Description                                         |
+|-----------------------|-----------------------------------------------------|
+| `--items PATH`        | JSONL of `{"id": ..., "state": {...}}`  -  required |
+| `--questions PATH`    | JSON list of questions  -  required                 |
+| `--out PATH`          | JSONL rows, written as they arrive  -  required     |
+| `--pilot N`           | Judge only the first N items                        |
+| `--rate`, `--workers` | Override `judge.rate`, `judge.workers`              |
+| `--attempts`          | Override `judge.attempts`                           |
+| `--timeout`, `--cap`  | Override `judge.timeout`, `judge.cap`               |
+| `--model`             | Override `judge.model`                              |
+| `--json`              | `{ok, command, data, skipped}` envelope             |
+| `--json-bare`         | Data only, also on failure                          |
+
+**Exit codes:** 0, 1 (some row failed), 2, 78
+
+### summarize
+
+Distribution, uncertain rows and flat questions of a run.
+
+| Option                  | Description                                         |
+|-------------------------|-----------------------------------------------------|
+| `--rows PATH`           | JSONL rows written by `run`  -  required            |
+| `--band LOW HIGH`       | Override `summary.band_low` and `summary.band_high` |
+| `--min-confidence`      | Override `summary.min_confidence`                   |
+| `--json`, `--json-bare` | As for `run`                                        |
+
+**Exit codes:** 0, 1 (a question looks flat), 2 (unreadable or malformed rows file, bad flag), 78
+
+### check-key
+
+Reports whether a usable key is configured and where it came from; never prints the key. It does
+not read the configuration.
+
+**Exit codes:** 0 (present), 1 (none)
 
 ### info
 
@@ -171,7 +217,7 @@ Deploy default configuration to system or user directories.
 | `--dir-mode MODE`                  | Directory mode for every target (octal)                          |
 | `--file-mode MODE`                 | File mode for every target (octal)                               |
 
-**Exit codes:** 0, 1, 2 (usage error, including a refused `--dir-mode`/`--file-mode` or `--profile` name, and `--no-permissions` together with a mode), 13 (permission denied), 78 (lib_layered_config refused the permission settings: a configured one, which both `--dir-mode` and `--file-mode` or `--no-permissions` deploy past, or a `--set` of `lib_layered_config.default_permissions`)
+**Exit codes:** 0, 1, 2 (usage error, including a refused mode or profile name), 13 (permission denied), 78 (lib_layered_config refused the permission settings)
 
 ### config-generate-examples
 
@@ -183,44 +229,6 @@ Generate example configuration files.
 | `--force`           | Overwrite existing files      |
 
 **Exit codes:** 0, 1
-
-### send-email
-
-Send email using configured SMTP settings.
-
-| Option                               | Description                     |
-|--------------------------------------|---------------------------------|
-| `--to ADDRESS`                       | Recipient (repeatable)          |
-| `--subject TEXT`                     | Subject line  -  required       |
-| `--body TEXT`                        | Plain-text body                 |
-| `--body-html TEXT`                   | HTML body                       |
-| `--from ADDRESS`                     | Override sender                 |
-| `--attachment PATH`                  | File to attach (repeatable)     |
-| `--smtp-host HOST:PORT`              | Override SMTP host (repeatable) |
-| `--smtp-username USER`               | Override username               |
-| `--smtp-password PASS`               | Override password               |
-| `--use-starttls / --no-use-starttls` | Override STARTTLS               |
-| `--timeout SECONDS`                  | Override timeout                |
-
-**Exit codes:** 0, 2 (file not found, or usage error), 22 (invalid option value), 69 (SMTP failure), 78 (no SMTP hosts, an invalid `[email]` section, or configuration not loadable)
-
-### send-notification
-
-Send simple plain-text notification email.
-
-| Option                               | Description                     |
-|--------------------------------------|---------------------------------|
-| `--to ADDRESS`                       | Recipient (repeatable)          |
-| `--subject TEXT`                     | Subject  -  required            |
-| `--message TEXT`                     | Message  -  required            |
-| `--from ADDRESS`                     | Override sender                 |
-| `--smtp-host HOST:PORT`              | Override SMTP host (repeatable) |
-| `--smtp-username USER`               | Override username               |
-| `--smtp-password PASS`               | Override password               |
-| `--use-starttls / --no-use-starttls` | Override STARTTLS               |
-| `--timeout SECONDS`                  | Override timeout                |
-
-**Exit codes:** 0, 2 (usage error), 22 (invalid option value), 69 (SMTP failure), 78 (no SMTP hosts, an invalid `[email]` section, or configuration not loadable)
 
 ### logdemo
 
@@ -264,62 +272,35 @@ def validate_profile(profile: str, max_length: int | None = None) -> None:
 | Path traversal   | `/`, `\`, `..` rejected                              |
 | Control chars    | Rejected                                             |
 
-### Error Handling
-
-Raises `ValueError` with descriptive message on invalid input.
+Raises `ValueError` with a descriptive message on invalid input.
 
 ---
 
-## Email Configuration
+## Judge Configuration
 
-### EmailConfig Fields
+`adapters/config/judge_settings.py` reads the `[judge]` and `[summary]` sections into two frozen
+Pydantic models that reject unknown keys (which keeps the API key out of configuration: a
+`judge.api_key` entry is refused with exit 78). A CLI flag wins over every configuration layer.
+`tests/test_module_reference_sync.py` keeps the two tables below in step with the models.
 
-The `EmailConfig` Pydantic model (`adapters/email/sender.py`) provides validated, immutable email configuration:
+### RunConfig
 
-| Field                          | Type                | Default | Description                                                                                                   |
-|--------------------------------|---------------------|---------|---------------------------------------------------------------------------------------------------------------|
-| `smtp_hosts`                   | `list[str]`         | `[]`    | SMTP servers in `host[:port]` format                                                                          |
-| `from_address`                 | `str \| None`       | `None`  | Default sender address                                                                                        |
-| `recipients`                   | `list[str]`         | `[]`    | Default recipient addresses                                                                                   |
-| `smtp_username`                | `str \| None`       | `None`  | SMTP authentication username; ASCII only                                                                      |
-| `smtp_password`                | `SecretStr \| None` | `None`  | SMTP authentication password; unwrap with `.get_secret_value()`; ASCII only, an integer is read as its digits |
-| `use_starttls`                 | `bool`              | `True`  | Enable STARTTLS negotiation                                                                                   |
-| `timeout`                      | `float`             | `30.0`  | Socket timeout in seconds                                                                                     |
-| `raise_on_missing_attachments` | `bool`              | `True`  | Raise on missing attachment files                                                                             |
-| `raise_on_invalid_recipient`   | `bool`              | `True`  | Raise on invalid recipient addresses                                                                          |
+| Field      | Type    | Default        | Constraint |
+|------------|---------|----------------|------------|
+| `rate`     | `float` | `20.0`         | `> 0`      |
+| `workers`  | `int`   | `8`            | `>= 1`     |
+| `attempts` | `int`   | `4`            | `>= 1`     |
+| `timeout`  | `float` | `30.0`         | `> 0`      |
+| `cap`      | `int`   | `60000`        | `>= 100`   |
+| `model`    | `str`   | `'jev-latest'` | non-empty  |
 
-### Attachment Security Fields
+### SummaryConfig
 
-| Field                                    | Type                      | Default      | Description                                   |
-|------------------------------------------|---------------------------|--------------|-----------------------------------------------|
-| `attachment_allowed_extensions`          | `frozenset[str] \| None`  | `None`       | Whitelist of allowed extensions               |
-| `attachment_blocked_extensions`          | `frozenset[str] \| None`  | `None`       | Blacklist of blocked extensions               |
-| `attachment_allowed_directories`         | `frozenset[Path] \| None` | `None`       | Whitelist of allowed source directories       |
-| `attachment_blocked_directories`         | `frozenset[Path] \| None` | `None`       | Blacklist of blocked directories              |
-| `attachment_max_size_bytes`              | `int \| None`             | `26_214_400` | Maximum file size (25 MiB), `None` to disable |
-| `attachment_allow_symlinks`              | `bool`                    | `False`      | Whether symlinks are permitted                |
-| `attachment_raise_on_security_violation` | `bool`                    | `True`       | Raise or skip on security violation           |
-
-**Notes:**
-- `None` values use `btx_lib_mail`'s OS-specific defaults (blocked extensions/directories)
-- Empty arrays `[]` in TOML configuration are coerced to `None`
-- `max_size_bytes = 0` is coerced to `None` (disable size checking)
-- String paths are converted to `Path` objects during validation
-
-### Configuration Loading
-
-`load_email_config_from_dict()` handles the nested `[email.attachments]` TOML section:
-
-```python
-# TOML structure:
-# [email]
-# smtp_hosts = ["smtp.example.com:587"]
-# [email.attachments]
-# max_size_bytes = 10485760
-
-config = load_email_config_from_dict(config_dict)
-# Flattens to: attachment_max_size_bytes = 10485760
-```
+| Field            | Type    | Default | Constraint                    |
+|------------------|---------|---------|-------------------------------|
+| `band_low`       | `float` | `0.2`   | `0` to `1`, below `band_high` |
+| `band_high`      | `float` | `0.8`   | `0` to `1`                    |
+| `min_confidence` | `float` | `0.6`   | `0` to `1`                    |
 
 ---
 
@@ -332,10 +313,11 @@ The `adapters/memory/` package provides lightweight implementations for testing:
 | Module              | Protocols Satisfied                                                         |
 |---------------------|-----------------------------------------------------------------------------|
 | `memory/config.py`  | `GetConfig`, `GetDefaultConfigPath`, `DeployConfiguration`, `DisplayConfig` |
-| `memory/email.py`   | `SendEmail`, `SendNotification`, `LoadEmailConfigFromDict`                  |
 | `memory/logging.py` | `InitLogging`                                                               |
 
-Use `composition.build_testing()` to wire all in-memory adapters.
+Use `composition.build_testing()` to wire them. The key lookup and the Jev client stay real,
+bound to the `env` and `home` the test passes, so a test reaches a loopback stub of Jev and never
+the developer's own key.
 
 ### Test Fixtures (conftest.py)
 
@@ -348,7 +330,3 @@ Use `composition.build_testing()` to wire all in-memory adapters.
 | `clear_config_cache`      | Clears LRU cache before tests                                                                                         |
 | `managed_traceback_state` | Resets/restores traceback configuration                                                                               |
 | `isolated_logging_state`  | Autouse: after every test, shuts the lib_log_rich runtime down and restores the root logger; yields that restore step |
-
----
-
-**Last Updated:** 2026-09-29 (config-deploy leaves permissions to lib_layered_config)

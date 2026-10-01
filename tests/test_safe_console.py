@@ -233,7 +233,9 @@ class TestSafeStreamProtectsRich:
 
     def test_rich_output_degrades_instead_of_raising(self) -> None:
         stream = _cp1252_stream()
-        Console(file=safe_console.safe_stream(stream), legacy_windows=False, width=80).print("check \u2713 done \u2265 90%")
+        Console(file=safe_console.safe_stream(stream), legacy_windows=False, width=80).print(
+            "check \u2713 done \u2265 90%"
+        )
         written = _read_back(stream)
         assert "[OK]" in written
         assert ">= 90%" in written

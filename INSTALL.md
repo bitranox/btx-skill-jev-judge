@@ -1,24 +1,15 @@
 # Installation Guide
 
-> The CLI stack uses `rich-click`, which bundles `rich` styling on top of click-style ergonomics.
+`btx-jev-judge` is a Python 3.10+ command-line tool published on PyPI. It installs two commands,
+`jev-judge` and `btx-jev-judge` (and `btx_jev_judge`), which are the same program. You also need a
+TypeSafe API key; see [Provide the key](#provide-the-key).
 
-This guide collects every supported method to install `btx_jev_judge`, including
-isolated environments and system package managers. Pick the option that matches your workflow.
+Using the Claude Code plugin instead? See "Install in Claude Code" in [README.md](README.md).
 
+## We recommend `uv`
 
-## We recommend `uv` to install the package
-
-### `uv` = Ultra-fast Python package manager
-
-> lightning-fast replacement for `pip`, `venv`, `pip-tools`, and `poetry`
-written in Rust, compatible with PEP 621 (`pyproject.toml`)
-
-### `uvx` = On-demand tool runner
-
-> runs tools temporarily in isolated environments without installing them globally
-
-
-## Install uv (if not already installed)
+`uv` is a fast Python package manager written in Rust, and `uvx` runs a tool in a temporary
+isolated environment without installing it.
 
 ```bash
 # macOS/Linux
@@ -27,116 +18,82 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-## One-shot run via uvx (no install needed)
+### Run once, nothing installed
 
 ```bash
-uvx btx_jev_judge@latest --help
+uvx --from btx-jev-judge jev-judge --help
 ```
 
-## Persistent install as CLI tool
+The package name and the command differ, so `--from` is needed.
+
+### Install on your PATH
 
 ```bash
-# install the CLI tool (isolated environment, added to PATH)
-uv tool install btx_jev_judge
-
-# upgrade to latest
-uv tool upgrade btx_jev_judge
+uv tool install btx-jev-judge
+uv tool upgrade btx-jev-judge
 ```
 
-## Install as project dependency
+### As a project dependency
 
 ```bash
 uv venv && source .venv/bin/activate   # Windows: .venv\Scripts\Activate.ps1
-uv pip install btx_jev_judge
+uv pip install btx-jev-judge
 ```
 
-## Verify installation
-
-After any install method, confirm the CLI is available:
+## pip
 
 ```bash
-btx-jev-judge --version
-```
-
----
-
-## Installation via pip
-
-```bash
-# optional, install in a venv (recommended)
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-# install from PyPI
-pip install btx_jev_judge
-# optional install from GitHub
-pip install "git+https://github.com/bitranox/btx_jev_judge"
-# optional development install from local
-pip install -e ".[dev]"
-# optional install from local runtime only:
-pip install .
+source .venv/bin/activate              # Windows: .venv\Scripts\activate
+pip install btx-jev-judge
 ```
 
-## Per-User Installation (No Virtualenv) - from local
+Per-user install without a virtual environment:
 
 ```bash
-# install from PyPI
-pip install --user btx_jev_judge
-# optional install from GitHub
-pip install --user "git+https://github.com/bitranox/btx_jev_judge"
-# optional install from local
-pip install --user .
+pip install --user btx-jev-judge
 ```
 
-> Note: This respects PEP 668. Avoid using it on system Python builds marked as
-> "externally managed". Ensure `~/.local/bin` (POSIX) is on your PATH so the CLI is available.
+This respects PEP 668: avoid it on a system Python marked "externally managed", and make sure
+`~/.local/bin` is on your PATH.
 
-## pipx (Isolated CLI-Friendly Environment)
+## pipx
 
 ```bash
-# install pipx via pip
-python -m pip install pipx
-# optional install pipx via apt
-sudo apt install python-pipx
-# install via pipx from PyPI
-pipx install btx_jev_judge
-# optional install via pipx from GitHub
-pipx install "git+https://github.com/bitranox/btx_jev_judge"
-# optional install from local
-pipx install .
-pipx upgrade btx_jev_judge
-# install from Git tag
-pipx install "git+https://github.com/bitranox/btx_jev_judge@v1.1.0"
+pipx install btx-jev-judge
+pipx upgrade btx-jev-judge
 ```
 
-## From Build Artifacts
+## From Git or a local clone
+
+```bash
+pip install "git+https://github.com/bitranox/btx-skill-jev"
+pip install .                 # from a clone, runtime only
+pip install -e ".[dev]"       # from a clone, with the development tools
+```
+
+## From build artifacts
 
 ```bash
 python -m build
 pip install dist/btx_jev_judge-*.whl
-pip install dist/btx_jev_judge-*.tar.gz   # sdist
 ```
 
-## Poetry or PDM Managed Environments
+## Provide the key
+
+The key comes from the `TYPESAFE_API_KEY` environment variable, else from
+`~/.credentials/typesafe.key`. Get one at https://console.typesafe.ai/keys. To create the file
+(mode 600, which is required on POSIX), run this and paste the key in with an editor:
 
 ```bash
-# Poetry
-poetry add btx_jev_judge     # as dependency
-poetry install                          # for local dev
-
-# PDM
-pdm add btx_jev_judge
-pdm install
+mkdir -p -m 700 ~/.credentials && install -m 600 /dev/null ~/.credentials/typesafe.key
 ```
 
-## Install Directly from Git
+## Verify
 
 ```bash
-pip install "git+https://github.com/bitranox/btx_jev_judge"
+jev-judge --version
+jev-judge check-key        # exit 0 and "key: present (...)" when a usable key is found
 ```
 
-## System Package Managers (Optional Distribution Channels)
-
-- Use [fpm](https://fpm.readthedocs.io/) to repackage the Python wheel into `.deb` or `.rpm` for distribution via `apt` or `yum`/`dnf`.
-
-All methods register both the `btx_jev_judge` and
-`btx-jev-judge` commands on your PATH.
+`check-key` never prints the key.

@@ -1,213 +1,81 @@
 # Development
 
-## Make Targets
+The repository is two things at once: the Python package `btx_jev_judge` (PyPI `btx-jev-judge`)
+and a Claude Code plugin marketplace (`.claude-plugin/`, `skills/jev-judge/`). Its build, test and
+release tasks are run by [bmk](https://pypi.org/project/bmk/) through a generated `Makefile`.
 
-| Target                | Description                                                                                |
-|-----------------------|--------------------------------------------------------------------------------------------|
-| `help`                | Show help                                                                                  |
-| `install`             | Install package editable                                                                   |
-| `dev`                 | Install package with dev extras                                                            |
-| `test`                | Lint, type-check, run tests with coverage, upload to Codecov                               |
-| `run`                 | Run module CLI (requires dev install or src on PYTHONPATH)                                 |
-| `version-current`     | Print current version from pyproject.toml                                                  |
-| `bump`                | Bump version (updates pyproject.toml and CHANGELOG.md)                                     |
-| `bump-patch`          | Bump patch version (X.Y.Z -> X.Y.(Z+1))                                                    |
-| `bump-minor`          | Bump minor version (X.Y.Z -> X.(Y+1).0)                                                    |
-| `bump-major`          | Bump major version ((X+1).0.0)                                                             |
-| `clean`               | Remove caches, build artifacts, and coverage                                               |
-| `push`                | Run tests, prompt for/accept a commit message, create (allow-empty) commit, push to remote |
-| `build`               | Build wheel/sdist artifacts via `python -m build`                                          |
-| `coverage`            | Generate coverage reports                                                                  |
-| `testintegration`     | Run integration tests only (SMTP, external resources) [aliases: `testi`, `ti`]             |
-| `dependencies`        | Check and list project dependencies                                                        |
-| `dependencies-update` | Update dependencies to latest versions                                                     |
-| `menu`                | Interactive TUI to run targets and edit parameters (requires dev dep: textual)             |
+## Everyday targets
 
-### Target Parameters (env vars)
+`make help` is the authoritative list; it is generated from the Makefile itself. The ones you
+use most:
 
-- **Global**
-  - `PY` (default: `python3`) -- interpreter used to run scripts
-  - `PIP` (default: `pip`) -- pip executable used by bootstrap/install
+| Target                 | What it does                                                           |
+|------------------------|------------------------------------------------------------------------|
+| `make test`            | The whole gate: format, lint, types, import contracts, tests, coverage |
+| `make test-all`        | Tests and types on every supported Python version                      |
+| `make testintegration` | Only the tests marked `integration`                                    |
+| `make push`            | Run the gate, commit, push                                             |
+| `make bump-patch`      | Bump the version (`bump-minor`, `bump-major` likewise)                 |
+| `make release`         | Tag the current version and create the release                         |
+| `make run`             | Run the CLI                                                            |
 
-- **install**
-  - No specific parameters (respects `PY`, `PIP`).
+The Makefile is rewritten by bmk on every run, so do not edit it. `bmk --help` documents the CLI
+behind it.
 
-- **dev**
-  - No specific parameters (respects `PY`, `PIP`).
+## The gate
 
-- **test**
-  - `COVERAGE=on|auto|off` (default: `on`) -- controls pytest coverage run and Codecov upload
-  - `SKIP_BOOTSTRAP=1` -- skip auto-install of dev tools if missing
-  - `TEST_VERBOSE=1` -- echo each command executed by the test harness
-  - Also respects `CODECOV_TOKEN` when uploading to Codecov
+`make test` runs ruff (lint and format check, Markdown included), pyright in strict mode,
+`import-linter`, and pytest with branch coverage. It must pass before every push. Unset a stray
+`VIRTUAL_ENV` first (`env -u VIRTUAL_ENV make test`) so bmk uses the project `.venv`.
 
-- **run**
-  - No parameters via `make` (always shows `--help`). For custom args: `python scripts/run_cli.py -- <args>`.
+Pytest markers: `os_agnostic`, `os_windows`, `os_macos`, `os_posix`, `os_linux` say where a test
+runs; `local_only` tests are skipped in CI; `integration` tests need external resources and run
+through `make testintegration`.
 
-- **version-current**
-  - No parameters
+## Layout and layering
 
-- **bump**
-  - `VERSION=X.Y.Z` -- explicit target version
-  - `PART=major|minor|patch` -- semantic part to bump (default if `VERSION` not set: `patch`)
-
-- **bump-patch** / **bump-minor** / **bump-major**
-  - No parameters; shorthand for `make bump PART=...`
-
-- **clean**
-  - No parameters
-
-- **push**
-  - `REMOTE=<name>` (default: `origin`) -- git remote to push to
-  - `COMMIT_MESSAGE="..."` -- optional commit message used by the automation; if unset, the target prompts (or uses the default `chore: update` when non-interactive).
-
-- **build**
-  - No parameters via `make`. Advanced: call the script directly, e.g. `python scripts/build.py --no-conda --no-nix`.
-
-- **release**
-  - `REMOTE=<name>` (default: `origin`) -- git remote to push to
-  - Advanced (via script): `python scripts/release.py --retries 5 --retry-wait 3.0`
-
-## Interactive Menu (Textual)
-
-`make menu` launches a Textual-powered TUI to browse targets, edit parameters, and run them with live output.
-
-Install dev extras if you haven't:
-
-```bash
-pip install -e .[dev]
+```text
+src/btx_jev_judge/
+  domain/        questions, items, answers, rows, redaction, summary (no I/O)
+  application/   the judge use case and the port protocols
+  adapters/      cli, jev (HTTP client), key, files, config, logging, memory
+  composition/   wires adapters to ports
+  entry.py       console-script entry point
 ```
 
-Run the menu:
+`import-linter` enforces two contracts from `pyproject.toml`: the layers
+(composition, then adapters, then application, then domain, each importing only downward) and a
+pure domain. `docs/systemdesign/module_reference.md` maps every module.
 
-```bash
-make menu
-```
+## Testing approach
 
-### Target Details
+Tests drive real seams instead of patching internals:
 
-- `test`: single entry point for local CI -- runs ruff lint + format check, pyright, pytest (including doctests) with coverage (enabled by default), and uploads coverage to Codecov if configured (reads `.env`).
-  - Auto-bootstrap: `make test` will try to install dev tools (`pip install -e .[dev]`) if `ruff`/`pyright`/`pytest` are missing. Set `SKIP_BOOTSTRAP=1` to skip this behavior.
-- `build`: creates wheel/sdist artifacts.
-- `version-current`: prints current version from `pyproject.toml`.
-- `bump`: updates `pyproject.toml` version and inserts a new section in `CHANGELOG.md`. Use `VERSION=X.Y.Z make bump` or `make bump-minor`/`bump-major`/`bump-patch`.
-- Additional scripts (`pipx-*`, `uv-*`, `which-cmd`, `verify-install`) provide install/run diagnostics.
+- The Jev client talks to a loopback HTTP stub server. `JEV_JUDGE_BASE_URL` is honoured only for a
+  loopback host, which is what makes this possible without touching the real API.
+- The CLI is driven with `click.testing.CliRunner`.
+- The judge use case receives a fake `JudgeClient`.
+- `composition.build_testing(env=..., home=...)` wires the in-memory configuration and logging
+  adapters (`adapters/memory/`) with the real key lookup and Jev client, bound to the environment
+  and home directory the test supplies. A test never sees the developer's own key or home.
 
-## Running Integration Tests
+## Metadata
 
-Some tests require external resources (SMTP servers, databases) and are excluded from the default test run. These are marked with `@pytest.mark.local_only`.
+`pyproject.toml` is the source of truth. `src/btx_jev_judge/__init__conf__.py` holds static copies
+that a test keeps in sync, so runtime code never queries packaging metadata. Bump versions with
+`make bump-*`; it also updates `.claude-plugin/plugin.json`.
 
-### Quick Reference
+## Dependency auditing
 
-| Command                | What it runs                                   |
-|------------------------|------------------------------------------------|
-| `make test`            | All tests EXCEPT `local_only` (default for CI) |
-| `make testintegration` | ONLY `local_only` integration tests            |
-| `pytest tests/`        | ALL tests (no marker filter)                   |
+`make test` runs `pip-audit`. Fix a finding by raising the dependency floor in `pyproject.toml`
+with an inline comment that names the CVE.
 
-### Email Integration Tests
+## Releasing
 
-To run email tests that actually send messages:
+1. `make test`, then `make bump-patch` (or `-minor`) and commit.
+2. `make push`, and wait for CI on that commit to finish green.
+3. `make release` tags the version in `pyproject.toml` and creates the GitHub release; the release
+   workflow publishes to PyPI. It tags the version that is already committed and does not bump.
 
-1. **Create a `.env` file** in the project root with your SMTP settings:
-
-```bash
-# .env (copy from .env.example)
-EMAIL__SMTP_HOSTS=smtp.example.com:587
-EMAIL__FROM_ADDRESS=sender@example.com
-EMAIL__RECIPIENTS=recipient@example.com
-EMAIL__SMTP_USERNAME=your_username
-EMAIL__SMTP_PASSWORD=your_password
-```
-
-   Alternatively, use `--env-file` to point at an existing `.env` file:
-
-```bash
-btx-jev-judge --env-file /path/to/my/.env send-notification --subject "Test" --message "Hello"
-```
-
-2. **Run the integration tests**:
-
-```bash
-make testintegration
-```
-
-3. **Or run specific email tests**:
-
-```bash
-pytest tests/test_cli_email_smtp.py -v
-```
-
-### Adding New Integration Tests
-
-Mark tests that require external resources:
-
-```python
-@pytest.mark.local_only
-@pytest.mark.os_agnostic
-def test_real_external_service(...):
-    """Integration test requiring external service."""
-    ...
-```
-
-These tests will be skipped in CI but run with `make testintegration`.
-
-### SMTP Test Seam
-
-`send_email()` and `send_notification()` accept an optional `transport` argument, forwarded
-to `btx_lib_mail`'s `Transport` port. Unit tests inject a double (`RecordingTransport` in
-`tests/test_mail.py`) rather than patching `smtplib.SMTP`, and assert on delivery intent:
-envelope sender, recipients, host failover order, credentials, and the composed payload.
-
-Do not go back to monkeypatching `smtplib`. btx_lib_mail streams the message over the wire
-protocol itself (MAIL/RCPT plus DATA or BDAT), so a `MagicMock` does not honour the contract
-and breaks whenever the library changes delivery strategy.
-
-The `SendEmail` / `SendNotification` ports in `application/ports.py` deliberately omit
-`transport`: a delivery mechanism is an adapter concern, not something the application layer
-should see. The adapter still satisfies the Protocol because an extra keyword parameter with
-a default is structurally compatible. Do not add `transport` to the port.
-
-## Development Workflow
-
-```bash
-make test                 # ruff + pyright + pytest + coverage (default ON)
-SKIP_BOOTSTRAP=1 make test  # skip auto-install of dev deps
-COVERAGE=off make test       # disable coverage locally
-COVERAGE=on make test        # force coverage and generate coverage.xml/codecov.xml
-```
-
-**Automation notes**
-
-- `make push` runs the full test suite (`python -m scripts.test`), checks pip and dependency versions, prompts for a commit message (or reads `COMMIT_MESSAGE="..."`), and always pushes, creating an empty commit when there are no staged changes. The Textual menu (`make menu -> push`) shows the same behaviour via an input field.
-
-### Versioning & Metadata
-
-- Single source of truth for package metadata is `pyproject.toml` (`[project]`).
-- The library reads its own metadata from static constants (see `src/btx_jev_judge/__init__conf__.py`).
-- Do not duplicate the version in code; bump only `pyproject.toml` and update `CHANGELOG.md`.
-- Console script name is discovered from entry points; defaults to `btx-jev-judge`.
-
-### Dependency Auditing
-
-- `make test` invokes `pip-audit` to check for known vulnerabilities. If pip-audit reports vulnerabilities, address them by pinning fixed versions in `[project.optional-dependencies.dev]`.
-
-### CI & Publishing
-
-GitHub Actions workflows are included:
-
-- `.github/workflows/ci.yml` -- lint/type/test, build wheel/sdist, and verify pipx and uv installs (CI-only; no local install required).
-- `.github/workflows/release.yml` -- on tags `v*.*.*`, builds artifacts and publishes to PyPI when `PYPI_API_TOKEN` secret is set.
-
-To publish a release:
-1. Bump `pyproject.toml` version and update `CHANGELOG.md`.
-2. Tag the commit (`git tag v0.1.1 && git push --tags`).
-3. Ensure `PYPI_API_TOKEN` secret is configured in the repo.
-4. Release workflow uploads wheel/sdist to PyPI.
-
-### Local Codecov uploads
-
-- `make test` (with coverage enabled) generates `coverage.xml` and `codecov.xml`, then attempts to upload via the Codecov CLI or the bash uploader.
-- For private repos, set `CODECOV_TOKEN` (see `.env.example`) or export it in your shell.
-- For public repos, a token is typically not required.
-- Because Codecov requires a revision, the test harness commits (allow-empty) immediately before uploading. Remove or amend that commit after the run if you do not intend to keep it.
+`.github/` is managed by an external CI template; never edit it in this repository.
+`main` is public and append-only: no force-push, no history rewriting.

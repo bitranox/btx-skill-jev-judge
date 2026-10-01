@@ -8,13 +8,13 @@
 #        - /etc/xdg/btx-jev-judge/config.[toml|yaml|json]
 #        - /etc/xdg/btx-jev-judge/config.d/*.[toml|yaml|json]
 #   - Host-level config (macOS):
-#        - /Library/Application Support/bitranox/Bitranox Template Py Cli/config.[toml|yaml|json]
-#        - /Library/Application Support/bitranox/Bitranox Template Py Cli/config.d/*.[toml|yaml|json]
+#        - /Library/Application Support/bitranox/btx_jev_judge/config.[toml|yaml|json]
+#        - /Library/Application Support/bitranox/btx_jev_judge/config.d/*.[toml|yaml|json]
 #   - User-level config (Linux):
 #        - ~/.config/btx-jev-judge/config.[toml|yaml|json]
 #        - ~/.config/btx-jev-judge/config.d/*.[toml|yaml|json]
 #   - User-level config (macOS):
-#        - ~/Library/Application Support/bitranox/Bitranox Template Py Cli/config.[toml|yaml|json]
+#        - ~/Library/Application Support/bitranox/btx_jev_judge/config.[toml|yaml|json]
 #   - .env files: .env in current directory or parent directories
 #   - Environment variables: Prefix with BTX_JEV_JUDGE___
 #
