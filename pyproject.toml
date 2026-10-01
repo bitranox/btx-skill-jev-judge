@@ -1,6 +1,6 @@
 [project]
 name = "btx_skill_jev_judge"
-version = "0.2.0"
+version = "0.2.1"
 description = "Batch-judge items with the TypeSafe Jev API: run, summarize and check-key from the command line"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -51,7 +51,7 @@ dev = [
   "pytest>=9.1.1",
   "pytest-cov>=7.1.0",
   "hypothesis>=6.168.3",
-  "ruff>=0.16.9",
+  "ruff>=0.16.10",
   "pyright[nodejs]>=1.1.414",
   "bandit>=1.9.4",
   "build>=1.6.1",
@@ -101,8 +101,6 @@ include = [
 [tool.ruff]
 line-length = 120
 target-version = "py310"
-# The pre-package script ships until the skill moves to the CLI; it is not held to the package gate.
-extend-exclude = ["skills/jev-judge/scripts"]
 
 [tool.ruff.lint]
 select = [
@@ -156,7 +154,7 @@ runtime-evaluated-base-classes = ["pydantic.BaseModel"]
 
 [tool.pyright]
 typeCheckingMode = "strict"
-exclude = ["skills/jev-judge/scripts", "**/.venv*", "**/node_modules"]
+exclude = ["**/.venv*", "**/node_modules"]
 extraPaths = [
   "src",
 ]

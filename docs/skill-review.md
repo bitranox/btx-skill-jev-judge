@@ -98,3 +98,61 @@ freshly created empty keyfile then produced the unhelpful reason "keyfile"; `che
 The body is about 960 words, over the 500-word target for a technique skill. Each section closes a
 gap a probe reported, and the body loads only when the skill is invoked; the always-loaded
 description is 425 characters.
+
+## Re-check for the switch to uvx (0.2.1)
+
+The skill stops bundling `scripts/jev_judge.py` and calls the published CLI through
+`uvx --from 'btx-skill-jev-judge>=0.2.0' jev-judge`. The floor is 0.2.0 because PyPI already
+served it when the skill text changed, and 0.2.0 has every command and option the text names.
+Same method as above: text-only sonnet probes, each ending with a "Skill gaps" section.
+
+Contamination: every probe inherits this repository's CLAUDE.md, which names the `uvx` form and
+the `.env` key source. The RED therefore shows what the OLD text gets wrong despite that help.
+
+### RED (old text, scenario on the changed lines)
+
+The situation: the key is only in the project `.env`, the base directory holds only `SKILL.md`,
+`run` exits 78, the user asks for timing and for a per-machine rate default.
+
+| Behaviour on the old text                                                                                                                |
+|------------------------------------------------------------------------------------------------------------------------------------------|
+| Noticed the missing script, switched to `uvx` from the inherited CLAUDE.md, guessed a floor of `>=0.2.1` (not on PyPI at the time)       |
+| Stored the command as `J='uvx --from "btx-skill-jev-judge>=0.2.1" jev-judge'`; executed, that form fails: uvx receives the double quotes |
+| Did not know a `.env` supplies the key; planned to move the key into the keyfile                                                         |
+| Exit 78 undocumented; inferred "config error" from sysexits                                                                              |
+| Quoted "about 100 ms" per request (measured p50 is 281 ms)                                                                               |
+| Could not set a per-machine rate default; "would not guess a flag name"                                                                  |
+| Unsure whether the full run overwrites the pilot's rows                                                                                  |
+
+### GREEN (new text)
+
+| Probe                               | Result                                                                                                                         |
+|-------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
+| Changed lines, five questions       | All five answered from the text with a direct quote: full prefix per line, `.env` honoured, 78 read correctly, rate via config |
+| Scenario 1 (400 issues, 30 bugs)    | Same flow as before: one `choice` with `none`, known yes/no first, pilot to `pilot.jsonl`, band, totals check per bug          |
+| Scenario 2 (12,000 log lines)       | Collapsed to shapes, computed retry-success per shape in code, Jev only above ~50 shapes                                       |
+| Scenario 3 (250 names, 900 catalog) | Shortlist of 8 in code, one pair per item with a 3-level `score`, recall check, two-"same" to hand list                        |
+| Quote-back on the REFACTOR fixes    | 5 of 5 quoted                                                                                                                  |
+
+Nothing the RED or the earlier GREEN runs produced went missing.
+
+| Gap reported                                                                        | Decision                                                                                     |
+|-------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| How to find which source set the setting behind exit 78                             | Closed: `config --section judge` shows each value's layer and file, and redacts secrets      |
+| `config-deploy` shown without the `uvx` prefix                                      | Closed: written in full                                                                      |
+| `noul` never defined; what `value` holds per type                                   | Closed: one line per type in Question design                                                 |
+| Where the cost comes from                                                           | Closed: `run` reports answered, failed ids and cost                                          |
+| Very long issue bodies; `labels` in or out; best-pair threshold; shortlist method   | Declined: task-specific choices, not skill guidance                                          |
+| Repo CLAUDE.md says the `uvx` form applies "from 0.2.1 on" while the floor is 0.2.0 | Declined: 0.2.1 is the plugin release that switches; the floor is the package version needed |
+
+### Executed
+
+- The quoted-prefix form, `uvx --from 'btx-skill-jev-judge>=0.2.0' jev-judge --version`, prints
+  `0.2.0`; the variable form the RED wrote fails with `Failed to parse` (exit 2).
+- The `check-key` and `summarize` lines, extracted from SKILL.md with grep and run unchanged:
+  exit 0.
+- A key only in a parent directory's `.env`: `check-key` finds it; with none, exit 1.
+- `BTX_SKILL_JEV_JUDGE___JUDGE__RATE=5` shows as `rate = 5` from layer `env` in
+  `config --section judge`; a `judge.api_key` setting makes `run` exit 78.
+- `config-deploy --target user` in an empty home writes `config.d/60-judge.toml` with `[judge]`
+  and `[summary]`.

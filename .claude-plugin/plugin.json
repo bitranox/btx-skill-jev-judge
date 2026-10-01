@@ -1,7 +1,7 @@
 {
   "name": "btx-skill-jev-judge",
-  "description": "Hand a bounded judgment repeated over many items (label, triage, match, score, yes/no) to TypeSafe's Jev from a tested script instead of reading every item into context or looping an LLM per item. Ships the jev-judge skill and its uv-run batch jig: redaction before sending, a request-rate limit, rate-limit retries, a pilot mode and a flat-question check.",
-  "version": "0.1.0",
+  "description": "Hand a bounded judgment repeated over many items (label, triage, match, score, yes/no) to TypeSafe's Jev through the tested jev-judge CLI instead of reading every item into context or looping an LLM per item. Ships the jev-judge skill; the CLI (PyPI btx-skill-jev-judge, run through uvx) redacts secrets before sending, limits the request rate, retries rate limits, and has a pilot mode and a flat-question check.",
+  "version": "0.2.1",
   "author": {
     "name": "bitranox"
   },

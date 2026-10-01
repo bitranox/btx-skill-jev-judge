@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file following
 the [Keep a Changelog](https://keepachangelog.com/) format.
 
+## [Unreleased]
+
+## [0.2.1] 2026-10-01
+
+### Changed
+- The `jev-judge` skill now runs the published CLI through
+  `uvx --from 'btx-skill-jev-judge>=0.2.0' jev-judge` instead of a script bundled with the
+  plugin. The skill text documents exit code 78, the `.env` key source, where a configuration
+  value came from (`config --section judge`), per-machine defaults (`config-deploy --target user`),
+  what `value` holds for each question type, and a separate `--out` for the pilot, since `run`
+  overwrites its output file. The latency figure is the measured one (about 300 ms per request).
+
+### Removed
+- The bundled script `skills/jev-judge/scripts/jev_judge.py`; the package replaces it.
+
 ## [0.2.0] 2026-10-01
 
 ### Added

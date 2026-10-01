@@ -6,13 +6,14 @@ description: Use when the same bounded judgment has to be made over many items d
 # jev-judge
 
 When the judgment is the SAME bounded question per item, write it once as a Jev question and let
-the bundled script ask it per item, instead of reading every item into context. Jev (TypeSafe)
-returns a typed answer - probability of yes, one option of a set, or a position on a scale - in
-about 100 ms at $0.042 per million input tokens: hundreds of items cost under one cent.
+the `jev-judge` command ask it per item, instead of reading every item into context. Jev
+(TypeSafe) returns a typed answer - probability of yes, one option of a set, or a position on a
+scale - in about 300 ms per request, 8 requests in parallel by default, at $0.042 per million
+input tokens: hundreds of items take seconds and cost under one cent.
 
 You keep the parts only you can do: the question, the evidence, the uncertain rows. Do not write
-your own Jev client or re-read the TypeSafe API docs; the script handles the API, Jev's rate limit,
-retries and secret redaction.
+your own Jev client or re-read the TypeSafe API docs; `jev-judge` handles the API, Jev's rate
+limit, retries and secret redaction.
 
 ## When not to use it
 
@@ -35,10 +36,11 @@ retries and secret redaction.
    field.
 3. **Write `questions.json`** (Question design). Several questions about the same item share one
    request.
-4. **Pilot:** `run --pilot 10` judges the first ten lines, so put at least one item you KNOW is
-   a yes and one you know is a no among them. Read the ten rows against their items. If you would
-   have answered more than one differently, fix the question or the state, not the threshold. If
-   two rewrites still fail the pilot, Jev is the wrong tool here: say so and judge another way.
+4. **Pilot:** `run --pilot 10 --out pilot.jsonl` judges the first ten lines, so put at least one
+   item you KNOW is a yes and one you know is a no among them. Read the ten rows against their
+   items. If you would have answered more than one differently, fix the question or the state, not
+   the threshold. If two rewrites still fail the pilot, Jev is the wrong tool here: say so and
+   judge another way.
 5. **Run everything, then `summarize`.** Exit 1 means a FLAT question (every item got about the
    same answer): a broken question until you have shown the items really are alike.
 6. **Decide with a band, not one cut.** `summarize` lists as "read by hand" every noul between 0.2
@@ -50,6 +52,8 @@ retries and secret redaction.
 
 ## Question design
 
+- Three types: `noul` (yes/no; `value` is the probability of yes), `choice` (`value` is the chosen
+  `criteria` key) and `score` (a position on the ordered `criteria` list).
 - `instructions` carries the whole question; the question `id` is never shown to the model. Refer
   to state fields as backticked paths (`title`, `candidates[0]`), and only to fields every item has.
 - Jev reads literally: state the exact condition, put boundary cases in `criteria`.
@@ -76,30 +80,41 @@ retries and secret redaction.
 
 ## Commands
 
-`<skill-dir>` is this skill's base directory. uv fetches Python and the dependencies on first use:
+`jev-judge` is the PyPI package `btx-skill-jev-judge`; `uvx` fetches it, Python and the
+dependencies on first use and caches them. Type the prefix in full on every line, single quotes
+included: unquoted, the shell reads `>=` as a redirection, and stored in a variable the quotes
+reach `uvx` and it refuses the name.
 
 ```bash
-J="uv run <skill-dir>/scripts/jev_judge.py"
-$J check-key
-$J run --items items.jsonl --questions questions.json --out rows.jsonl --pilot 10
-$J run --items items.jsonl --questions questions.json --out rows.jsonl
-$J summarize --rows rows.jsonl
+uvx --from 'btx-skill-jev-judge>=0.2.0' jev-judge check-key
+uvx --from 'btx-skill-jev-judge>=0.2.0' jev-judge run --items items.jsonl --questions questions.json --out pilot.jsonl --pilot 10
+uvx --from 'btx-skill-jev-judge>=0.2.0' jev-judge run --items items.jsonl --questions questions.json --out rows.jsonl
+uvx --from 'btx-skill-jev-judge>=0.2.0' jev-judge summarize --rows rows.jsonl
 ```
 
-`$J <command> --help` lists every option; `--json` gives an `{ok, command, data, skipped}`
-envelope. Exit codes: 0 yes, 1 no (a row failed / a question is flat / no key), 2 usage or IO
-error. A row in `rows.jsonl`: `id`, `ok`, `answers` (`{qid: {type, value, probabilities,
+`run` overwrites `--out` and reports answered, failed ids and cost. `<command> --help` lists every
+option (`--rate`, `--workers`, `--band`, ...); `--json` gives an `{ok, command, data, skipped}`
+envelope. Exit codes: 0 yes, 1 no (a row failed / a question is flat / no key), 2 usage, input or
+IO error, 78 broken configuration: stderr names the setting, and `config --section judge` shows
+the layer each value came from (`defaults`, `user`, `dotenv`, `env`, with the file); fix it there,
+not on the command line. A row: `id`, `ok`, `answers` (`{qid: {type, value, probabilities,
 confidence}}`), and `reason` when it failed.
 
 ## Setup
 
-The key comes from `TYPESAFE_API_KEY`, else `~/.credentials/typesafe.key` (mode 600). Keys:
-https://console.typesafe.ai/keys. Have the user run this, then paste the key in with an editor;
-never ask for it in chat:
+The key comes from an exported `TYPESAFE_API_KEY`, else a `TYPESAFE_API_KEY=` line in a `.env` in
+the current directory or a parent, else `~/.credentials/typesafe.key` (mode 600). It is never a
+configuration setting. Keys: https://console.typesafe.ai/keys. If none is set up, have the user
+run this, then paste the key in with an editor; never ask for it in chat and never read it out:
 
 ```bash
 mkdir -p -m 700 ~/.credentials && install -m 600 /dev/null ~/.credentials/typesafe.key
 ```
+
+Per-machine defaults (e.g. a lower `rate`): `uvx --from 'btx-skill-jev-judge>=0.2.0' jev-judge
+config-deploy --target user` prints the files it writes; edit `[judge]` / `[summary]` in the one
+named `60-judge.toml`. Or set `BTX_SKILL_JEV_JUDGE___JUDGE__RATE=5` in the environment. A flag
+always wins.
 
 ## Related
 

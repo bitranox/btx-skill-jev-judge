@@ -10,7 +10,7 @@
     {
       "name": "btx-skill-jev-judge",
       "source": ".",
-      "description": "Batch typed judgments over many items with TypeSafe's Jev: a tested uv-run jig plus the question design, pilot and band decisions around it."
+      "description": "Batch typed judgments over many items with TypeSafe's Jev: the jev-judge CLI run through uvx, plus the question design, pilot and band decisions around it."
     }
   ]
 }
