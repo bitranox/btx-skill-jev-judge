@@ -11,7 +11,6 @@ dependencies = [
     "lib_cli_exit_tools>=2.3.4",
     "lib_log_rich>=6.3.7",
     "lib_layered_config>=6.1.0",
-    "btx_lib_mail>=2.0.0",
     "pydantic>=2.13.5",
     "orjson>=3.12.0",
 ]
@@ -134,7 +133,7 @@ select = [
 convention = "google"
 
 [tool.ruff.lint.flake8-type-checking]
-# The Pydantic models (EmailConfig, LoggingConfigModel)
+# The Pydantic models (LoggingConfigModel)
 # resolve their field annotations at model-build time, so their field-type imports
 # must stay at runtime even though the file uses ``from __future__ import annotations``.
 # Telling ruff about the Pydantic base keeps TC001/TC002/TC003 from moving those
@@ -153,7 +152,6 @@ runtime-evaluated-base-classes = ["pydantic.BaseModel"]
 # Protocols/adapters: many-param signatures by design
 "src/btx_jev_judge/application/*.py" = ["PLR0913"]
 "src/btx_jev_judge/adapters/config/*.py" = ["PLR0913"]
-"src/btx_jev_judge/adapters/email/*.py" = ["PLR0913"]
 "src/btx_jev_judge/adapters/memory/*.py" = ["PLR0913"]
 
 [tool.pyright]
@@ -174,7 +172,7 @@ markers = [
   "os_posix: test exercises behavior requiring POSIX semantics",
   "os_linux: test exercises Linux-only behavior",
   "local_only: tests that require the local dev environment (external resources, script composition); skipped in CI",
-  "integration: tests requiring external resources (SMTP, databases, APIs); run via 'bmk ti' or 'mktesti.sh'",
+  "integration: tests requiring external resources (databases, APIs); run via 'bmk ti' or 'mktesti.sh'",
 ]
 
 [tool.coverage.run]

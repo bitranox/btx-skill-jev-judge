@@ -12,45 +12,12 @@ class ConfigurationError(Exception):
 
     Example:
         >>> from btx_jev_judge.domain.errors import ConfigurationError
-        >>> err = ConfigurationError("No SMTP hosts configured")
+        >>> err = ConfigurationError("No API key configured")
         >>> str(err)
-        'No SMTP hosts configured'
-    """
-
-
-class DeliveryError(Exception):
-    """Email/notification delivery failed at SMTP level.
-
-    Raised when all configured SMTP hosts fail to accept the message.
-    Contains details about the delivery failure for logging and user feedback.
-
-    Example:
-        >>> from btx_jev_judge.domain.errors import DeliveryError
-        >>> err = DeliveryError("Connection refused by smtp.example.com:587")
-        >>> str(err)
-        'Connection refused by smtp.example.com:587'
-    """
-
-
-class InvalidRecipientError(ValueError):
-    """Email address validation failure.
-
-    Raised when a recipient address fails RFC 5321/5322 validation.
-    Inherits from ValueError so existing ``except ValueError`` handlers
-    continue to catch it during the migration period.
-
-    Example:
-        >>> from btx_jev_judge.domain.errors import InvalidRecipientError
-        >>> err = InvalidRecipientError("Invalid email: not-an-email")
-        >>> str(err)
-        'Invalid email: not-an-email'
-        >>> isinstance(err, ValueError)
-        True
+        'No API key configured'
     """
 
 
 __all__ = [
     "ConfigurationError",
-    "DeliveryError",
-    "InvalidRecipientError",
 ]

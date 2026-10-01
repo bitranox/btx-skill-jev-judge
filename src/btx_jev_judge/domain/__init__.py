@@ -16,17 +16,15 @@ from .behaviors import (
     build_greeting,
 )
 from .enums import DeployTarget, OutputFormat
-from .errors import ConfigurationError, DeliveryError, InvalidRecipientError
+from .errors import ConfigurationError
 
 __all__ = [
     # Behaviors
     "CANONICAL_GREETING",
     # Errors
     "ConfigurationError",
-    "DeliveryError",
     # Enums
     "DeployTarget",
-    "InvalidRecipientError",
     "OutputFormat",
     "build_greeting",
 ]

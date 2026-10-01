@@ -364,7 +364,7 @@ _PERMISSIONS_KEY: Final[str] = "default_permissions"
 
 #: How to deploy when the configured permission settings cannot be used. Both modes come
 #: first: --no-permissions leaves every mode to the umask, which can make a user file that
-#: holds the SMTP password readable by other accounts.
+#: holds secrets readable by other accounts.
 _DEPLOY_ANYWAY_HINT: Final[str] = (
     "Hint: to deploy anyway, pass both --dir-mode and --file-mode (the built-in modes are 700 and 600 "
     "for user, 755 and 644 for app and host); --no-permissions also deploys, but leaves every mode to "

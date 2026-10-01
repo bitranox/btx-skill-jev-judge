@@ -51,8 +51,6 @@ UNREADABLE = PermissionError(13, "Permission denied", "/etc/xdg/app/config.toml"
 #: that silently reads an empty configuration after a load failure.
 NEEDS_CONFIG: dict[str, list[str]] = {
     "config": ["config"],
-    "send-email": ["send-email", "--to", "a@example.com", "--subject", "s", "--body", "b"],
-    "send-notification": ["send-notification", "--to", "a@example.com", "--subject", "s", "--message", "m"],
 }
 RUNS_WITHOUT_CONFIG: dict[str, list[str]] = {
     "config-deploy": ["config-deploy", "--target", "user"],

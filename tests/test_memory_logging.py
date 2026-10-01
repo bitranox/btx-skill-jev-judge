@@ -81,7 +81,6 @@ _SERVICE_FIXTURES: dict[str, Callable[[Any], AppServices]] = {
     "inject_config_with_profile_capture": lambda make: make(Config({}, {}), [])(),
     "inject_deploy_with_profile_capture": lambda make: make(Path("config.toml"), [])(),
     "inject_deploy_configuration": lambda make: make(_deploy_nothing)(),
-    "email_cli_context": lambda make: make({}).factory(),
     "config_cli_context": lambda make: make({})(),
 }
 

@@ -23,8 +23,6 @@ from .commands import (
     cli_hello,
     cli_info,
     cli_logdemo,
-    cli_send_email,
-    cli_send_notification,
 )
 from .constants import CLICK_CONTEXT_SETTINGS, TRACEBACK_SUMMARY_LIMIT, TRACEBACK_VERBOSE_LIMIT
 from .context import (
@@ -55,8 +53,6 @@ __all__ = [
     "cli_hello",
     "cli_info",
     "cli_logdemo",
-    "cli_send_email",
-    "cli_send_notification",
     # Entry point
     "main",
     "restore_traceback_state",

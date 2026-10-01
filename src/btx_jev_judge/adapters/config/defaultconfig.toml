@@ -31,7 +31,6 @@
 #     MY_SECTION__SOME_KEY=some_value
 #     MY_SECTION__TIMEOUT=60.0
 #     LIB_LOG_RICH__CONSOLE_LEVEL=DEBUG
-#     EMAIL__SMTP_USERNAME=user@example.com
 #
 # ENVIRONMENT VARIABLES (require prefix):
 #   Format: PREFIX___SECTION__KEY=value
@@ -41,6 +40,5 @@
 #   Examples as environment variables:
 #     BTX_JEV_JUDGE___MY_SECTION__SOME_KEY=some_value
 #     BTX_JEV_JUDGE___LIB_LOG_RICH__CONSOLE_LEVEL=DEBUG
-#     BTX_JEV_JUDGE___EMAIL__SMTP_PASSWORD=secret
 #
 # Value coercion: "true"/"false" → bool, "null"/"none" → None, numbers → int/float

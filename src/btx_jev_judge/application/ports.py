@@ -5,14 +5,13 @@ matches the corresponding adapter function.  Existing module-level functions
 satisfy these protocols automatically via structural subtyping (PEP 544).
 
 System Role:
-    Sits between domain and adapters.  Infrastructure types (``Config``,
-    ``EmailConfig``) are imported under ``TYPE_CHECKING`` only so that
-    import-linter layer contracts remain satisfied at runtime.
+    Sits between domain and adapters.  Infrastructure types (``Config``) are imported under ``TYPE_CHECKING``
+    only so that import-linter layer contracts remain satisfied at runtime.
 """
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -20,7 +19,6 @@ if TYPE_CHECKING:
 
     from lib_layered_config import Config
 
-    from ..adapters.email.sender import EmailConfig
     from ..domain.enums import DeployTarget, OutputFormat
 
 
@@ -62,42 +60,6 @@ class DisplayConfig(Protocol):
     ) -> None: ...
 
 
-class SendEmail(Protocol):
-    """Send an email using configured SMTP settings."""
-
-    def __call__(
-        self,
-        *,
-        config: EmailConfig,
-        recipients: str | Sequence[str] | None = ...,
-        subject: str,
-        body: str = ...,
-        body_html: str = ...,
-        from_address: str | None = ...,
-        attachments: Sequence[Path] | None = ...,
-    ) -> bool: ...
-
-
-class SendNotification(Protocol):
-    """Send a simple plain-text notification email."""
-
-    def __call__(
-        self,
-        *,
-        config: EmailConfig,
-        recipients: str | Sequence[str] | None = ...,
-        subject: str,
-        message: str,
-        from_address: str | None = ...,
-    ) -> bool: ...
-
-
-class LoadEmailConfigFromDict(Protocol):
-    """Load EmailConfig from a configuration dictionary."""
-
-    def __call__(self, config_dict: Mapping[str, Any]) -> EmailConfig: ...
-
-
 class InitLogging(Protocol):
     """Initialize lib_log_rich runtime with the provided configuration."""
 
@@ -110,7 +72,4 @@ __all__ = [
     "GetConfig",
     "GetDefaultConfigPath",
     "InitLogging",
-    "LoadEmailConfigFromDict",
-    "SendEmail",
-    "SendNotification",
 ]

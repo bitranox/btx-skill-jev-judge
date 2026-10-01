@@ -1,6 +1,6 @@
 """``--dir-mode`` / ``--file-mode`` are validated before anything is written.
 
-The deployed configuration can hold SMTP credentials, so a mode reaches ``chmod`` only when
+The deployed configuration can hold secrets, so a mode reaches ``chmod`` only when
 it is a plain octal literal inside 0..0o7777 and is safe for such a file: no setuid, setgid
 or sticky bit, no group or world write, no execute bit on a file, and the owner keeps the
 access it needs (rwx on a directory, rw on a file). Group write matters as much as world

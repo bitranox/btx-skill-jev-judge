@@ -14,10 +14,10 @@ character '\\u2713'`` and the command exits non-zero -- after its real work has
 already succeeded, which is the part that misleads. ``click.echo`` does not
 protect against this; the exception propagates.
 
-Degrading at the SINK keeps the glyphs where they are wanted: an email body or
-a UTF-8 terminal still receives ``✓``, and only a stream that genuinely cannot
-encode it sees ``[OK]``. Callers therefore write the glyph they mean and never
-branch on the platform.
+Degrading at the SINK keeps the glyphs where they are wanted: a UTF-8 terminal
+still receives ``✓``, and only a stream that genuinely cannot encode it sees
+``[OK]``. Callers therefore write the glyph they mean and never branch on the
+platform.
 
 Contents
 --------
