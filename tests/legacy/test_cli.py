@@ -7,9 +7,8 @@ import json
 from pathlib import Path
 from typing import Any
 
-import pytest
-
 import jev_judge as jj
+import pytest
 from conftest import JevStub
 
 KEY = "tk_" + "c" * 40
@@ -41,9 +40,7 @@ def _main(argv: list[str], env: dict[str, str], home: Path) -> tuple[int, str]:
     return code, out.getvalue()
 
 
-def _run(
-    stub: JevStub, tmp_path: Path, items: list[dict[str, Any]], *extra: str
-) -> tuple[int, dict[str, Any], Path]:
+def _run(stub: JevStub, tmp_path: Path, items: list[dict[str, Any]], *extra: str) -> tuple[int, dict[str, Any], Path]:
     items_path, questions_path = _files(tmp_path, items)
     out = tmp_path / "rows.jsonl"
     code, text = _main(
@@ -198,11 +195,7 @@ def test_summarize_flags_a_noul_that_never_moves() -> None:
 
 
 def test_summarize_passes_a_noul_that_separates_and_lists_the_middle_band() -> None:
-    rows = (
-        [_row(f"lo{i}", 0.05) for i in range(6)]
-        + [_row(f"hi{i}", 0.95) for i in range(6)]
-        + [_row("mid", 0.5)]
-    )
+    rows = [_row(f"lo{i}", 0.05) for i in range(6)] + [_row(f"hi{i}", 0.95) for i in range(6)] + [_row("mid", 0.5)]
     summary = jj.summarize(rows)
     assert summary["flat"] == []
     assert summary["questions"]["q"]["uncertain"] == ["mid"]

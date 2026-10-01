@@ -1,28 +1,284 @@
-# Tool configuration only: this repo ships a Claude Code skill whose script is a PEP 723
-# file run with `uv run`, not an installable package.
+[project]
+name = "btx_jev_judge"
+version = "0.2.0"
+description = "Batch-judge items with the TypeSafe Jev API: run, summarize and check-key from the command line"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "rich-click>=1.9.9",
+    # Imported directly (adapters/cli/main.py, commands/config.py), not only through rich-click.
+    "click>=8.5.0",
+    "lib_cli_exit_tools>=2.3.4",
+    "lib_log_rich>=6.3.7",
+    "lib_layered_config>=6.1.0",
+    "btx_lib_mail>=2.0.0",
+    "pydantic>=2.13.5",
+    "orjson>=3.12.0",
+]
+license = { text = "MIT" }
+authors = [{ name = "bitranox", email = "bitranox@gmail.com" }]
+keywords = ["cli", "jev", "typesafe", "llm-judge", "batch", "claude-code-skill"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "License :: OSI Approved :: MIT License",
+  "Environment :: Console",
+  "Operating System :: OS Independent",
+  "Typing :: Typed",
+]
+
+# System packages required for CI runners (read by GitHub Actions workflow template)
+# Format: "apt_package_name" for Ubuntu, future: {"apt": "...", "brew": "...", "choco": "..."}
+[tool.ci]
+system-dependencies-ubuntu = []
+system-dependencies-macos = []
+system-dependencies-windows-pip = []
+system-dependencies-windows-choco = []
+os = ["ubuntu-latest", "windows-latest", "macos-latest"]
+
+[project.urls]
+Homepage = "https://github.com/bitranox/btx-skill-jev"
+Repository = "https://github.com/bitranox/btx-skill-jev.git"
+Issues = "https://github.com/bitranox/btx-skill-jev/issues"
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=9.1.1",
+  "pytest-cov>=7.1.0",
+  "hypothesis>=6.168.3",
+  "ruff>=0.16.9",
+  "pyright[nodejs]>=1.1.414",
+  "bandit>=1.9.4",
+  # 1.5.1 was yanked upstream (unintended breaking changes), so 1.5.0 is the newest usable
+  # release; a >=1.5.1 floor has ZERO candidates and makes this extra unresolvable.
+  "build>=1.6.1",
+  "twine>=7.0.0",
+  # codecov-cli is disabled, not dropped: it requires click<8.3.0, which drags click back to
+  # 8.2.1 - the version with CVE-2026-7246 (command injection in click.edit(), fixed in 8.3.3).
+  # Nothing else here caps click, so with this line active the audit gate goes red on every
+  # clean install. Leaving it off costs nothing: CI uploads coverage via codecov/codecov-action,
+  # not this CLI, and "bmk codecov" resolves codecovcli from PATH and only warns when absent.
+  # Re-enable once codecov-cli relaxes its click<8.3.0 pin.
+  # "codecov-cli>=11.2.8",
+  "pip-audit>=2.10.1",
+  "textual>=8.2.8",
+  "import-linter>=2.15",
+  "rtoml>=0.13.0",
+  "httpx2>=2.13.1",
+  # Transitive CVE pins
+  "click>=8.5.0",                # CVE-2026-7246
+  "jaraco-context>=6.1.2",       # CVE-2025-23949
+  "python-multipart>=0.0.32",    # CVE-2025-24486
+  "wheel>=0.48.0",               # CVE-2025-24049
+  "pynacl>=1.6.2",               # CVE-2025-69277
+  "urllib3>=2.8.0",              # CVE-2025-66471, CVE-2025-66418
+  "virtualenv>=21.14.2",         # CVE-2025-22702
+]
+
+[project.scripts]
+btx_jev_judge = "btx_jev_judge.entry:main"
+btx-jev-judge = "btx_jev_judge.entry:main"
+jev-judge = "btx_jev_judge.entry:main"
+
+[build-system]
+requires = ["hatchling>=1.32.4"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/btx_jev_judge"]
+include = [
+    "src/btx_jev_judge/py.typed",
+    "src/btx_jev_judge/adapters/config/defaultconfig.toml",
+    "src/btx_jev_judge/adapters/config/defaultconfig.d/*.toml",
+]
+
 [tool.ruff]
-line-length = 110
+line-length = 120
 target-version = "py310"
+# Pre-package script and its tests, removed once ported; not held to the package gate meanwhile.
+extend-exclude = ["tests/legacy", "skills/jev-judge/scripts"]
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF", "PL", "N", "S", "C90", "ANN", "D"]
-ignore = ["D203", "D213", "D105", "D107", "PLR0913", "S101"]
+select = [
+  "E", "W",     # pycodestyle
+  "F",           # pyflakes
+  "I",           # isort
+  "N",           # pep8-naming
+  "UP",          # pyupgrade
+  "B",           # bugbear
+  "A",           # builtins shadowing
+  "C4",          # comprehension simplification
+  "SIM",         # simplification
+  "TCH",         # type-checking imports
+  "RUF",         # ruff-specific
+  "G",           # logging format (catches f-string in logger)
+  "T20",         # print statements
+  "PTH",         # pathlib preference
+  "PLC", "PLE",  # pylint conventions/errors
+  "S",           # flake8-bandit security checks
+  "PERF",        # performance anti-patterns
+  "ERA",         # eradicate dead/commented-out code
+  "FBT",         # boolean trap (boolean positional args)
+  "PLR",         # pylint refactor
+  "PLW",         # pylint warnings
+]
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.flake8-type-checking]
+# The Pydantic models (EmailConfig, LoggingConfigModel)
+# resolve their field annotations at model-build time, so their field-type imports
+# must stay at runtime even though the file uses ``from __future__ import annotations``.
+# Telling ruff about the Pydantic base keeps TC001/TC002/TC003 from moving those
+# imports into a TYPE_CHECKING block and breaking model construction.
+runtime-evaluated-base-classes = ["pydantic.BaseModel"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["D", "S105", "S106", "PLR2004", "ANN401"]
-
-[tool.ruff.lint.mccabe]
-max-complexity = 10
+# Notebooks: unused imports are often intentional for side effects
+"notebooks/*.ipynb" = ["F401"]
+# Tests: assert is standard, test fixtures have passwords, magic values are clearer inline, temp paths are fine.
+# PLC0415: local/deferred imports are a deliberate test idiom - several tests import inside the test
+# body to exercise import-time and cache behaviour, so moving them to module top would defeat intent.
+"tests/*.py" = ["T20", "S101", "S105", "S106", "S108", "FBT001", "FBT003", "PLR0913", "PLR2004", "PLC0415"]
+# CLI: Click framework injects boolean params; commands have many options
+"src/btx_jev_judge/adapters/cli/**/*.py" = ["FBT001", "FBT002", "PLR0913"]
+# Protocols/adapters: many-param signatures by design
+"src/btx_jev_judge/application/*.py" = ["PLR0913"]
+"src/btx_jev_judge/adapters/config/*.py" = ["PLR0913"]
+"src/btx_jev_judge/adapters/email/*.py" = ["PLR0913"]
+"src/btx_jev_judge/adapters/memory/*.py" = ["PLR0913"]
 
 [tool.pyright]
 typeCheckingMode = "strict"
-pythonVersion = "3.10"
-include = ["skills", "tests"]
-extraPaths = ["skills/jev-judge/scripts", "tests"]
+exclude = ["tests/legacy", "skills/jev-judge/scripts", "**/.venv*", "**/node_modules"]
+extraPaths = [
+  "src",
+]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "-p no:cacheprovider --doctest-modules"
+addopts = ["--doctest-modules", "--ignore=tests/legacy"]
+doctest_optionflags = ["ELLIPSIS", "NORMALIZE_WHITESPACE"]
+pythonpath = ["src"]
+markers = [
+  "os_agnostic: test runs on every supported operating system",
+  "os_windows: test exercises Windows-only behavior",
+  "os_macos: test exercises macOS-only behavior",
+  "os_posix: test exercises behavior requiring POSIX semantics",
+  "os_linux: test exercises Linux-only behavior",
+  "local_only: tests that require the local dev environment (external resources, script composition); skipped in CI",
+  "integration: tests requiring external resources (SMTP, databases, APIs); run via 'bmk ti' or 'mktesti.sh'",
+]
 
-[tool.ruff.lint.isort]
-known-first-party = ["jev_judge", "conftest"]
+[tool.coverage.run]
+branch = true
+parallel = false
+# Use a temp directory for the coverage database to avoid SQLite locking
+# issues on network-mounted filesystems. The {envtmpdir} placeholder is
+# not supported by coverage.py, so we use an environment variable with
+# fallback to a cross-platform temp location via the pytest_configure
+# hook in tests/conftest.py. CI also sets COVERAGE_FILE via workflow env.
+#
+# For local development, the pytest hook automatically redirects to
+# tempfile.gettempdir() before pytest-cov creates its Coverage() object.
+# This static fallback catches edge cases where coverage is run directly.
+data_file = "/tmp/.coverage.btx_jev_judge"
+source = ["src/btx_jev_judge"]
+
+[tool.coverage.report]
+omit = [
+  "tests/*",
+]
+fail_under = 80
+show_missing = true
+
+[tool.coverage.json]
+output = "coverage.json"
+pretty_print = true
+
+[tool.clean]
+# Patterns to remove when running `make clean`
+patterns = [
+  "**/__pycache__",
+  ".hypothesis",
+  ".import_linter_cache",
+  ".pytest_cache",
+  ".ruff_cache",
+  ".pyright",
+  ".mypy_cache",
+  ".tox",
+  ".nox",
+  ".eggs",
+  "*.egg-info",
+  "build",
+  "dist",
+  "htmlcov",
+  ".coverage",
+  "coverage.xml",
+  "codecov.sh",
+  ".cache",
+  "result",
+  ".data_arch_violations.json",
+]
+
+[tool.git]
+# Default git remote for push/release commands
+default-remote = "origin"
+
+[tool.scripts.test]
+# Configuration for CI/CD test runner
+pytest-verbosity = "-vv"
+coverage-report-file = "coverage.xml"
+src-path = "src"
+
+[tool.importlinter]
+root_package = "btx_jev_judge"
+exclude_type_checking_imports = true
+
+[[tool.importlinter.contracts]]
+name = "Domain is pure (no adapter dependencies)"
+type = "forbidden"
+source_modules = [
+  "btx_jev_judge.domain",
+]
+forbidden_modules = [
+  "btx_jev_judge.adapters",
+  "btx_jev_judge.composition",
+]
+
+[[tool.importlinter.contracts]]
+name = "Clean Architecture layers"
+type = "layers"
+layers = [
+  # Composition wires adapters - can import everything
+  "btx_jev_judge.composition",
+  # Adapters implement ports - can import application and domain
+  "btx_jev_judge.adapters",
+  # Application defines ports - can import domain
+  "btx_jev_judge.application",
+  # Domain is pure - bottom layer
+  "btx_jev_judge.domain",
+]
+
+[tool.pip-audit]
+# Known vulnerabilities to ignore (environment-level packages, not project dependencies)
+# PYSEC-2022-42969: py library ReDoS — py 1.11.0 is installed in the development
+#   environment but is not a dependency of this project; no fix available.
+ignore-vulns = [
+  "PYSEC-2022-42969",  # py 1.11.0 — ReDoS, env-only, no fix available
+  "CVE-2025-8869",     # pip 24.3.1 — env-only, not a project dependency
+  "CVE-2026-1703",     # pip 24.3.1 — env-only, not a project dependency
+  "CVE-2026-25990",    # pillow 12.0.0 — env-only, fix in 12.1.1
+]
+
+[tool.bashate]
+# bashate style settings for .sh files (E003 excluded: indent handled by shfmt)
+max-line-length = 120
+ignores = ["E003"]

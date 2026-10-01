@@ -7,9 +7,8 @@ import os
 from pathlib import Path
 from typing import Any
 
-import pytest
-
 import jev_judge as jj
+import pytest
 from conftest import JevStub
 
 KEY = "tk_" + "a" * 40
@@ -153,9 +152,7 @@ def test_a_malformed_body_is_a_failed_row(jev: JevStub) -> None:
 
 
 def test_a_rate_limit_is_retried_after_the_servers_retry_after(jev: JevStub) -> None:
-    jev.reply = lambda body, n: (
-        (429, {"error": "slow"}, {"Retry-After": "3"}) if n == 1 else (200, _noul(0.5), {})
-    )
+    jev.reply = lambda body, n: (429, {"error": "slow"}, {"Retry-After": "3"}) if n == 1 else (200, _noul(0.5), {})
     waits: list[float] = []
     row = _judge(jev, [("a", {"title": "x"})], waits=waits)[0]
     assert row.ok and row.attempts == 2 and len(jev.seen) == 2
