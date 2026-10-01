@@ -10,9 +10,10 @@ dependencies = [
     "click>=8.5.0",
     "lib_cli_exit_tools>=2.3.4",
     "lib_log_rich>=6.3.7",
-    "lib_layered_config>=6.1.0",
+    "lib_layered_config>=6.1.1",
     "pydantic>=2.13.5",
     "orjson>=3.12.0",
+    "httpx2>=2.13.1",
 ]
 license = { text = "MIT" }
 authors = [{ name = "bitranox", email = "bitranox@gmail.com" }]
@@ -153,6 +154,8 @@ runtime-evaluated-base-classes = ["pydantic.BaseModel"]
 "src/btx_jev_judge/application/*.py" = ["PLR0913"]
 "src/btx_jev_judge/adapters/config/*.py" = ["PLR0913"]
 "src/btx_jev_judge/adapters/memory/*.py" = ["PLR0913"]
+# JevClient takes its eight knobs keyword-only, one per config key, so a caller names each one.
+"src/btx_jev_judge/adapters/jev/client.py" = ["PLR0913"]
 
 [tool.pyright]
 typeCheckingMode = "strict"

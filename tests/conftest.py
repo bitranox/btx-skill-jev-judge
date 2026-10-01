@@ -9,11 +9,14 @@ Centralizes test infrastructure following clean architecture principles:
 from __future__ import annotations
 
 import contextlib
+import json
 import logging
 import os
 import re
 import tempfile
-from dataclasses import fields
+import threading
+from dataclasses import dataclass, field, fields
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -637,3 +640,59 @@ def failing_command() -> Iterator[str]:
         yield name
     finally:
         cli.commands.pop(name, None)
+
+
+Reply = tuple[int, Any, dict[str, str]]
+
+
+@dataclass
+class JevStub:
+    """What the loopback Jev saw, and how it answers the n-th request (1-based)."""
+
+    url: str = ""
+    seen: list[dict[str, Any]] = field(default_factory=list[dict[str, Any]])
+    headers: list[dict[str, str]] = field(default_factory=list[dict[str, str]])
+    reply: Callable[[dict[str, Any], int], Reply] = lambda body, n: (500, {}, {})
+    _lock: threading.Lock = field(default_factory=threading.Lock)
+
+    def record(self, body: dict[str, Any], headers: dict[str, str]) -> int:
+        """Remember one request and return its 1-based position."""
+        with self._lock:
+            self.seen.append(body)
+            self.headers.append(headers)
+            return len(self.seen)
+
+
+def _handler_for(stub: JevStub) -> type[BaseHTTPRequestHandler]:
+    class Handler(BaseHTTPRequestHandler):
+        def do_POST(self) -> None:  # http.server dispatches on this exact name
+            raw = self.rfile.read(int(self.headers["Content-Length"]))
+            body = json.loads(raw)
+            n = stub.record(body, {k.lower(): v for k, v in self.headers.items()})
+            status, payload, extra = stub.reply(body, n)
+            data = payload if isinstance(payload, bytes) else json.dumps(payload).encode("utf-8")
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(data)))
+            for name, value in extra.items():
+                self.send_header(name, value)
+            self.end_headers()
+            self.wfile.write(data)
+
+        def log_message(self, format: str, *args: object) -> None:  # noqa: A002 - must keep the stdlib override's parameter name
+            pass
+
+    return Handler
+
+
+@pytest.fixture
+def jev() -> Iterator[JevStub]:
+    """A real ``http.server`` on 127.0.0.1 standing in for Jev, so the client drives real HTTP."""
+    stub = JevStub()
+    server = ThreadingHTTPServer(("127.0.0.1", 0), _handler_for(stub))
+    thread = threading.Thread(target=server.serve_forever, kwargs={"poll_interval": 0.02}, daemon=True)
+    thread.start()
+    stub.url = f"http://127.0.0.1:{server.server_address[1]}"
+    yield stub
+    server.shutdown()
+    server.server_close()
