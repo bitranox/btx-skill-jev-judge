@@ -173,7 +173,7 @@ def test_coerce_value_negative_number() -> None:
 @pytest.mark.os_agnostic
 def test_coerce_value_unicode_string() -> None:
     """Unicode string falls back to raw string."""
-    assert coerce_value("日本語") == "日本語"
+    assert coerce_value("\u65e5\u672c\u8a9e") == "\u65e5\u672c\u8a9e"
 
 
 @pytest.mark.os_agnostic
@@ -210,9 +210,9 @@ def test_parse_override_deeply_nested_key() -> None:
 @pytest.mark.os_agnostic
 def test_parse_override_unicode_value() -> None:
     """Unicode characters in the value are preserved."""
-    result = parse_override("s.key=こんにちは")
+    result = parse_override("s.key=\u3053\u3093\u306b\u3061\u306f")
 
-    assert result.value == "こんにちは"
+    assert result.value == "\u3053\u3093\u306b\u3061\u306f"
 
 
 @pytest.mark.os_agnostic

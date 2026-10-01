@@ -18,7 +18,7 @@
 #   - .env files: .env in current directory or parent directories
 #   - Environment variables: Prefix with BTX_JEV_JUDGE___
 #
-# Precedence (lowest to highest): defaults → app → host → user → dotenv → env
+# Precedence (lowest to highest): defaults -> app -> host -> user -> dotenv -> env
 #
 # IMPORTANT: Naming Conventions for .env Files vs Environment Variables
 # ----------------------------------------------------------------------
@@ -41,4 +41,4 @@
 #     BTX_JEV_JUDGE___MY_SECTION__SOME_KEY=some_value
 #     BTX_JEV_JUDGE___LIB_LOG_RICH__CONSOLE_LEVEL=DEBUG
 #
-# Value coercion: "true"/"false" → bool, "null"/"none" → None, numbers → int/float
+# Value coercion: "true"/"false" -> bool, "null"/"none" -> None, numbers -> int/float

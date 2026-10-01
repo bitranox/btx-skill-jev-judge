@@ -9,13 +9,13 @@ Why
 ---
 Console output is a sink with an encoding the program does not choose. Python
 hands stdout to a Windows console at codepage 1252 with ``errors="strict"``, so
-writing ``✓`` raises ``UnicodeEncodeError: 'charmap' codec can't encode
+writing U+2713 (check mark) raises ``UnicodeEncodeError: 'charmap' codec can't encode
 character '\\u2713'`` and the command exits non-zero -- after its real work has
 already succeeded, which is the part that misleads. ``click.echo`` does not
 protect against this; the exception propagates.
 
 Degrading at the SINK keeps the glyphs where they are wanted: a UTF-8 terminal
-still receives ``✓``, and only a stream that genuinely cannot encode it sees
+still receives U+2713, and only a stream that genuinely cannot encode it sees
 ``[OK]``. Callers therefore write the glyph they mean and never branch on the
 platform.
 
@@ -41,19 +41,19 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
 ASCII_FALLBACKS: Final[dict[str, str]] = {
-    "✓": "[OK]",  # check mark
-    "✔": "[OK]",  # heavy check mark
-    "✅": "[OK]",  # white heavy check mark
-    "✗": "[X]",  # ballot X
-    "✘": "[X]",  # heavy ballot X
-    "❌": "[X]",  # cross mark
-    "⚠": "[!]",  # warning sign
-    "️": "",  # variation selector 16, trails an emoji glyph and carries no text
-    "•": "-",  # bullet
-    "≥": ">=",
-    "≤": "<=",
-    "→": "->",
-    "←": "<-",
+    "\u2713": "[OK]",  # check mark
+    "\u2714": "[OK]",  # heavy check mark
+    "\u2705": "[OK]",  # white heavy check mark
+    "\u2717": "[X]",  # ballot X
+    "\u2718": "[X]",  # heavy ballot X
+    "\u274c": "[X]",  # cross mark
+    "\u26a0": "[!]",  # warning sign
+    "\ufe0f": "",  # variation selector 16, trails an emoji glyph and carries no text
+    "\u2022": "-",  # bullet
+    "\u2265": ">=",
+    "\u2264": "<=",
+    "\u2192": "->",
+    "\u2190": "<-",
     # The quotation marks are spelled as escapes on purpose: written literally
     # they are indistinguishable from ASCII ' and " in most editors, which is
     # exactly the confusion ruff's RUF001 exists to flag.
@@ -61,7 +61,7 @@ ASCII_FALLBACKS: Final[dict[str, str]] = {
     "\u2019": "'",  # right single quotation mark
     "\u201c": '"',  # left double quotation mark
     "\u201d": '"',  # right double quotation mark
-    "…": "...",
+    "\u2026": "...",
 }
 
 #: The prefix of the codec error handlers :func:`ascii_fallback` encodes with, one per stream

@@ -1,4 +1,4 @@
-"""Port behavioral contract tests — verify in-memory adapter implementations.
+"""Port behavioral contract tests - verify in-memory adapter implementations.
 
 Tests exercise in-memory adapters only - production adapters are tested
 via CLI integration tests. Static type conformance is enforced by pyright.

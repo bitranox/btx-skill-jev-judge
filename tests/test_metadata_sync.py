@@ -73,7 +73,7 @@ def test_name_matches_project_name() -> None:
     """__init__conf__.name must match the pyproject.toml project name."""
     project_name = _read_project_name()
 
-    # Package names are normalized (underscores → hyphens in some contexts)
+    # Package names are normalized (underscores -> hyphens in some contexts)
     # but __init__conf__.name should match the canonical form
     assert __init__conf__.name.replace("-", "_") == project_name.replace("-", "_"), (
         f"__init__conf__.name '{__init__conf__.name}' does not match project name '{project_name}'"

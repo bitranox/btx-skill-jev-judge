@@ -38,19 +38,19 @@ class TestEchoOnALegacyCodepage:
 
     def test_check_mark_does_not_raise(self) -> None:
         stream = _cp1252_stream()
-        safe_console.echo("✓ deployed", file=stream)
+        safe_console.echo("\u2713 deployed", file=stream)
         assert "[OK]" in _read_back(stream)
 
     @pytest.mark.parametrize(
         ("glyph", "expected"),
-        [("✓", "[OK]"), ("✗", "[X]"), ("⚠", "[!]"), ("≥", ">="), ("→", "->")],
+        [("\u2713", "[OK]"), ("\u2717", "[X]"), ("\u26a0", "[!]"), ("\u2265", ">="), ("\u2192", "->")],
     )
     def test_a_character_cp1252_lacks_degrades_to_its_ascii_form(self, glyph: str, expected: str) -> None:
         stream = _cp1252_stream()
         safe_console.echo(f"{glyph} status", file=stream)
         assert expected in _read_back(stream)
 
-    @pytest.mark.parametrize("glyph", ["•", "…", "\u2019"])
+    @pytest.mark.parametrize("glyph", ["\u2022", "\u2026", "\u2019"])
     def test_a_character_cp1252_has_is_left_alone(self, glyph: str) -> None:
         """Degrade only what the stream cannot take; cp1252 has these."""
         stream = _cp1252_stream()
@@ -59,13 +59,13 @@ class TestEchoOnALegacyCodepage:
 
     def test_an_unmapped_character_is_replaced_rather_than_raising(self) -> None:
         stream = _cp1252_stream()
-        safe_console.echo("host 中文 name", file=stream)
+        safe_console.echo("host \u4e2d\u6587 name", file=stream)
         assert "host" in _read_back(stream)
 
     def test_the_message_is_written_exactly_once(self) -> None:
         """A retry-after-failure would emit the surviving prefix twice."""
         stream = _cp1252_stream()
-        safe_console.echo("\n✓ done", file=stream)
+        safe_console.echo("\n\u2713 done", file=stream)
         assert _read_back(stream).count("done") == 1
 
 
@@ -74,11 +74,11 @@ class TestEchoOnAUtf8Console:
 
     def test_character_is_preserved(self) -> None:
         stream = io.TextIOWrapper(io.BytesIO(), encoding="utf-8", errors="strict", newline="")
-        safe_console.echo("✓ deployed", file=stream)
+        safe_console.echo("\u2713 deployed", file=stream)
         stream.flush()
         buffer = stream.buffer
         assert isinstance(buffer, io.BytesIO)
-        assert "✓" in buffer.getvalue().decode("utf-8")
+        assert "\u2713" in buffer.getvalue().decode("utf-8")
 
 
 class TestTheDefaultTargetFollowsTheStreamEchoWritesTo:
@@ -93,7 +93,7 @@ class TestTheDefaultTargetFollowsTheStreamEchoWritesTo:
     def test_a_cp1252_stdout_degrades_the_glyph(self, monkeypatch: pytest.MonkeyPatch) -> None:
         stream = _cp1252_stream()
         monkeypatch.setattr(sys, "stdout", stream)
-        safe_console.echo("✓ deployed")
+        safe_console.echo("\u2713 deployed")
         assert "[OK]" in _read_back(stream)
 
     def test_err_is_judged_against_stderr_not_stdout(self, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -101,7 +101,7 @@ class TestTheDefaultTargetFollowsTheStreamEchoWritesTo:
         stream = _cp1252_stream()
         monkeypatch.setattr(sys, "stdout", io.TextIOWrapper(io.BytesIO(), encoding="utf-8", newline=""))
         monkeypatch.setattr(sys, "stderr", stream)
-        safe_console.echo("✓ deployed", err=True)
+        safe_console.echo("\u2713 deployed", err=True)
         assert "[OK]" in _read_back(stream)
 
 
@@ -233,7 +233,7 @@ class TestSafeStreamProtectsRich:
 
     def test_rich_output_degrades_instead_of_raising(self) -> None:
         stream = _cp1252_stream()
-        Console(file=safe_console.safe_stream(stream), legacy_windows=False, width=80).print("check ✓ done ≥ 90%")
+        Console(file=safe_console.safe_stream(stream), legacy_windows=False, width=80).print("check \u2713 done \u2265 90%")
         written = _read_back(stream)
         assert "[OK]" in written
         assert ">= 90%" in written

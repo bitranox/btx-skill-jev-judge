@@ -42,7 +42,7 @@ def test_when_profile_is_valid_alphanumeric_it_accepts(clear_config_cache: None)
     """Alphanumeric profiles with hyphens and underscores must be accepted."""
     from btx_jev_judge.adapters.config.loader import get_config
 
-    # Should not raise — the config may or may not exist, but validation passes
+    # Should not raise - the config may or may not exist, but validation passes
     config = get_config(profile="staging-v2")
     assert config is not None
 

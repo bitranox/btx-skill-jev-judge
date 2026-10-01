@@ -134,9 +134,9 @@ select = [
 convention = "google"
 
 [tool.ruff.lint.flake8-type-checking]
-# The Pydantic models (LoggingConfigModel)
-# resolve their field annotations at model-build time, so their field-type imports
-# must stay at runtime even though the file uses ``from __future__ import annotations``.
+# The Pydantic models (RunConfig, SummaryConfig, LoggingConfigModel and the domain and file
+# boundary models) resolve their field annotations at model-build time, so their field-type
+# imports must stay at runtime even though the files use ``from __future__ import annotations``.
 # Telling ruff about the Pydantic base keeps TC001/TC002/TC003 from moving those
 # imports into a TYPE_CHECKING block and breaking model construction.
 runtime-evaluated-base-classes = ["pydantic.BaseModel"]
@@ -269,13 +269,13 @@ layers = [
 
 [tool.pip-audit]
 # Known vulnerabilities to ignore (environment-level packages, not project dependencies)
-# PYSEC-2022-42969: py library ReDoS — py 1.11.0 is installed in the development
+# PYSEC-2022-42969: py library ReDoS - py 1.11.0 is installed in the development
 #   environment but is not a dependency of this project; no fix available.
 ignore-vulns = [
-  "PYSEC-2022-42969",  # py 1.11.0 — ReDoS, env-only, no fix available
-  "CVE-2025-8869",     # pip 24.3.1 — env-only, not a project dependency
-  "CVE-2026-1703",     # pip 24.3.1 — env-only, not a project dependency
-  "CVE-2026-25990",    # pillow 12.0.0 — env-only, fix in 12.1.1
+  "PYSEC-2022-42969",  # py 1.11.0 - ReDoS, env-only, no fix available
+  "CVE-2025-8869",     # pip 24.3.1 - env-only, not a project dependency
+  "CVE-2026-1703",     # pip 24.3.1 - env-only, not a project dependency
+  "CVE-2026-25990",    # pillow 12.0.0 - env-only, fix in 12.1.1
 ]
 
 [tool.bashate]
