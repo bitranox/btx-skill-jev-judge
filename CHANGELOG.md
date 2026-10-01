@@ -5,6 +5,14 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+## [0.2.4] 2026-10-01
+
+### Changed
+- The `jev-judge` skill documents the `summarize` data (`rows`, `answered`, `failed`, `flat`,
+  `questions`, where each question's `uncertain` list holds its read-by-hand ids) and that
+  `--json-bare` prints that data without the `{ok, command, data, skipped}` envelope, on exit 1
+  too.
+
 ## [0.2.3] 2026-10-01
 
 ### Changed
