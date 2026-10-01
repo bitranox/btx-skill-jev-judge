@@ -17,8 +17,11 @@ GITHUB_TOKEN = "ghp_" + "B" * 36
 
 
 def _noul(value: float, tokens: int = 11) -> dict[str, Any]:
-    return {"model": "jev-1.13.0", "usage": {"input_tokens": tokens, "output_tokens": 3},
-            "answers": {"dup": {"type": "noul", "noul": value}}}
+    return {
+        "model": "jev-1.13.0",
+        "usage": {"input_tokens": tokens, "output_tokens": 3},
+        "answers": {"dup": {"type": "noul", "noul": value}},
+    }
 
 
 def _dup_by_title(body: dict[str, Any], _n: int) -> tuple[int, Any, dict[str, str]]:
@@ -27,22 +30,36 @@ def _dup_by_title(body: dict[str, Any], _n: int) -> tuple[int, Any, dict[str, st
 
 def _questions() -> list[jj.Question]:
     return jj.parse_questions(
-        [{"id": "dup", "type": "noul",
-          "instructions": "Is `title` a duplicate report of an existing issue?"}])
+        [{"id": "dup", "type": "noul", "instructions": "Is `title` a duplicate report of an existing issue?"}]
+    )
 
 
 def _client(stub: JevStub, waits: list[float] | None = None, attempts: int = 4) -> jj.JevClient:
-    sleep = waits.append if waits is not None else (lambda _s: None)
-    return jj.JevClient(key=KEY, base_url=stub.url, timeout=5.0, attempts=attempts,
-                        limiter=jj.RateLimiter(rate=1000.0, sleep=sleep), sleep=sleep)
+    def sleep(seconds: float) -> None:
+        if waits is not None:
+            waits.append(seconds)
+
+    return jj.JevClient(
+        key=KEY,
+        base_url=stub.url,
+        timeout=5.0,
+        attempts=attempts,
+        limiter=jj.RateLimiter(rate=1000.0, sleep=sleep),
+        sleep=sleep,
+    )
 
 
 def _judge(stub: JevStub, items: list[tuple[str, dict[str, Any]]], **kw: Any) -> list[jj.Row]:
     waits = kw.pop("waits", None)
     attempts = kw.pop("attempts", 4)
     with _client(stub, waits, attempts) as client:
-        return jj.judge_all([jj.Item(id=i, state=s) for i, s in items], _questions(), client=client,
-                            key=KEY, settings=jj.Settings(**kw))
+        return jj.judge_all(
+            [jj.Item(id=i, state=s) for i, s in items],
+            _questions(),
+            client=client,
+            key=KEY,
+            settings=jj.Settings(**kw),
+        )
 
 
 # --- answering -------------------------------------------------------------------------------
@@ -50,8 +67,11 @@ def _judge(stub: JevStub, items: list[tuple[str, dict[str, Any]]], **kw: Any) ->
 
 def test_every_item_is_answered_in_input_order(jev: JevStub) -> None:
     jev.reply = _dup_by_title
-    rows = _judge(jev, [("a", {"title": "dup of 12"}), ("b", {"title": "new crash"}),
-                        ("c", {"title": "dup"})], workers=3)
+    rows = _judge(
+        jev,
+        [("a", {"title": "dup of 12"}), ("b", {"title": "new crash"}), ("c", {"title": "dup"})],
+        workers=3,
+    )
     assert [r.id for r in rows] == ["a", "b", "c"]
     assert [r.answers["dup"].value for r in rows] == [0.9, 0.1, 0.9]
     assert all(r.ok and r.input_tokens == 11 and r.model == "jev-1.13.0" for r in rows)
@@ -62,30 +82,59 @@ def test_the_request_carries_model_bearer_key_and_question_shape(jev: JevStub) -
     _judge(jev, [("a", {"title": "x"})])
     body, headers = jev.seen[0], jev.headers[0]
     assert body["model"] == "jev-latest"
-    assert body["questions"] == {"dup": {"type": "noul", "instructions":
-                                         "Is `title` a duplicate report of an existing issue?"}}
+    assert body["questions"] == {
+        "dup": {"type": "noul", "instructions": "Is `title` a duplicate report of an existing issue?"}
+    }
     assert headers["authorization"] == "Bearer " + KEY
 
 
 def test_choice_and_score_answers_are_normalised(jev: JevStub) -> None:
-    questions = jj.parse_questions([
-        {"id": "team", "type": "choice", "instructions": "Which team owns `title`?",
-         "criteria": {"billing": "payments", "tech": None}},
-        {"id": "sev", "type": "score", "instructions": "How severe is `title`?",
-         "criteria": ["cosmetic", "annoying", "blocking"]}])
-    jev.reply = lambda body, n: (200, {"model": "jev-1.13.0", "usage": {"input_tokens": 40},
-                                       "answers": {
-        "team": {"type": "choice", "choice": "tech",
-                 "probabilities": {"billing": 0.1, "tech": 0.9}, "confidence": 0.8},
-        "sev": {"type": "score", "score": 1.7, "legend": {"0": "cosmetic", "1": "annoying",
-                                                          "2": "blocking"},
-                "probabilities": {"0": 0.0, "1": 0.3, "2": 0.7}, "confidence": 0.6}}}, {})
+    questions = jj.parse_questions(
+        [
+            {
+                "id": "team",
+                "type": "choice",
+                "instructions": "Which team owns `title`?",
+                "criteria": {"billing": "payments", "tech": None},
+            },
+            {
+                "id": "sev",
+                "type": "score",
+                "instructions": "How severe is `title`?",
+                "criteria": ["cosmetic", "annoying", "blocking"],
+            },
+        ]
+    )
+    jev.reply = lambda body, n: (
+        200,
+        {
+            "model": "jev-1.13.0",
+            "usage": {"input_tokens": 40},
+            "answers": {
+                "team": {
+                    "type": "choice",
+                    "choice": "tech",
+                    "probabilities": {"billing": 0.1, "tech": 0.9},
+                    "confidence": 0.8,
+                },
+                "sev": {
+                    "type": "score",
+                    "score": 1.7,
+                    "legend": {"0": "cosmetic", "1": "annoying", "2": "blocking"},
+                    "probabilities": {"0": 0.0, "1": 0.3, "2": 0.7},
+                    "confidence": 0.6,
+                },
+            },
+        },
+        {},
+    )
     with _client(jev) as client:
-        row = jj.judge_all([jj.Item(id="a", state={"title": "x"})], questions, client=client,
-                           key=KEY)[0]
+        row = jj.judge_all([jj.Item(id="a", state={"title": "x"})], questions, client=client, key=KEY)[0]
     assert row.ok
     assert (row.answers["team"].value, row.answers["team"].confidence) == ("tech", 0.8)
-    assert (row.answers["sev"].value, row.answers["sev"].probabilities["2"]) == (1.7, 0.7)
+    sev = row.answers["sev"]
+    assert sev.probabilities is not None
+    assert (sev.value, sev.probabilities["2"]) == (1.7, 0.7)
 
 
 def test_an_answer_missing_a_question_is_a_failed_row(jev: JevStub) -> None:
@@ -104,8 +153,9 @@ def test_a_malformed_body_is_a_failed_row(jev: JevStub) -> None:
 
 
 def test_a_rate_limit_is_retried_after_the_servers_retry_after(jev: JevStub) -> None:
-    jev.reply = lambda body, n: ((429, {"error": "slow"}, {"Retry-After": "3"}) if n == 1
-                                 else (200, _noul(0.5), {}))
+    jev.reply = lambda body, n: (
+        (429, {"error": "slow"}, {"Retry-After": "3"}) if n == 1 else (200, _noul(0.5), {})
+    )
     waits: list[float] = []
     row = _judge(jev, [("a", {"title": "x"})], waits=waits)[0]
     assert row.ok and row.attempts == 2 and len(jev.seen) == 2
@@ -160,14 +210,17 @@ def test_nested_state_keeps_its_structure_and_is_redacted_inside(jev: JevStub) -
     assert state["labels"] == ["bug", "key [REDACTED]"] and state["n"] == 3
 
 
-@pytest.mark.parametrize("secret", [
-    "-----BEGIN RSA PRIVATE KEY-----\nMIIEow\n-----END RSA PRIVATE KEY-----",
-    "API_KEY=s3cr3tvalue123",
-    "Authorization: Bearer abcdefghijklmnopqrstuvwxyz012345",
-    "xoxb-1234567890-abcdefghijkl",
-    "AKIAABCDEFGHIJKLMNOP",
-    "https://user:hunter2pass@example.com/x",
-])
+@pytest.mark.parametrize(
+    "secret",
+    [
+        "-----BEGIN RSA PRIVATE KEY-----\nMIIEow\n-----END RSA PRIVATE KEY-----",
+        "API_KEY=s3cr3tvalue123",
+        "Authorization: Bearer abcdefghijklmnopqrstuvwxyz012345",
+        "xoxb-1234567890-abcdefghijkl",
+        "AKIAABCDEFGHIJKLMNOP",
+        "https://user:hunter2pass@example.com/x",
+    ],
+)
 def test_common_secret_shapes_are_redacted(secret: str) -> None:
     text, n = jj.redact(f"before {secret} after", key=None)
     assert n >= 1 and "before" in text and "after" in text
@@ -183,6 +236,7 @@ def test_ordinary_text_is_not_redacted() -> None:
 def test_a_long_field_keeps_head_and_tail_and_marks_the_cut() -> None:
     fields, _n = jj.prepare_state({"body": "H" * 50 + "M" * 1000 + "T" * 50}, key=None, cap=200)
     body = fields["body"]
+    assert isinstance(body, str)
     assert len(body) <= 200 and body.startswith("H" * 50) and body.endswith("T" * 50)
     assert "chars cut" in body
 
@@ -231,16 +285,20 @@ def test_load_items_refuses_invalid_json_naming_the_line(tmp_path: Path) -> None
 
 
 def test_load_questions_refuses_a_one_option_choice(tmp_path: Path) -> None:
-    p = _write(tmp_path, "q.json", json.dumps([{"id": "k", "type": "choice",
-                                                 "instructions": "pick", "criteria": {"one": "x"}}]))
+    p = _write(
+        tmp_path,
+        "q.json",
+        json.dumps([{"id": "k", "type": "choice", "instructions": "pick", "criteria": {"one": "x"}}]),
+    )
     with pytest.raises(jj.UsageError, match="criteria"):
         jj.load_questions(p)
 
 
 def test_load_questions_refuses_an_eleven_level_score() -> None:
     with pytest.raises(jj.UsageError, match="criteria"):
-        jj.parse_questions([{"id": "s", "type": "score", "instructions": "rate",
-                             "criteria": [str(i) for i in range(11)]}])
+        jj.parse_questions(
+            [{"id": "s", "type": "score", "instructions": "rate", "criteria": [str(i) for i in range(11)]}]
+        )
 
 
 def test_load_questions_refuses_a_duplicate_question_id() -> None:
@@ -255,11 +313,22 @@ def test_load_questions_refuses_an_unknown_type() -> None:
 
 
 def test_structured_instructions_and_noul_criteria_are_accepted() -> None:
-    q = jj.parse_questions([{"id": "same", "type": "noul",
-                             "instructions": {"candidate": {"name": "J. Smith"},
-                                              "question": "Is `person` the same as `candidate`?"},
-                             "criteria": {"true": "same person", "false": "different"}}])[0]
-    assert q.to_api()["instructions"]["candidate"] == {"name": "J. Smith"}
+    q = jj.parse_questions(
+        [
+            {
+                "id": "same",
+                "type": "noul",
+                "instructions": {
+                    "candidate": {"name": "J. Smith"},
+                    "question": "Is `person` the same as `candidate`?",
+                },
+                "criteria": {"true": "same person", "false": "different"},
+            }
+        ]
+    )[0]
+    instructions = q.to_api()["instructions"]
+    assert isinstance(instructions, dict)
+    assert instructions["candidate"] == {"name": "J. Smith"}
     assert q.to_api()["criteria"] == {"true": "same person", "false": "different"}
 
 
@@ -299,6 +368,4 @@ def test_a_key_that_is_not_printable_ascii_is_refused(tmp_path: Path) -> None:
 
 def test_a_non_loopback_base_url_override_is_ignored() -> None:
     assert jj.resolve_base_url({"JEV_JUDGE_BASE_URL": "https://evil.example"}) == jj.DEFAULT_BASE_URL
-    assert jj.resolve_base_url({"JEV_JUDGE_BASE_URL": "http://127.0.0.1:8123"}) == \
-        "http://127.0.0.1:8123"
-
+    assert jj.resolve_base_url({"JEV_JUDGE_BASE_URL": "http://127.0.0.1:8123"}) == "http://127.0.0.1:8123"

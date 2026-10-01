@@ -29,8 +29,8 @@ class JevStub:
     """What the loopback Jev saw, and how it answers the n-th request (1-based)."""
 
     url: str = ""
-    seen: list[dict[str, Any]] = field(default_factory=list)
-    headers: list[dict[str, str]] = field(default_factory=list)
+    seen: list[dict[str, Any]] = field(default_factory=list[dict[str, Any]])
+    headers: list[dict[str, str]] = field(default_factory=list[dict[str, str]])
     reply: Callable[[dict[str, Any], int], Reply] = lambda body, n: (500, {}, {})
     _lock: threading.Lock = field(default_factory=threading.Lock)
 
@@ -67,8 +67,7 @@ def _handler_for(stub: JevStub) -> type[BaseHTTPRequestHandler]:
 def jev() -> Iterator[JevStub]:
     stub = JevStub()
     server = ThreadingHTTPServer(("127.0.0.1", 0), _handler_for(stub))
-    thread = threading.Thread(target=server.serve_forever, kwargs={"poll_interval": 0.02},
-                              daemon=True)
+    thread = threading.Thread(target=server.serve_forever, kwargs={"poll_interval": 0.02}, daemon=True)
     thread.start()
     stub.url = f"http://127.0.0.1:{server.server_address[1]}"
     yield stub

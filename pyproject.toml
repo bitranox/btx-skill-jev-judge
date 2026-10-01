@@ -1,0 +1,28 @@
+# Tool configuration only: this repo ships a Claude Code skill whose script is a PEP 723
+# file run with `uv run`, not an installable package.
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF", "PL", "N", "S", "C90", "ANN", "D"]
+ignore = ["D203", "D213", "D105", "D107", "PLR0913", "S101"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D", "S105", "S106", "PLR2004", "ANN401"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.pyright]
+typeCheckingMode = "strict"
+pythonVersion = "3.10"
+include = ["skills", "tests"]
+extraPaths = ["skills/jev-judge/scripts", "tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-p no:cacheprovider --doctest-modules"
+
+[tool.ruff.lint.isort]
+known-first-party = ["jev_judge", "conftest"]
