@@ -1,5 +1,16 @@
 # btx-skill-jev-judge
 
+<!-- Badges -->
+[![CI](https://github.com/bitranox/btx-skill-jev-judge/actions/workflows/default_cicd_public.yml/badge.svg)](https://github.com/bitranox/btx-skill-jev-judge/actions/workflows/default_cicd_public.yml)
+[![CodeQL](https://github.com/bitranox/btx-skill-jev-judge/actions/workflows/codeql.yml/badge.svg)](https://github.com/bitranox/btx-skill-jev-judge/actions/workflows/codeql.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Open in Codespaces](https://img.shields.io/badge/Codespaces-Open-blue?logo=github&logoColor=white&style=flat-square)](https://codespaces.new/bitranox/btx-skill-jev-judge?quickstart=1)
+[![PyPI](https://img.shields.io/pypi/v/btx-skill-jev-judge.svg)](https://pypi.org/project/btx-skill-jev-judge/)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/btx-skill-jev-judge.svg)](https://pypi.org/project/btx-skill-jev-judge/)
+[![Code Style: Ruff](https://img.shields.io/badge/Code%20Style-Ruff-46A3FF?logo=ruff&labelColor=000)](https://docs.astral.sh/ruff/)
+[![codecov](https://codecov.io/gh/bitranox/btx-skill-jev-judge/graph/badge.svg)](https://codecov.io/gh/bitranox/btx-skill-jev-judge)
+[![security: bandit](https://img.shields.io/badge/security-bandit-yellow.svg)](https://github.com/PyCQA/bandit)
+
 A Claude Code plugin with one skill, `jev-judge`, and the Python package behind it,
 `btx-skill-jev-judge`. When the same judgment repeats over many items, such as labeling 600 support
 tickets, Claude hands it to [TypeSafe's Jev](https://docs.typesafe.ai) through a tested
