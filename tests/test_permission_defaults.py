@@ -536,7 +536,7 @@ def test_a_dotenv_mode_does_not_decide_the_deployed_mode_beside_a_set(tmp_path: 
 @_LINUX_ONLY
 def test_a_dotenv_enabled_false_does_not_turn_permission_setting_off(tmp_path: Path) -> None:
     (tmp_path / ".env").write_text(f"{_DOTENV_PREFIX}ENABLED=false\n", encoding="utf-8")
-    assert '"enabled": "false"' in _show_layered_config(tmp_path).stdout.decode("utf-8", "replace")  # liveness
+    assert '"enabled": false' in _show_layered_config(tmp_path).stdout.decode("utf-8", "replace")  # liveness
 
     completed = _deploy_user(tmp_path)
 

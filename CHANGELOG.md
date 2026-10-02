@@ -5,6 +5,11 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+### Changed
+- **Requires lib_layered_config 7.0.1.** An unquoted `.env` value now converts like the
+  environment layer, so `ENABLED=false` arrives as the boolean `false`; the permission-defaults
+  test reads it that way. A `.env` setting still never reaches a deploy.
+
 ## [0.2.4] 2026-10-01
 
 ### Changed
