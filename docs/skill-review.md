@@ -210,3 +210,15 @@ data (`flat: ["q"]`), checked by running it.
 The four Commands lines, extracted from SKILL.md with `grep` and run unchanged on 62 HTTP status
 items once PyPI served 0.2.4: all exit 0, no per-request line on stderr; `--version` prints
 `0.2.4`; `summarize --json-bare` read as the text says gives 15 uncertain ids and an empty `flat`.
+
+## Re-check for the digit-only config fix (0.2.5)
+
+The release changes no instruction: it fixes text settings whose `.env` value is digits only, and
+SKILL.md moves only its version floors to 0.2.5.
+
+### Executed
+
+The four Commands lines, extracted from SKILL.md with `grep` and run unchanged on 62 HTTP status
+items once PyPI served 0.2.5: all exit 0, no per-request line on stderr (the one stderr line is
+uvx's own install notice); `--version` prints `0.2.5`; `summarize --json-bare` gives 62 rows, 62
+answered, no failed ids, an empty `flat` and 10 uncertain ids.
