@@ -37,7 +37,9 @@ class RunConfig(BaseModel):
         model: Model name sent with every request.
     """
 
-    model_config = ConfigDict(frozen=True, extra="forbid")
+    # lib_layered_config reads an unquoted all-digit value as an int; the conversion is lossless,
+    # so turning it back into text keeps a model name made of digits valid.
+    model_config = ConfigDict(frozen=True, extra="forbid", coerce_numbers_to_str=True)
 
     rate: float = Field(default=DEFAULT_RATE, gt=0)
     workers: int = Field(default=_JUDGE_DEFAULTS.workers, ge=1)

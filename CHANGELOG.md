@@ -5,8 +5,16 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+### Fixed
+- **A digit-only `.env` value no longer stops the program.** lib_layered_config 7.1 reads an
+  unquoted `.env` or environment value that spells a number losslessly as an int, so
+  `LIB_LOG_RICH__SERVICE=2026` or `JUDGE__MODEL=4` reached a text setting as a number and failed
+  with `Input should be a valid string`. The logging model and `[judge]` settings now turn such a
+  number back into the text the operator wrote. Numeric settings still read as numbers and
+  out-of-range values are still refused.
+
 ### Changed
-- **Requires lib_layered_config 7.0.1.** An unquoted `.env` value now converts like the
+- **Requires lib_layered_config 7.1.6.** An unquoted `.env` value now converts like the
   environment layer, so `ENABLED=false` arrives as the boolean `false`; the permission-defaults
   test reads it that way. A `.env` setting still never reaches a deploy.
 
