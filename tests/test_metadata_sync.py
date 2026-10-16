@@ -42,6 +42,16 @@ def test_layeredconf_slug_matches_project_name() -> None:
 
 
 @pytest.mark.os_agnostic
+def test_layeredconf_app_matches_project_name() -> None:
+    """LAYEREDCONF_APP names the macOS/Windows config folder after the project.
+
+    Keeping it equal to the pyproject name gives one spelling on every OS,
+    the same one the Linux slug and the GitHub repo use.
+    """
+    assert _read_project_name() == __init__conf__.LAYEREDCONF_APP
+
+
+@pytest.mark.os_agnostic
 def test_layeredconf_vendor_is_not_empty() -> None:
     """LAYEREDCONF_VENDOR must be set for macOS/Windows config paths."""
     assert __init__conf__.LAYEREDCONF_VENDOR, "LAYEREDCONF_VENDOR is empty"

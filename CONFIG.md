@@ -105,8 +105,8 @@ directory beside them whose files are merged in name order.
 
 | Layer       | Linux                            | macOS                                                         |
 |-------------|----------------------------------|---------------------------------------------------------------|
-| application | `/etc/xdg/btx-skill-jev-judge/`  | `/Library/Application Support/bitranox/btx_skill_jev_judge/`  |
-| user        | `~/.config/btx-skill-jev-judge/` | `~/Library/Application Support/bitranox/btx_skill_jev_judge/` |
+| application | `/etc/xdg/btx-skill-jev-judge/`  | `/Library/Application Support/bitranox/btx-skill-jev-judge/`  |
+| user        | `~/.config/btx-skill-jev-judge/` | `~/Library/Application Support/bitranox/btx-skill-jev-judge/` |
 
 Windows uses the equivalent per-user and machine-wide application-data directories. A file only
 needs the keys it changes:

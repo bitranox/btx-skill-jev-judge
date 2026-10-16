@@ -53,7 +53,7 @@ shell_command = "btx-skill-jev-judge"
 #: Vendor identifier for lib_layered_config paths (macOS/Windows)
 LAYEREDCONF_VENDOR: str = "bitranox"
 #: Application display name for lib_layered_config paths (macOS/Windows)
-LAYEREDCONF_APP: str = "btx_skill_jev_judge"
+LAYEREDCONF_APP: str = "btx-skill-jev-judge"
 #: Configuration slug for lib_layered_config Linux paths and environment variables
 LAYEREDCONF_SLUG: str = "btx-skill-jev-judge"
 

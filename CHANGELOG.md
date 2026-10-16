@@ -10,6 +10,9 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   distribution name in `pyproject.toml`, the `info` output, the default logging service name, and the
   install commands in the README. PyPI treats both spellings as one project, so installs are
   unaffected. The import package stays `btx_skill_jev_judge`.
+- The macOS and Windows configuration folder is now `bitranox/btx-skill-jev-judge`, matching the
+  Linux folder. A config file in the old `bitranox/btx_skill_jev_judge` folder is no longer read;
+  move it to the new folder.
 
 ## [0.2.6] 2026-10-13 15:42:05
 
