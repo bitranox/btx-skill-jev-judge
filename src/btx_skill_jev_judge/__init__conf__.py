@@ -36,7 +36,7 @@ __all__ = [
 ]
 
 #: Distribution name declared in ``pyproject.toml``.
-name = "btx_skill_jev_judge"
+name = "btx-skill-jev-judge"
 #: Human-readable summary shown in CLI help output.
 title = "Batch-judge items with the TypeSafe Jev API: run, summarize and check-key from the command line"
 #: Current release version pulled from ``pyproject.toml`` by automation.
@@ -71,7 +71,7 @@ def print_info() -> None:
     Examples
     --------
     >>> print_info()  # doctest: +ELLIPSIS
-    Info for btx_skill_jev_judge:
+    Info for btx-skill-jev-judge:
     ...
     """
 

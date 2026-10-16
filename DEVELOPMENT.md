@@ -1,6 +1,6 @@
 # Development
 
-The repository is two things at once: the Python package `btx_skill_jev_judge` (PyPI `btx-skill-jev-judge`)
+The repository is two things at once: the Python package `btx-skill-jev-judge` (import `btx_skill_jev_judge`)
 and a Claude Code plugin marketplace (`.claude-plugin/`, `skills/jev-judge/`). Its build, test and
 release tasks are run by [bmk](https://pypi.org/project/bmk/) through a generated `Makefile`.
 

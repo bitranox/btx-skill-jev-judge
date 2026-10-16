@@ -1,4 +1,4 @@
-# Default configuration for btx_skill_jev_judge
+# Default configuration for btx-skill-jev-judge
 #
 # This file contains the default configuration that ships with the application.
 # Additional settings can be placed in defaultconfig.d/*.toml

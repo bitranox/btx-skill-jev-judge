@@ -31,7 +31,7 @@ def get_config_in_memory(
 
 def get_default_config_path_in_memory() -> Path:
     """Return a synthetic path (not a real file)."""
-    return Path(tempfile.gettempdir()) / "btx_skill_jev_judge" / "defaultconfig.toml"
+    return Path(tempfile.gettempdir()) / "btx-skill-jev-judge" / "defaultconfig.toml"
 
 
 def deploy_configuration_in_memory(

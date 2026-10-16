@@ -48,7 +48,7 @@ def test_when_print_info_runs_it_outputs_metadata(capsys: pytest.CaptureFixture[
     print_info()
 
     captured = capsys.readouterr().out
-    assert "btx_skill_jev_judge" in captured
+    assert "btx-skill-jev-judge" in captured
     assert "version" in captured
 
 
@@ -58,7 +58,7 @@ def test_metadata_constants_are_set() -> None:
     from btx_skill_jev_judge import __init__conf__
 
     # These should be non-empty when package is installed
-    assert __init__conf__.name == "btx_skill_jev_judge"
+    assert __init__conf__.name == "btx-skill-jev-judge"
     assert __init__conf__.version  # Should have a version
     assert __init__conf__.shell_command == "btx-skill-jev-judge"
 

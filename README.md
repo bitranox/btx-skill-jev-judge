@@ -139,12 +139,12 @@ To install the command line tool with a cooldown of your own (uv then skips any 
 than 7 days, transitive ones included), or to run the exact tree our CI tests:
 
 ```bash
-uv tool install --exclude-newer "7 days" btx_skill_jev_judge
-git clone https://github.com/bitranox/btx-skill-jev-judge.git && cd btx-skill-jev-judge && uv sync --locked && uv run btx_skill_jev_judge --help
+uv tool install --exclude-newer "7 days" btx-skill-jev-judge
+git clone https://github.com/bitranox/btx-skill-jev-judge.git && cd btx-skill-jev-judge && uv sync --locked && uv run btx-skill-jev-judge --help
 ```
 
-If you depend on btx_skill_jev_judge in your own project, give that project the same cooldown (7 days here, as
-an example) and commit the `uv.lock` that `uv add btx_skill_jev_judge` writes:
+If you depend on btx-skill-jev-judge in your own project, give that project the same cooldown (7 days here, as
+an example) and commit the `uv.lock` that `uv add btx-skill-jev-judge` writes:
 
 ```toml
 [tool.uv]

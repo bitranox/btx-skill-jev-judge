@@ -5,6 +5,12 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+### Changed
+- The project is named `btx-skill-jev-judge` everywhere the name is not a Python import: the
+  distribution name in `pyproject.toml`, the `info` output, the default logging service name, and the
+  install commands in the README. PyPI treats both spellings as one project, so installs are
+  unaffected. The import package stays `btx_skill_jev_judge`.
+
 ## [0.2.6] 2026-10-13 15:42:05
 
 ### Added

@@ -43,10 +43,10 @@
 
 # Purpose: Logical service name recorded in each log event
 # Type: string (non-empty)
-# Default: "btx_skill_jev_judge" (from package name)
+# Default: "btx-skill-jev-judge" (from package name)
 # Environment Variable: BTX_SKILL_JEV_JUDGE___LIB_LOG_RICH__SERVICE=my-application
 # .env: LIB_LOG_RICH__SERVICE=my-application
-service = "btx_skill_jev_judge"
+service = "btx-skill-jev-judge"
 
 # Purpose: Deployment environment label (dev, stage, prod, local, etc.)
 # Type: string (non-empty)
