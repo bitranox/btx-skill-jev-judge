@@ -1,7 +1,7 @@
 # Installation Guide
 
-`btx-skill-jev-judge` is a Python 3.10+ command-line tool published on PyPI. It installs three command names
-for one program: `jev-judge`, `btx-skill-jev-judge` and `btx_skill_jev_judge`. You also need a
+`btx-skill-jev-judge` is a Python 3.10+ command-line tool published on PyPI. It installs two command names
+for one program: `jev-judge` and `btx-skill-jev-judge`. You also need a
 TypeSafe API key; see [Provide the key](#provide-the-key).
 
 Using the Claude Code plugin instead? See "Install in Claude Code" in [README.md](README.md).

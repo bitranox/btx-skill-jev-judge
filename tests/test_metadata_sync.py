@@ -52,6 +52,17 @@ def test_layeredconf_app_matches_project_name() -> None:
 
 
 @pytest.mark.os_agnostic
+def test_console_scripts_are_the_documented_two() -> None:
+    """The package installs exactly the commands the skill and README name.
+
+    SKILL.md calls ``jev-judge``; ``btx-skill-jev-judge`` is the project name.
+    A third spelling would be undocumented surface that the skill never uses.
+    """
+    scripts = rtoml.load(_PYPROJECT_PATH)["project"]["scripts"]
+    assert set(scripts) == {"jev-judge", __init__conf__.shell_command}
+
+
+@pytest.mark.os_agnostic
 def test_layeredconf_vendor_is_not_empty() -> None:
     """LAYEREDCONF_VENDOR must be set for macOS/Windows config paths."""
     assert __init__conf__.LAYEREDCONF_VENDOR, "LAYEREDCONF_VENDOR is empty"

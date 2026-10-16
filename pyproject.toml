@@ -80,7 +80,6 @@ dev = [
 ]
 
 [project.scripts]
-btx_skill_jev_judge = "btx_skill_jev_judge.entry:main"
 btx-skill-jev-judge = "btx_skill_jev_judge.entry:main"
 jev-judge = "btx_skill_jev_judge.entry:main"
 

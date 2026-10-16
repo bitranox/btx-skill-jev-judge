@@ -14,6 +14,10 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   Linux folder. A config file in the old `bitranox/btx_skill_jev_judge` folder is no longer read;
   move it to the new folder.
 
+### Removed
+- The `btx_skill_jev_judge` command. The package installs `jev-judge` and `btx-skill-jev-judge`,
+  which run the same program; use either instead.
+
 ## [0.2.6] 2026-10-13 15:42:05
 
 ### Added

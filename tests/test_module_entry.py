@@ -105,9 +105,9 @@ def test_entry_main_invokes_cli_with_help(
     """entry.main() wires production services and invokes CLI.
 
     This tests the console script entry point used by pip-installed commands
-    (btx_skill_jev_judge, btx-skill-jev-judge).
+    (btx-skill-jev-judge, jev-judge).
     """
-    monkeypatch.setattr(sys, "argv", ["btx_skill_jev_judge", "--help"])
+    monkeypatch.setattr(sys, "argv", ["btx-skill-jev-judge", "--help"])
 
     exit_code = entry.main()
 
@@ -125,7 +125,7 @@ def test_module_entry_formats_exceptions_via_exit_helpers(
     failing_command: str,
 ) -> None:
     """Exceptions during module entry are formatted by lib_cli_exit_tools."""
-    monkeypatch.setattr(sys, "argv", ["btx_skill_jev_judge", failing_command], raising=False)
+    monkeypatch.setattr(sys, "argv", ["btx-skill-jev-judge", failing_command], raising=False)
     monkeypatch.setattr(lib_cli_exit_tools.config, "traceback", False, raising=False)
     monkeypatch.setattr(lib_cli_exit_tools.config, "traceback_force_color", False, raising=False)
 
@@ -145,7 +145,7 @@ def test_module_entry_traceback_flag_prints_full_traceback(
     failing_command: str,
 ) -> None:
     """--traceback via module entry prints complete traceback on error."""
-    monkeypatch.setattr(sys, "argv", ["btx_skill_jev_judge", "--traceback", failing_command])
+    monkeypatch.setattr(sys, "argv", ["btx-skill-jev-judge", "--traceback", failing_command])
     monkeypatch.setattr(lib_cli_exit_tools.config, "traceback", False, raising=False)
     monkeypatch.setattr(lib_cli_exit_tools.config, "traceback_force_color", False, raising=False)
 
@@ -170,7 +170,7 @@ def test_entry_main_returns_nonzero_on_error(
     failing_command: str,
 ) -> None:
     """entry.main() returns non-zero exit code on CLI errors."""
-    monkeypatch.setattr(sys, "argv", ["btx_skill_jev_judge", failing_command])
+    monkeypatch.setattr(sys, "argv", ["btx-skill-jev-judge", failing_command])
     monkeypatch.setattr(lib_cli_exit_tools.config, "traceback", False)
     monkeypatch.setattr(lib_cli_exit_tools.config, "traceback_force_color", False)
 

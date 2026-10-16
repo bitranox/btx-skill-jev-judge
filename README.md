@@ -110,8 +110,8 @@ Start a relative path with `./`, or Claude Code reads it as `owner/repo`:
 
 ## Installation
 
-The command-line tool is the PyPI package `btx-skill-jev-judge`. It installs three command names for
-one program: `jev-judge`, `btx-skill-jev-judge` and `btx_skill_jev_judge`.
+The command-line tool is the PyPI package `btx-skill-jev-judge`. It installs two command names for
+one program: `jev-judge` and `btx-skill-jev-judge`.
 
 ```bash
 uvx --from btx-skill-jev-judge jev-judge --help   # run once, nothing installed
