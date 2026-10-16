@@ -5,6 +5,8 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+## [0.3.0] 2026-10-16 23:42:10
+
 ### Changed
 - The project is named `btx-skill-jev-judge` everywhere the name is not a Python import: the
   distribution name in `pyproject.toml`, the `info` output, the default logging service name, and the

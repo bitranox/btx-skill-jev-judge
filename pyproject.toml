@@ -1,6 +1,6 @@
 [project]
 name = "btx-skill-jev-judge"
-version = "0.2.6"
+version = "0.3.0"
 description = "Batch-judge items with the TypeSafe Jev API: run, summarize and check-key from the command line"
 readme = "README.md"
 requires-python = ">=3.10"
