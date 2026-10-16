@@ -222,3 +222,19 @@ The four Commands lines, extracted from SKILL.md with `grep` and run unchanged o
 items once PyPI served 0.2.5: all exit 0, no per-request line on stderr (the one stderr line is
 uvx's own install notice); `--version` prints `0.2.5`; `summarize --json-bare` gives 62 rows, 62
 answered, no failed ids, an empty `flat` and 10 uncertain ids.
+
+## Re-check for the rename (0.3.0)
+
+The release names the project `btx-skill-jev-judge` throughout, moves the macOS/Windows config
+folder to that name and drops the `btx_skill_jev_judge` command. SKILL.md changes only its version
+floors to 0.3.0; every command it names is `jev-judge`.
+
+### Executed
+
+The four Commands lines, extracted from SKILL.md with `grep` and run unchanged on 62 HTTP status
+items once PyPI served 0.3.0: all exit 0, no per-request line on stderr (the one stderr line is
+uvx's own install notice); `--version` prints `0.3.0` and `info` names `btx-skill-jev-judge`;
+`summarize --json-bare` gives 62 rows, 62 answered, no failed ids and an empty `flat`. Checked
+against each status class in code: the yes/no "request failed" question got 62 of 62 (10 of 10 in
+the pilot); the six-way kind question got 52 of 62, with 17 ids on its read-by-hand list. Asking uvx
+for `btx_skill_jev_judge` now exits 1 and lists `btx-skill-jev-judge` and `jev-judge`.
