@@ -1,6 +1,6 @@
 [project]
 name = "btx-skill-jev-judge"
-version = "0.3.0"
+version = "0.3.1"
 description = "Batch-judge items with the TypeSafe Jev API: run, summarize and check-key from the command line"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -9,11 +9,11 @@ dependencies = [
     # Imported directly (adapters/cli/main.py, commands/config.py), not only through rich-click.
     "click>=8.5.0",
     "lib_cli_exit_tools>=2.4.1",
-    "lib_log_rich>=6.5.3",
-    "lib_layered_config>=7.1.9",
+    "lib_log_rich>=6.5.6",
+    "lib_layered_config>=7.3.0",
     "pydantic>=2.14.1",
     "orjson>=3.13.0",
-    "httpx2>=2.13.1",
+    "httpx2>=2.14.0",
 ]
 license = { text = "MIT" }
 authors = [{ name = "bitranox", email = "bitranox@gmail.com" }]
@@ -68,7 +68,7 @@ dev = [
   "textual>=8.2.8",
   "import-linter>=2.15",
   "rtoml>=0.14.0",
-  "httpx2>=2.13.1",
+  "httpx2>=2.14.0",
   # Transitive CVE pins
   "click>=8.5.0",                # CVE-2026-7246
   "jaraco-context>=6.1.2",       # CVE-2025-23949
@@ -76,7 +76,8 @@ dev = [
   "wheel>=0.48.0",               # CVE-2025-24049
   "pynacl>=1.6.2",               # CVE-2025-69277
   "urllib3>=2.8.0",              # CVE-2025-66471, CVE-2025-66418
-  "virtualenv>=21.14.7",         # CVE-2025-22702
+  "virtualenv>=21.14.11",        # CVE-2025-22702
+  "certifi>=2026.10.19",         # GHSA-6q48-6c7w-9gw2
 ]
 
 [project.scripts]
@@ -277,4 +278,4 @@ ignores = ["E003"]
 
 [tool.uv]
 exclude-newer = "1 day"
-exclude-newer-package = {lib-cli-exit-tools = false, lib-layered-config = false, lib-log-rich = false}
+exclude-newer-package = {lib-cli-exit-tools = false, lib-layered-config = false, lib-log-rich = false, certifi = "2026-10-20T02:24:17Z"}

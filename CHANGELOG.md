@@ -5,6 +5,17 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+## [0.3.1] 2026-10-21 00:04:23
+
+### Changed
+- SKILL.md, Pilot step: before piloting, name the fact the judgment must decide and the state
+  field that carries it; a flat pilot can mean the state lacks the deciding signal, not that the
+  wording is wrong.
+- SKILL.md's version floors name 0.3.1.
+
+### Security
+- The dev environment requires `certifi>=2026.10.19` (GHSA-6q48-6c7w-9gw2).
+
 ## [0.3.0] 2026-10-16 23:42:10
 
 ### Changed

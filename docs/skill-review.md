@@ -238,3 +238,16 @@ uvx's own install notice); `--version` prints `0.3.0` and `info` names `btx-skil
 against each status class in code: the yes/no "request failed" question got 62 of 62 (10 of 10 in
 the pilot); the six-way kind question got 52 of 62, with 17 ids on its read-by-hand list. Asking uvx
 for `btx_skill_jev_judge` now exits 1 and lists `btx-skill-jev-judge` and `jev-judge`.
+
+## Re-check for the pilot-signal rule (0.3.1)
+
+SKILL.md's Pilot step gains one rule: name the fact the judgment decides and the state field that
+carries it before piloting, because a fact absent from the state (whether an author measured a
+claim) gives a flat or near-flat pilot that no rewording fixes; step 5 adds that reading to what a
+FLAT exit 1 can mean. No command, flag or version floor changed.
+
+### Executed
+
+A quote-back probe on haiku and opus, given a pilot that came back high and narrow on a question
+whose deciding fact is not in the text, quoted the new Pilot paragraph on both tiers; the same
+question on the pre-edit text quoted only the generic pilot advice.

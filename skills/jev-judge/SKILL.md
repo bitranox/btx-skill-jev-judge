@@ -36,13 +36,21 @@ limit, retries and secret redaction.
    field.
 3. **Write `questions.json`** (Question design). Several questions about the same item share one
    request.
-4. **Pilot:** `run --pilot 10 --out pilot.jsonl` judges the first ten lines, so put at least one
+4. **Pilot.** Before it, name the fact the judgment must decide and the state field that carries
+   it. If no field carries it, for example whether an author MEASURED a claim (that lives in their
+   session, not in the text), no wording can recover it: the pilot comes back flat or nearly so,
+   every item scored alike whether it matters or not, and invites rewrite after rewrite. A proxy
+   question that does spread the scores can still pass the very items that matter, so check it
+   against known positives before trusting the spread. If the signal is absent, judge another way;
+   for an existing gate, label what each of its past decisions changed and size it from that.
+   `run --pilot 10 --out pilot.jsonl` judges the first ten lines, so put at least one
    item you KNOW is a yes and one you know is a no among them. Read the ten rows against their
    items. If you would have answered more than one differently, fix the question or the state, not
    the threshold. If two rewrites still fail the pilot, Jev is the wrong tool here: say so and
    judge another way.
 5. **Run everything, then `summarize`.** Exit 1 means a FLAT question (every item got about the
-   same answer): a broken question until you have shown the items really are alike.
+   same answer): a broken question until you have shown the items really are alike, or that the
+   state lacks the deciding signal (step 4).
 6. **Decide with a band, not one cut.** `summarize` lists as "read by hand" every noul between 0.2
    and 0.8 and every choice or score with confidence below 0.6 (`--band`, `--min-confidence`).
    Take the rest as decided and read those yourself, or hand them to the user. A probability is
@@ -86,10 +94,10 @@ included: unquoted, the shell reads `>=` as a redirection, and stored in a varia
 reach `uvx` and it refuses the name.
 
 ```bash
-uvx --from 'btx-skill-jev-judge>=0.3.0' jev-judge check-key
-uvx --from 'btx-skill-jev-judge>=0.3.0' jev-judge run --items items.jsonl --questions questions.json --out pilot.jsonl --pilot 10
-uvx --from 'btx-skill-jev-judge>=0.3.0' jev-judge run --items items.jsonl --questions questions.json --out rows.jsonl
-uvx --from 'btx-skill-jev-judge>=0.3.0' jev-judge summarize --rows rows.jsonl
+uvx --from 'btx-skill-jev-judge>=0.3.1' jev-judge check-key
+uvx --from 'btx-skill-jev-judge>=0.3.1' jev-judge run --items items.jsonl --questions questions.json --out pilot.jsonl --pilot 10
+uvx --from 'btx-skill-jev-judge>=0.3.1' jev-judge run --items items.jsonl --questions questions.json --out rows.jsonl
+uvx --from 'btx-skill-jev-judge>=0.3.1' jev-judge summarize --rows rows.jsonl
 ```
 
 `run` overwrites `--out` and reports answered, failed ids and cost. `<command> --help` lists every
@@ -113,7 +121,7 @@ run this, then paste the key in with an editor; never ask for it in chat and nev
 mkdir -p -m 700 ~/.credentials && install -m 600 /dev/null ~/.credentials/typesafe.key
 ```
 
-Per-machine defaults (e.g. a lower `rate`): `uvx --from 'btx-skill-jev-judge>=0.3.0' jev-judge
+Per-machine defaults (e.g. a lower `rate`): `uvx --from 'btx-skill-jev-judge>=0.3.1' jev-judge
 config-deploy --target user` prints the files it writes; edit `[judge]` / `[summary]` in the one
 named `60-judge.toml`. Or set `BTX_SKILL_JEV_JUDGE___JUDGE__RATE=5` in the environment. A flag
 always wins.
