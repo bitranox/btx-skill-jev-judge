@@ -5,6 +5,14 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+## [0.3.2] 2026-10-22 12:10:35
+
+### Changed
+- SKILL.md, Question design: a question naming a state field an item lacks does not fail, Jev
+  hedges toward the middle; send that field in every item with an explicit empty marker, or ask a
+  variant that does not name it. The Pilot step includes the item with the fewest state fields.
+- SKILL.md's version floors name 0.3.2.
+
 ## [0.3.1] 2026-10-21 00:04:23
 
 ### Changed

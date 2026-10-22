@@ -251,3 +251,18 @@ FLAT exit 1 can mean. No command, flag or version floor changed.
 A quote-back probe on haiku and opus, given a pilot that came back high and narrow on a question
 whose deciding fact is not in the text, quoted the new Pilot paragraph on both tiers; the same
 question on the pre-edit text quoted only the generic pilot advice.
+
+## Re-check for the absent-field rule (0.3.2)
+
+SKILL.md's Question design gains one rule: a question that names a state field an item lacks does
+not fail, Jev hedges toward the middle, so the defect shows as no error and no non-zero exit; send
+the field in every item with an explicit empty marker, or ask a variant that does not name it. The
+Pilot step adds the item with the fewest state fields. No command or flag changed; the version
+floors name 0.3.2.
+
+### Executed
+
+A quote-back probe on haiku and opus, given a question naming an optional field that the extraction
+drops when empty, quoted the new Question design sentence and the Pilot clause on both tiers; the
+same question on the pre-edit text quoted only the rule to name fields every item has and the
+generic pilot advice.

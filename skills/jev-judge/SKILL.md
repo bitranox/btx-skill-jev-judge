@@ -44,10 +44,11 @@ limit, retries and secret redaction.
    against known positives before trusting the spread. If the signal is absent, judge another way;
    for an existing gate, label what each of its past decisions changed and size it from that.
    `run --pilot 10 --out pilot.jsonl` judges the first ten lines, so put at least one
-   item you KNOW is a yes and one you know is a no among them. Read the ten rows against their
-   items. If you would have answered more than one differently, fix the question or the state, not
-   the threshold. If two rewrites still fail the pilot, Jev is the wrong tool here: say so and
-   judge another way.
+   item you KNOW is a yes and one you know is a no among them, plus the item with the fewest state
+   fields any real item has: the first ten lines of an export may hold none, and that sparse item
+   must still separate from a known no. Read the ten rows against their items. If you would have
+   answered more than one differently, fix the question or the state, not the threshold. If two
+   rewrites still fail the pilot, Jev is the wrong tool here: say so and judge another way.
 5. **Run everything, then `summarize`.** Exit 1 means a FLAT question (every item got about the
    same answer): a broken question until you have shown the items really are alike, or that the
    state lacks the deciding signal (step 4).
@@ -64,6 +65,11 @@ limit, retries and secret redaction.
   `criteria` key) and `score` (a position on the ordered `criteria` list).
 - `instructions` carries the whole question; the question `id` is never shown to the model. Refer
   to state fields as backticked paths (`title`, `candidates[0]`), and only to fields every item has.
+  A question naming a field an item lacks does not fail: Jev hedges toward the middle (measured:
+  0.66-0.70 against a 0.7 threshold, where the same item scored 0.89-0.90 with the field present),
+  so the defect never shows as an error or a non-zero exit. If extraction drops a key whose value
+  is empty, either send that key in every item with an explicit empty marker, or ask a variant
+  that does not name it for the items without it, and pilot one of those items (step 4).
 - Jev reads literally: state the exact condition, put boundary cases in `criteria`.
 - `choice` options are the SAME for every item, so use it for a fixed set of targets (2-255; e.g.
   30 known bugs, 8 product areas), each target's description in `criteria`, not in the state.
@@ -94,10 +100,10 @@ included: unquoted, the shell reads `>=` as a redirection, and stored in a varia
 reach `uvx` and it refuses the name.
 
 ```bash
-uvx --from 'btx-skill-jev-judge>=0.3.1' jev-judge check-key
-uvx --from 'btx-skill-jev-judge>=0.3.1' jev-judge run --items items.jsonl --questions questions.json --out pilot.jsonl --pilot 10
-uvx --from 'btx-skill-jev-judge>=0.3.1' jev-judge run --items items.jsonl --questions questions.json --out rows.jsonl
-uvx --from 'btx-skill-jev-judge>=0.3.1' jev-judge summarize --rows rows.jsonl
+uvx --from 'btx-skill-jev-judge>=0.3.2' jev-judge check-key
+uvx --from 'btx-skill-jev-judge>=0.3.2' jev-judge run --items items.jsonl --questions questions.json --out pilot.jsonl --pilot 10
+uvx --from 'btx-skill-jev-judge>=0.3.2' jev-judge run --items items.jsonl --questions questions.json --out rows.jsonl
+uvx --from 'btx-skill-jev-judge>=0.3.2' jev-judge summarize --rows rows.jsonl
 ```
 
 `run` overwrites `--out` and reports answered, failed ids and cost. `<command> --help` lists every
@@ -121,7 +127,7 @@ run this, then paste the key in with an editor; never ask for it in chat and nev
 mkdir -p -m 700 ~/.credentials && install -m 600 /dev/null ~/.credentials/typesafe.key
 ```
 
-Per-machine defaults (e.g. a lower `rate`): `uvx --from 'btx-skill-jev-judge>=0.3.1' jev-judge
+Per-machine defaults (e.g. a lower `rate`): `uvx --from 'btx-skill-jev-judge>=0.3.2' jev-judge
 config-deploy --target user` prints the files it writes; edit `[judge]` / `[summary]` in the one
 named `60-judge.toml`. Or set `BTX_SKILL_JEV_JUDGE___JUDGE__RATE=5` in the environment. A flag
 always wins.
