@@ -7,6 +7,12 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ### Fixed
 
+- A `[lib_log_rich]` value lib_log_rich refuses (a wrong type, such as `rate_limit = "100:60"`, or
+  one of its own range checks, such as `queue_maxsize = 0`) made every command exit with the OS
+  errno (22 on POSIX, 87 on Windows) and pydantic's report. It is now a configuration failure like a
+  broken file: logging starts with its defaults, the commands that read the configuration (`config`,
+  `run`, `summarize`) exit 78 with one `Error:` line per problem naming the key, never the value, and
+  the other commands run.
 - `logdemo` works with lib_log_rich 7.0, which takes a `ConsoleTheme` member rather than a string
   (it failed with `AttributeError: 'str' object has no attribute 'value'`). `--theme` offers
   lib_log_rich's own theme list, so an unknown name is a usage error (exit 2) instead of the

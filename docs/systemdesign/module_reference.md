@@ -29,14 +29,14 @@ Complete (v0.2.0)
 - `src/btx_skill_jev_judge/adapters/config/deploy.py`  -  Configuration deployment
 - `src/btx_skill_jev_judge/adapters/config/display.py`  -  Configuration display (TOML/JSON output, redaction)
 - `src/btx_skill_jev_judge/adapters/config/overrides.py`  -  CLI `--set` override parsing and deep-merge
-- `src/btx_skill_jev_judge/adapters/logging/setup.py`  -  lib_log_rich initialization
+- `src/btx_skill_jev_judge/adapters/logging/setup.py`  -  lib_log_rich initialization; raises `InvalidLoggingConfigError` for a refused `[lib_log_rich]` value
 - `src/btx_skill_jev_judge/adapters/cli/`  -  CLI adapter package:
   - `__init__.py`  -  Public facade
   - `constants.py`  -  Shared constants
   - `safe_console.py`  -  Encode-safe terminal output; use `safe_console.echo` instead of `click.echo`
   - `exit_codes.py`  -  POSIX exit codes (ExitCode IntEnum)
   - `context.py`  -  Click context helpers
-  - `config_load.py`  -  Configuration load for the CLI; records a load failure, `require_config` refuses with exit 78
+  - `config_load.py`  -  Configuration load for the CLI; records a load failure (a refused logging setting included, through `start_logging`), `require_config` refuses with exit 78
   - `root.py`  -  Root command group
   - `main.py`  -  Entry point
   - `typed_click.py`  -  Strictly typed wrappers for rich-click decorators
@@ -82,6 +82,7 @@ Complete (v0.2.0)
 - `tests/test_permission_defaults.py`  -  `config-deploy` hands permissions to lib_layered_config
 - `tests/test_safe_console.py`  -  Legacy-codepage output tests, plus the guard forbidding direct `click.echo`
 - `tests/test_display.py`  -  Config display formatting tests
+- `tests/test_logging_config_refusal.py`  -  An invalid `[lib_log_rich]` section is a configuration failure: the commands that read the configuration exit 78 naming the key, the others run
 - `tests/test_memory_logging.py`  -  Testing-composition logging runtime and the per-test logging reset
 - `tests/test_metadata.py`, `tests/test_metadata_sync.py`  -  Package metadata and its sync with `pyproject.toml`
 - `tests/test_module_reference_sync.py`  -  The field tables below match the models

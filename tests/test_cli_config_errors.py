@@ -22,6 +22,7 @@ spelling.
 from __future__ import annotations
 
 import dataclasses
+import json
 import logging
 import os
 import stat
@@ -34,6 +35,7 @@ from lib_layered_config import Config, ConfigError, DeployPermissionsError, Perm
 
 from btx_skill_jev_judge import __init__conf__
 from btx_skill_jev_judge.adapters import cli as cli_mod
+from btx_skill_jev_judge.adapters.key import KEY_ENV
 from btx_skill_jev_judge.composition import AppServices, build_testing
 
 if TYPE_CHECKING:
@@ -98,6 +100,119 @@ def test_a_command_that_does_not_read_the_config_still_runs(cli_runner: CliRunne
     result = cli_runner.invoke(cli_mod.cli, args, obj=_failing_config(ConfigError(BROKEN_TOML)))
 
     assert result.exit_code == 0, result.output
+
+
+#: The line lib_log_rich's refusal of ``LOG_CONSOLE_LEVEL=bogus`` becomes, written by every command
+#: that refuses it: the ones that read the configuration, and logdemo, whose demo reads the variable.
+REFUSED_LOG_VARIABLE = "Error: lib_log_rich: Invalid runtime settings: LOG_CONSOLE_LEVEL: Unknown log level: 'bogus'"
+
+#: The commands outside the two tables above, and their exit code under a refused ``LOG_*``
+#: variable: check-key and config-generate-examples read no configuration and run; logdemo's
+#: demo reads the variable itself and refuses it as config does.
+OTHER_UNDER_A_REFUSED_LOG_VARIABLE: dict[str, int] = {"check-key": 0, "config-generate-examples": 0, "logdemo": 78}
+
+
+@pytest.fixture
+def refused_log_variable(
+    monkeypatch: pytest.MonkeyPatch, production_factory: Callable[[], AppServices]
+) -> Callable[[], AppServices]:
+    """The production services, ``LOG_CONSOLE_LEVEL=bogus``, and a key, so check-key can succeed.
+
+    Production, because the defect is in the real logging start: the testing composition's quiet
+    runtime never reads the ``[lib_log_rich]`` section.
+    """
+    monkeypatch.setenv("LOG_CONSOLE_LEVEL", "bogus")
+    monkeypatch.setenv(KEY_ENV, "fake-key-for-check-key")
+    return production_factory
+
+
+@pytest.mark.os_agnostic
+def test_every_other_command_has_an_expected_exit_under_a_refused_log_variable() -> None:
+    assert set(OTHER_UNDER_A_REFUSED_LOG_VARIABLE) == set(OTHER)
+
+
+@pytest.mark.os_agnostic
+@pytest.mark.parametrize("args", NEEDS_CONFIG.values(), ids=NEEDS_CONFIG.keys())
+def test_a_refused_log_variable_refuses_a_command_that_reads_the_config_with_exit_78(
+    capsys: pytest.CaptureFixture[str], refused_log_variable: Callable[[], AppServices], args: list[str]
+) -> None:
+    """Exit 78 and lib_log_rich's own line, not main()'s catch-all errno (22 on POSIX, 87 on Windows)."""
+    exit_code = cli_mod.main(args, services_factory=refused_log_variable)
+
+    err = capsys.readouterr().err
+    assert exit_code == 78, err
+    assert REFUSED_LOG_VARIABLE in err
+    assert "Traceback" not in err
+
+
+@pytest.mark.os_agnostic
+@pytest.mark.parametrize(
+    "args",
+    [*RUNS_WITHOUT_CONFIG.values(), ["check-key"], []],
+    ids=[*RUNS_WITHOUT_CONFIG.keys(), "check-key", "bare-group"],
+)
+def test_a_refused_log_variable_does_not_stop_a_command_that_does_not_read_the_config(
+    capsys: pytest.CaptureFixture[str], refused_log_variable: Callable[[], AppServices], args: list[str]
+) -> None:
+    """It runs on logging's defaults with the ``LOG_*`` variables hidden, and says nothing about them."""
+    exit_code = cli_mod.main(args, services_factory=refused_log_variable)
+
+    err = capsys.readouterr().err
+    assert exit_code == 0, err
+    assert "bogus" not in err
+
+
+@pytest.mark.os_agnostic
+def test_a_refused_log_variable_does_not_stop_config_generate_examples(
+    capsys: pytest.CaptureFixture[str], refused_log_variable: Callable[[], AppServices], tmp_path: Path
+) -> None:
+    args = ["config-generate-examples", "--destination", str(tmp_path)]
+    exit_code = cli_mod.main(args, services_factory=refused_log_variable)
+
+    err = capsys.readouterr().err
+    assert exit_code == OTHER_UNDER_A_REFUSED_LOG_VARIABLE["config-generate-examples"], err
+    assert "bogus" not in err
+
+
+@pytest.mark.os_agnostic
+def test_a_refused_log_variable_ends_logdemo_with_exit_78(
+    capsys: pytest.CaptureFixture[str], refused_log_variable: Callable[[], AppServices]
+) -> None:
+    exit_code = cli_mod.main(["logdemo"], services_factory=refused_log_variable)
+
+    err = capsys.readouterr().err
+    assert exit_code == OTHER_UNDER_A_REFUSED_LOG_VARIABLE["logdemo"], err
+    assert REFUSED_LOG_VARIABLE in err
+    assert "Traceback" not in err
+
+
+@pytest.mark.os_agnostic
+def test_a_refused_log_variable_reaches_the_json_envelope_of_run(
+    capsys: pytest.CaptureFixture[str], refused_log_variable: Callable[[], AppServices]
+) -> None:
+    """The same route as any other configuration failure: the Error line, and the envelope on --json."""
+    exit_code = cli_mod.main([*NEEDS_CONFIG["run"], "--json"], services_factory=refused_log_variable)
+
+    captured = capsys.readouterr()
+    assert exit_code == 78, captured.err
+    assert REFUSED_LOG_VARIABLE in captured.err
+    envelope = json.loads(captured.out)
+    assert envelope["ok"] is False
+    assert envelope["data"] == {"error": REFUSED_LOG_VARIABLE.removeprefix("Error: ")}
+
+
+@pytest.mark.os_agnostic
+def test_a_refused_logging_section_value_refuses_config_with_exit_78(
+    capsys: pytest.CaptureFixture[str], production_factory: Callable[[], AppServices]
+) -> None:
+    """A ``[lib_log_rich]`` value lib_log_rich refuses takes the same route as a refused variable."""
+    args = ["--set", "lib_log_rich.console_level=bogus", "config"]
+    exit_code = cli_mod.main(args, services_factory=production_factory)
+
+    err = capsys.readouterr().err
+    assert exit_code == 78, err
+    assert "Error: lib_log_rich: Invalid runtime settings: console_level: Unknown log level: 'bogus'" in err
+    assert "Traceback" not in err
 
 
 def _recording_failing_config(error: Exception) -> tuple[list[dict[str, Any]], Callable[[], AppServices]]:

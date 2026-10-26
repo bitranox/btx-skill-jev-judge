@@ -6,6 +6,7 @@ eliminating duplication between module entry (__main__.py) and console script
 
 Contents:
     * :func:`init_logging` - idempotent logging initialization with layered config.
+    * :class:`InvalidLoggingConfigError` - the ``[lib_log_rich]`` section cannot configure logging.
     * :func:`_build_runtime_config` - constructs RuntimeConfig from layered sources.
     * :func:`_quiet_http_loggers` - keeps httpx2's one-line-per-request INFO log off the console.
 
@@ -22,9 +23,10 @@ from typing import TYPE_CHECKING, cast
 
 import lib_log_rich.config
 import lib_log_rich.runtime
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, ValidationError
 
 from btx_skill_jev_judge import __init__conf__
+from btx_skill_jev_judge.domain.errors import ConfigurationError
 
 if TYPE_CHECKING:
     from lib_layered_config import Config
@@ -131,6 +133,41 @@ def _quiet_http_loggers(console_level: object) -> None:
         logging.getLogger(name).setLevel(logging.WARNING)
 
 
+class InvalidLoggingConfigError(ConfigurationError):
+    """lib_log_rich refuses its settings: one ``<key>: <reason>`` in :attr:`problems` per problem.
+
+    The settings are the ``[lib_log_rich]`` section plus any ``LOG_*`` variable. A problem names
+    the key and never repeats the refused value.
+
+    Attributes:
+        problems: One line per refused setting.
+
+    Example:
+        >>> from lib_layered_config import Config
+        >>> try:
+        ...     init_logging(Config({"lib_log_rich": {"rate_limit": "100:60"}}, {}))
+        ... except InvalidLoggingConfigError as exc:
+        ...     print(exc)
+        lib_log_rich.rate_limit: Input should be a valid tuple
+    """
+
+    def __init__(self, problems: list[str]) -> None:
+        super().__init__("; ".join(problems))
+        self.problems = problems
+
+
+def _problems(error: BaseException) -> list[str]:
+    """One line per problem, from the first pydantic error in ``error``'s chain; never the value."""
+    cause: BaseException | None = error
+    while cause is not None and not isinstance(cause, ValidationError):
+        cause = cause.__cause__ or cause.__context__
+    if cause is None:
+        # Not a pydantic error (e.g. an unknown level name): its own first line, which names
+        # the setting.
+        return [f"lib_log_rich: {str(error).splitlines()[0]}"]
+    return [f"lib_log_rich.{'.'.join(str(part) for part in item['loc'])}: {item['msg']}" for item in cause.errors()]
+
+
 def init_logging(config: Config) -> None:
     """Initialize lib_log_rich runtime with the provided configuration.
 
@@ -144,6 +181,10 @@ def init_logging(config: Config) -> None:
     Args:
         config: Already-loaded layered configuration object containing logging
             settings in the [lib_log_rich] section.
+
+    Raises:
+        InvalidLoggingConfigError: The ``[lib_log_rich]`` section holds a value lib_log_rich
+            refuses; logging is not started.
 
     Side Effects:
         Loads .env files into the process environment on first invocation.
@@ -167,13 +208,19 @@ def init_logging(config: Config) -> None:
     if lib_log_rich.runtime.is_initialised():
         return
     lib_log_rich.config.enable_dotenv()
-    runtime_config = _build_runtime_config(config)
-    lib_log_rich.runtime.init(runtime_config)
+    try:
+        runtime_config = _build_runtime_config(config)
+        lib_log_rich.runtime.init(runtime_config)
+    except (ValidationError, ValueError) as exc:
+        # The type check of the section and lib_log_rich's own range checks (which also see the
+        # LOG_* variables) both refuse here; neither has started the runtime.
+        raise InvalidLoggingConfigError(_problems(exc)) from exc
     lib_log_rich.runtime.attach_std_logging()
     _quiet_http_loggers(runtime_config.console_level)
 
 
 __all__ = [
+    "InvalidLoggingConfigError",
     "LoggingConfigModel",
     "init_logging",
 ]
