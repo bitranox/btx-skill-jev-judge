@@ -413,7 +413,7 @@ def inject_config(
             result = cli_runner.invoke(cli, ["config"], obj=factory)
             assert "key" in result.output
     """
-    from btx_skill_jev_judge.adapters.memory import init_logging_in_memory
+    from btx_skill_jev_judge.adapters.memory import check_logging_config_in_memory, init_logging_in_memory
     from btx_skill_jev_judge.composition import AppServices, build_production, build_testing
 
     def _inject(config: Config) -> Callable[[], AppServices]:
@@ -429,6 +429,7 @@ def inject_config(
             # The quiet runtime: production init_logging queues INFO lines that race into
             # CliRunner's stderr, so a stderr assertion would depend on timing.
             init_logging=init_logging_in_memory,
+            check_logging_config=check_logging_config_in_memory,
             # Bound to an empty environment and a home that does not exist, never to the real ones.
             load_key=safe.load_key,
             make_client=safe.make_client,
@@ -467,7 +468,7 @@ def inject_config_with_profile_capture(
             cli_runner.invoke(cli, ["--profile", "staging", "config"], obj=factory)
             assert captured == ["staging"]
     """
-    from btx_skill_jev_judge.adapters.memory import init_logging_in_memory
+    from btx_skill_jev_judge.adapters.memory import check_logging_config_in_memory, init_logging_in_memory
     from btx_skill_jev_judge.composition import AppServices, build_production, build_testing
 
     def _inject(config: Config, captured_profiles: list[str | None]) -> Callable[[], AppServices]:
@@ -484,6 +485,7 @@ def inject_config_with_profile_capture(
             # The quiet runtime: production init_logging queues INFO lines that race into
             # CliRunner's stderr, so a stderr assertion would depend on timing.
             init_logging=init_logging_in_memory,
+            check_logging_config=check_logging_config_in_memory,
             # Bound to an empty environment and a home that does not exist, never to the real ones.
             load_key=safe.load_key,
             make_client=safe.make_client,
@@ -522,7 +524,7 @@ def inject_deploy_with_profile_capture(
             cli_runner.invoke(cli, ["--profile", "prod", "config-deploy", ...], obj=factory)
             assert captured == ["prod"]
     """
-    from btx_skill_jev_judge.adapters.memory import init_logging_in_memory
+    from btx_skill_jev_judge.adapters.memory import check_logging_config_in_memory, init_logging_in_memory
     from btx_skill_jev_judge.composition import AppServices, build_production, build_testing
 
     def _inject(deployed_path: Path, captured_profiles: list[str | None]) -> Callable[[], AppServices]:
@@ -548,6 +550,7 @@ def inject_deploy_with_profile_capture(
             # The quiet runtime: production init_logging queues INFO lines that race into
             # CliRunner's stderr, so a stderr assertion would depend on timing.
             init_logging=init_logging_in_memory,
+            check_logging_config=check_logging_config_in_memory,
             # Bound to an empty environment and a home that does not exist, never to the real ones.
             load_key=safe.load_key,
             make_client=safe.make_client,
@@ -582,7 +585,7 @@ def inject_deploy_configuration() -> Callable[[Callable[..., list[Path]]], Calla
             cli_runner.invoke(cli, ["config-deploy", "--target", "user"], obj=factory)
             assert len(calls) == 1
     """
-    from btx_skill_jev_judge.adapters.memory import init_logging_in_memory
+    from btx_skill_jev_judge.adapters.memory import check_logging_config_in_memory, init_logging_in_memory
     from btx_skill_jev_judge.composition import AppServices, build_production, build_testing
 
     def _inject(deploy_fn: Callable[..., list[Path]]) -> Callable[[], AppServices]:
@@ -595,6 +598,7 @@ def inject_deploy_configuration() -> Callable[[Callable[..., list[Path]]], Calla
             # The quiet runtime: production init_logging queues INFO lines that race into
             # CliRunner's stderr, so a stderr assertion would depend on timing.
             init_logging=init_logging_in_memory,
+            check_logging_config=check_logging_config_in_memory,
             # Bound to an empty environment and a home that does not exist, never to the real ones.
             load_key=safe.load_key,
             make_client=safe.make_client,
@@ -657,7 +661,7 @@ def config_cli_context(
             result = cli_runner.invoke(cli, ["config"], obj=factory)
             assert "key" in result.output
     """
-    from btx_skill_jev_judge.adapters.memory import init_logging_in_memory
+    from btx_skill_jev_judge.adapters.memory import check_logging_config_in_memory, init_logging_in_memory
     from btx_skill_jev_judge.composition import AppServices, build_production, build_testing
 
     def _create(config_data: dict[str, Any]) -> Callable[[], AppServices]:
@@ -675,6 +679,7 @@ def config_cli_context(
             # The quiet runtime: production init_logging queues INFO lines that race into
             # CliRunner's stderr, so a stderr assertion would depend on timing.
             init_logging=init_logging_in_memory,
+            check_logging_config=check_logging_config_in_memory,
             # Bound to an empty environment and a home that does not exist, never to the real ones.
             load_key=safe.load_key,
             make_client=safe.make_client,

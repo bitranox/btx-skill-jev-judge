@@ -13,6 +13,7 @@ import pytest
 from lib_layered_config import Config
 
 from btx_skill_jev_judge.adapters.memory import (
+    check_logging_config_in_memory,
     get_config_in_memory,
     get_default_config_path_in_memory,
     init_logging_in_memory,
@@ -20,6 +21,7 @@ from btx_skill_jev_judge.adapters.memory import (
 
 if TYPE_CHECKING:
     from btx_skill_jev_judge.application.ports import (
+        CheckLoggingConfig,
         GetConfig,
         GetDefaultConfigPath,
         InitLogging,
@@ -47,6 +49,12 @@ def init_logging_impl() -> InitLogging:
     return init_logging_in_memory
 
 
+@pytest.fixture
+def check_logging_config_impl() -> CheckLoggingConfig:
+    """Provide in-memory CheckLoggingConfig implementation."""
+    return check_logging_config_in_memory
+
+
 @pytest.mark.os_agnostic
 def test_get_config_returns_config_with_dict(get_config_impl: GetConfig) -> None:
     """GetConfig must return a Config whose as_dict() yields a dict."""
@@ -68,6 +76,12 @@ def test_init_logging_does_not_raise(init_logging_impl: InitLogging) -> None:
     """InitLogging must not raise when called with a Config."""
     config = Config({}, {})
     init_logging_impl(config)
+
+
+@pytest.mark.os_agnostic
+def test_check_logging_config_in_memory_refuses_nothing(check_logging_config_impl: CheckLoggingConfig) -> None:
+    """The test runtime ignores the configuration, so no logging section can break it."""
+    check_logging_config_impl(Config({"lib_log_rich": {"rate_limit": "100:60"}}, {}))
 
 
 # ======================== Composition Wiring Tests ========================

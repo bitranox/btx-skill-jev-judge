@@ -16,6 +16,7 @@ Contents:
     * :func:`load_config` - load with profile, ``.env`` and ``--set``, or say why not.
     * :func:`start_logging` - start logging; an invalid ``[lib_log_rich]`` value or ``LOG_*``
       variable is a load failure.
+    * :func:`check_logging` - the same refusal for a configuration loaded after logging started.
     * :func:`require_config` - the configuration, or exit 78 naming the failure.
     * :func:`report_load_failure` - the one-line report, after the traceback on request.
     * :func:`echo_load_traceback` - the loader's traceback alone, for a caller with its own line.
@@ -140,6 +141,29 @@ def start_logging(
     return config, config_error
 
 
+def check_logging(services: AppServices, config: Config) -> Exception | None:
+    """Judge the logging settings of a configuration loaded after logging started; a refusal is returned.
+
+    ``config --profile`` reloads the configuration once logging is running, so
+    :func:`start_logging` never sees the reloaded ``[lib_log_rich]`` section; without this an
+    invalid value there would display with exit 0 while plain ``config`` exits 78. The check
+    refuses what :func:`start_logging` refuses, in the same words, and never touches the
+    running runtime: the command keeps logging with the settings logging started with.
+
+    Args:
+        services: The composition's services; only ``check_logging_config`` is used.
+        config: The configuration :func:`load_config` returned.
+
+    Returns:
+        None, or the refusal.
+    """
+    try:
+        services.check_logging_config(config)
+    except InvalidLoggingConfigError as exc:
+        return exc
+    return None
+
+
 def echo_load_traceback(error: Exception, *, show_traceback: bool) -> None:
     """Write the loader's chained traceback to stderr when ``--traceback`` was given.
 
@@ -187,4 +211,11 @@ def require_config(ctx: click.Context, cli_ctx: CLIContext) -> Config:
     return cli_ctx.config
 
 
-__all__ = ["echo_load_traceback", "load_config", "report_load_failure", "require_config", "start_logging"]
+__all__ = [
+    "check_logging",
+    "echo_load_traceback",
+    "load_config",
+    "report_load_failure",
+    "require_config",
+    "start_logging",
+]

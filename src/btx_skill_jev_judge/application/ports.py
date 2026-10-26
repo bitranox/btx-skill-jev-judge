@@ -72,6 +72,16 @@ class InitLogging(Protocol):
     def __call__(self, config: Config) -> None: ...
 
 
+class CheckLoggingConfig(Protocol):
+    """Refuse ``config``'s logging settings as ``InitLogging`` would, leaving the running runtime alone.
+
+    For a configuration loaded after logging is running; a refused setting raises
+    ``InvalidLoggingConfigError`` and logging keeps running with the settings it started with.
+    """
+
+    def __call__(self, config: Config) -> None: ...
+
+
 class JudgeClient(Protocol):
     """Ask the judge model one batch of questions about one (already redacted) state."""
 
@@ -85,6 +95,7 @@ class KeySource(Protocol):
 
 
 __all__ = [
+    "CheckLoggingConfig",
     "DeployConfiguration",
     "DisplayConfig",
     "GetConfig",

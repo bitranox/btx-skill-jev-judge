@@ -20,7 +20,7 @@ from ..adapters.jev import JevClient, JevSettings, RateLimiter, resolve_base_url
 from ..adapters.key import load_key
 
 # Logging services
-from ..adapters.logging.setup import init_logging
+from ..adapters.logging.setup import check_logging_config, init_logging
 
 # Static conformance assertions - pyright verifies that each adapter function
 # structurally satisfies its corresponding Protocol at type-check time.
@@ -30,6 +30,7 @@ if TYPE_CHECKING:
 
     from ..adapters.config.judge_settings import RunConfig
     from ..application.ports import (
+        CheckLoggingConfig,
         DeployConfiguration,
         DisplayConfig,
         GetConfig,
@@ -48,6 +49,7 @@ if TYPE_CHECKING:
     _assert_deploy_configuration: DeployConfiguration = deploy_configuration
     _assert_display_config: DisplayConfig = display_config
     _assert_init_logging: InitLogging = init_logging
+    _assert_check_logging_config: CheckLoggingConfig = check_logging_config
 
 
 @dataclass(frozen=True, slots=True)
@@ -59,6 +61,7 @@ class AppServices:
     deploy_configuration: DeployConfiguration
     display_config: DisplayConfig
     init_logging: InitLogging
+    check_logging_config: CheckLoggingConfig
     load_key: KeySource
     make_client: MakeClient
 
@@ -108,6 +111,7 @@ def build_production() -> AppServices:
         deploy_configuration=deploy_configuration,
         display_config=display_config,
         init_logging=init_logging,
+        check_logging_config=check_logging_config,
         load_key=_key_source(os.environ, Path.home()),
         make_client=_client_factory(os.environ, time.sleep),
     )
@@ -147,6 +151,7 @@ def build_testing(
         AppServices container with in-memory adapters.
     """
     from ..adapters.memory import (  # noqa: PLC0415 - deferred: keeps in-memory test doubles out of the production import path
+        check_logging_config_in_memory,
         deploy_configuration_in_memory,
         display_config_in_memory,
         get_config_in_memory,
@@ -162,6 +167,7 @@ def build_testing(
         deploy_configuration=deploy_configuration_in_memory,
         display_config=display_config_in_memory,
         init_logging=init_logging_in_memory,
+        check_logging_config=check_logging_config_in_memory,
         load_key=_key_source(environment, home_dir),
         make_client=_client_factory(environment, sleep),
     )
@@ -172,6 +178,7 @@ __all__ = [
     "AppServices",
     "build_production",
     "build_testing",
+    "check_logging_config",
     "deploy_configuration",
     "display_config",
     # Configuration

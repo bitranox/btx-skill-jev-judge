@@ -74,6 +74,7 @@ def inject_deploy_with_permission_capture(
             deploy_configuration=_capturing_deploy,
             display_config=prod.display_config,
             init_logging=prod.init_logging,
+            check_logging_config=prod.check_logging_config,
             # Bound to an empty environment and a home that does not exist, never to the real ones.
             load_key=safe.load_key,
             make_client=safe.make_client,

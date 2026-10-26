@@ -29,14 +29,14 @@ Complete (v0.2.0)
 - `src/btx_skill_jev_judge/adapters/config/deploy.py`  -  Configuration deployment
 - `src/btx_skill_jev_judge/adapters/config/display.py`  -  Configuration display (TOML/JSON output, redaction)
 - `src/btx_skill_jev_judge/adapters/config/overrides.py`  -  CLI `--set` override parsing and deep-merge
-- `src/btx_skill_jev_judge/adapters/logging/setup.py`  -  lib_log_rich initialization; raises `InvalidLoggingConfigError` for a refused `[lib_log_rich]` value or `LOG_*` variable, after starting logging with its defaults (and without the `LOG_*` variables only when one of them is refused)
+- `src/btx_skill_jev_judge/adapters/logging/setup.py`  -  lib_log_rich initialization; raises `InvalidLoggingConfigError` for a refused `[lib_log_rich]` value or `LOG_*` variable, after starting logging with its defaults (and without the `LOG_*` variables only when one of them is refused); `check_logging_config` refuses another configuration's logging settings through lib_log_rich's `validate_config`, without touching the running runtime
 - `src/btx_skill_jev_judge/adapters/cli/`  -  CLI adapter package:
   - `__init__.py`  -  Public facade
   - `constants.py`  -  Shared constants
   - `safe_console.py`  -  Encode-safe terminal output; use `safe_console.echo` instead of `click.echo`
   - `exit_codes.py`  -  POSIX exit codes (ExitCode IntEnum)
   - `context.py`  -  Click context helpers
-  - `config_load.py`  -  Configuration load for the CLI; records a load failure (a refused logging setting included, through `start_logging`), `require_config` refuses with exit 78
+  - `config_load.py`  -  Configuration load for the CLI; records a load failure (a refused logging setting included, through `start_logging`), `require_config` refuses with exit 78, `check_logging` checks the logging settings of a configuration reloaded by `config --profile`, refusing them as the root does
   - `root.py`  -  Root command group
   - `main.py`  -  Entry point
   - `typed_click.py`  -  Strictly typed wrappers for rich-click decorators
@@ -314,7 +314,7 @@ The `adapters/memory/` package provides lightweight implementations for testing:
 | Module              | Protocols Satisfied                                                         |
 |---------------------|-----------------------------------------------------------------------------|
 | `memory/config.py`  | `GetConfig`, `GetDefaultConfigPath`, `DeployConfiguration`, `DisplayConfig` |
-| `memory/logging.py` | `InitLogging`                                                               |
+| `memory/logging.py` | `InitLogging`, `CheckLoggingConfig`                                         |
 
 Use `composition.build_testing()` to wire them. The key lookup and the Jev client stay real,
 bound to the `env` and `home` the test passes, so a test reaches a loopback stub of Jev and never

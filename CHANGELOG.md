@@ -23,6 +23,15 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   'bogus'` (under `--json` also in the envelope), and the others run with exit 0. A refused
   `[lib_log_rich]` value leaves every valid `LOG_*` variable in force for the fallback: only a
   refused variable hides them.
+- `config --profile NAME` refuses an invalid logging setting like `config` does. The subcommand's
+  `--profile` reloads the configuration after logging has started, and that reload skipped the
+  logging settings, so a `[lib_log_rich]` value or `LOG_*` variable that makes plain `config` exit
+  78 was displayed with exit 0. The reload now checks them through lib_log_rich's `validate_config`,
+  which refuses exactly what starting logging refuses (a scrub pattern, a console format preset or
+  style key and a level name included) with the same `Error:` lines, also for a `[lib_log_rich]`
+  section that is invalid only in that profile's own file; the running logging runtime is left
+  alone. New `CheckLoggingConfig` port (`AppServices.check_logging_config`; the testing
+  composition's double refuses nothing).
 - The testing composition (`build_testing()`) starts its quiet logging runtime with every `LOG_*`
   variable hidden: a developer's own `LOG_CONSOLE_LEVEL=bogus` refused it and failed every command
   run under it, and a valid one changed the test runtime.

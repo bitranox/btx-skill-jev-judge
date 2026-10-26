@@ -32,7 +32,7 @@ from btx_skill_jev_judge.adapters.config.overrides import nest_overrides
 from btx_skill_jev_judge.domain.enums import DeployTarget, OutputFormat
 
 from .. import safe_console
-from ..config_load import load_config, report_load_failure, require_config
+from ..config_load import check_logging, load_config, report_load_failure, require_config
 from ..constants import CLICK_CONTEXT_SETTINGS
 from ..context import CLIContext, get_cli_context
 from ..exit_codes import ExitCode
@@ -109,7 +109,8 @@ def _resolve_config(ctx: click.Context, cli_ctx: CLIContext, profile: str | None
 
     When a subcommand-level profile override is specified, reloads config
     with that profile, the root's ``--env-file`` and any root-level ``--set``
-    overrides stored in the CLI context.
+    overrides stored in the CLI context, and checks its logging settings, which
+    are refused the way the root refuses its own; logging itself keeps running unchanged.
 
     Args:
         ctx: The running command's click context, exited with 78 when loading failed.
@@ -125,6 +126,8 @@ def _resolve_config(ctx: click.Context, cli_ctx: CLIContext, profile: str | None
     config, error = load_config(
         cli_ctx.services, profile=profile, env_file=cli_ctx.env_file, set_overrides=cli_ctx.set_overrides
     )
+    if error is None:
+        error = check_logging(cli_ctx.services, config)
     if error is not None:
         report_load_failure(error, show_traceback=cli_ctx.traceback)
         ctx.exit(ExitCode.CONFIG_ERROR)
