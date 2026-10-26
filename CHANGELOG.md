@@ -5,6 +5,8 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+## [0.3.3] 2026-10-27 00:08:16
+
 ### Fixed
 
 - A `[lib_log_rich]` value lib_log_rich refuses (a wrong type, such as `rate_limit = "100:60"`, or

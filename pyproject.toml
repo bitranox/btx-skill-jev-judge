@@ -1,6 +1,6 @@
 [project]
 name = "btx-skill-jev-judge"
-version = "0.3.2"
+version = "0.3.3"
 description = "Batch-judge items with the TypeSafe Jev API: run, summarize and check-key from the command line"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -9,7 +9,7 @@ dependencies = [
     # Imported directly (adapters/cli/main.py, commands/config.py), not only through rich-click.
     "click>=8.5.0",
     "lib_cli_exit_tools>=2.4.1",
-    "lib_log_rich>=8.0.0",
+    "lib_log_rich>=8.0.1",
     "lib_layered_config>=7.3.0",
     "pydantic>=2.14.1",
     "orjson>=3.13.0",
