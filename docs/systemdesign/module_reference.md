@@ -29,7 +29,7 @@ Complete (v0.2.0)
 - `src/btx_skill_jev_judge/adapters/config/deploy.py`  -  Configuration deployment
 - `src/btx_skill_jev_judge/adapters/config/display.py`  -  Configuration display (TOML/JSON output, redaction)
 - `src/btx_skill_jev_judge/adapters/config/overrides.py`  -  CLI `--set` override parsing and deep-merge
-- `src/btx_skill_jev_judge/adapters/logging/setup.py`  -  lib_log_rich initialization; raises `InvalidLoggingConfigError` for a refused `[lib_log_rich]` value or `LOG_*` variable, after starting logging with its defaults and no `LOG_*` variable
+- `src/btx_skill_jev_judge/adapters/logging/setup.py`  -  lib_log_rich initialization; raises `InvalidLoggingConfigError` for a refused `[lib_log_rich]` value or `LOG_*` variable, after starting logging with its defaults (and without the `LOG_*` variables only when one of them is refused)
 - `src/btx_skill_jev_judge/adapters/cli/`  -  CLI adapter package:
   - `__init__.py`  -  Public facade
   - `constants.py`  -  Shared constants

@@ -2,9 +2,9 @@
 
 An invalid ``[lib_log_rich]`` section is a configuration failure like a broken file: the commands
 that read the configuration refuse with exit 78 and one ``Error:`` line per problem naming the key,
-the others still run. A refused ``LOG_*`` variable, from the environment or the ``.env`` logging
-loads, is the same failure: logging still starts, with its defaults and without any ``LOG_*``
-variable.
+the others still run, logging with its defaults and every valid ``LOG_*`` variable. A refused
+``LOG_*`` variable, from the environment or the ``.env`` logging loads, is the same failure: logging
+still starts, with its defaults and without any ``LOG_*`` variable.
 
 The end-to-end tests run the real CLI in a subprocess with every configuration location under
 ``tmp_path``.
@@ -163,6 +163,18 @@ def test_a_refused_logging_section_still_leaves_logging_running() -> None:
 
 
 @pytest.mark.os_agnostic
+def test_only_the_first_call_raises_for_a_refused_logging_section() -> None:
+    """The fallback leaves logging running, so a later call returns before it checks anything."""
+    refused = Config({"lib_log_rich": {"rate_limit": "100:60"}}, {})
+    with pytest.raises(InvalidLoggingConfigError):
+        init_logging(refused)
+
+    init_logging(refused)
+
+    assert lib_log_rich.runtime.is_initialised()
+
+
+@pytest.mark.os_agnostic
 def test_a_refused_log_variable_still_leaves_logging_running(monkeypatch: pytest.MonkeyPatch) -> None:
     """lib_log_rich reads every ``LOG_*`` variable on each init, so the fallback must start without them."""
     monkeypatch.setenv("LOG_CONSOLE_LEVEL", "bogus")
@@ -252,13 +264,12 @@ def test_every_log_variable_comes_back_even_when_the_default_start_fails(monkeyp
     level, the second (the defaults) fails for a reason of its own.
     """
     monkeypatch.setenv("LOG_CONSOLE_LEVEL", "bogus")
-    seen_by_default_start: list[bool] = []
+    variable_seen: list[bool] = []
 
     def refuse(_config: object) -> None:
-        if not seen_by_default_start and "LOG_CONSOLE_LEVEL" in os.environ:
-            seen_by_default_start.append(True)
+        variable_seen.append("LOG_CONSOLE_LEVEL" in os.environ)
+        if "LOG_CONSOLE_LEVEL" in os.environ:
             raise ValueError("Unknown log level: 'bogus'")
-        seen_by_default_start.append("LOG_CONSOLE_LEVEL" in os.environ)
         raise RuntimeError("the default start failed too")
 
     monkeypatch.setattr(lib_log_rich.runtime, "init", refuse)
@@ -266,5 +277,64 @@ def test_every_log_variable_comes_back_even_when_the_default_start_fails(monkeyp
     with pytest.raises(RuntimeError, match="the default start failed too"):
         init_logging(Config({}, {}))
 
-    assert seen_by_default_start == [True, False]
+    # The configuration, then the defaults with the variables, then the defaults without them.
+    assert variable_seen == [True, True, False]
     assert os.environ["LOG_CONSOLE_LEVEL"] == "bogus"
+
+
+# ------------------------------------------------------------------ which LOG_* variables the fallback keeps
+
+_INFO_LINE = "Displaying package information"
+
+
+def _info_with_a_refused_section(cwd: Path, env: dict[str, str]) -> tuple[int, str, str]:
+    """``info`` under ``--set lib_log_rich.rate_limit=100:60``, a section value lib_log_rich refuses."""
+    return _finished(
+        subprocess.run(
+            [sys.executable, "-m", "btx_skill_jev_judge", "--set", "lib_log_rich.rate_limit=100:60", "info"],
+            cwd=cwd,
+            env=_environment(cwd, env),
+            capture_output=True,
+            check=False,
+        )
+    )
+
+
+@pytest.mark.os_agnostic
+def test_a_valid_log_variable_is_still_honoured_when_the_logging_section_is_refused(tmp_path: Path) -> None:
+    """Only a refused ``LOG_*`` variable is a reason to start without them; a refused section is not."""
+    shown_code, _out, shown_err = _info_with_a_refused_section(tmp_path, {})
+    quieted_code, _out, quieted_err = _info_with_a_refused_section(tmp_path, {"LOG_CONSOLE_LEVEL": "error"})
+
+    # Premise: at the default console level the fallback shows info's INFO line.
+    assert shown_code == 0, shown_err
+    assert _INFO_LINE in shown_err, shown_err
+    assert quieted_code == 0, quieted_err
+    assert _INFO_LINE not in quieted_err, quieted_err
+
+
+@pytest.mark.os_agnostic
+def test_a_refused_log_variable_alone_is_hidden_and_the_fallback_still_logs(tmp_path: Path) -> None:
+    """The defaults start without every ``LOG_*`` variable, and std logging still reaches the console."""
+    code, _out, err = _finished(
+        subprocess.run(
+            [sys.executable, "-m", "btx_skill_jev_judge", "info"],
+            cwd=tmp_path,
+            env=_environment(tmp_path, {"LOG_CONSOLE_LEVEL": "bogus"}),
+            capture_output=True,
+            check=False,
+        )
+    )
+
+    assert code == 0, err
+    assert _INFO_LINE in err, err
+
+
+@pytest.mark.os_agnostic
+def test_a_refused_log_variable_beside_a_refused_section_is_hidden_and_the_fallback_still_logs(
+    tmp_path: Path,
+) -> None:
+    code, _out, err = _info_with_a_refused_section(tmp_path, {"LOG_CONSOLE_LEVEL": "bogus"})
+
+    assert code == 0, err
+    assert _INFO_LINE in err, err

@@ -18,9 +18,11 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   exit with the OS errno (22 on POSIX, 87 on Windows) and
   `ValueError: Invalid runtime settings: LOG_CONSOLE_LEVEL: Unknown log level: 'bogus'`. Logging now
   falls back to its defaults with every `LOG_*` variable hidden for that start (and put back
-  afterwards), so only the commands that read the configuration (`config`, `run`, `summarize`) exit
+  afterwards) when one of them is the refused setting, so only the commands that read the configuration (`config`, `run`, `summarize`) exit
   78 with `Error: lib_log_rich: Invalid runtime settings: LOG_CONSOLE_LEVEL: Unknown log level:
-  'bogus'` (under `--json` also in the envelope), and the others run with exit 0.
+  'bogus'` (under `--json` also in the envelope), and the others run with exit 0. A refused
+  `[lib_log_rich]` value leaves every valid `LOG_*` variable in force for the fallback: only a
+  refused variable hides them.
 - `logdemo` works with lib_log_rich 7.0, which takes a `ConsoleTheme` member rather than a string
   (it failed with `AttributeError: 'str' object has no attribute 'value'`). `--theme` offers
   lib_log_rich's own theme list, so an unknown name is a usage error (exit 2) instead of the
