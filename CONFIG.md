@@ -135,15 +135,19 @@ directory of your choice.
 
 ## Errors
 
-| Situation                                                       | Exit | stderr                             |
-|-----------------------------------------------------------------|------|------------------------------------|
-| A configuration file or `.env` cannot be read or parsed         | 78   | `Error: <reason>`                  |
-| An unknown key, or a value outside its constraint, in a section | 78   | `Error: <section>.<key>: <reason>` |
-| `band_low` is not below `band_high`                             | 78   | `Error: summary: <reason>`         |
-| A flag outside its constraint                                   | 2    | `jev-judge: --<flag>: <reason>`    |
+| Situation                                                         | Exit | stderr                                |
+|-------------------------------------------------------------------|------|---------------------------------------|
+| A configuration file or `.env` cannot be read or parsed           | 78   | `Error: <reason>`                     |
+| An unknown key, or a value outside its constraint, in a section   | 78   | `Error: <section>.<key>: <reason>`    |
+| `band_low` is not below `band_high`                               | 78   | `Error: summary: <reason>`            |
+| A `[lib_log_rich]` value or `LOG_*` variable lib_log_rich refuses | 78   | `Error: lib_log_rich<.key>: <reason>` |
+| A flag outside its constraint                                     | 2    | `jev-judge: --<flag>: <reason>`       |
 
-Exit 78 applies to `run` and `summarize`; `check-key` still works while the configuration is
-broken. Under `--json-bare` these errors still print `{"error": "<reason>"}` on stdout.
+Exit 78 applies to the commands that read the configuration: `config`, `run` and `summarize`.
+`info`, `config-deploy`, `config-generate-examples` and `check-key` still work while the
+configuration is broken; under a refused logging setting they run on logging's defaults, with every
+`LOG_*` variable ignored. Under `--json-bare` these errors still print `{"error": "<reason>"}` on
+stdout.
 
 ## Other settings
 

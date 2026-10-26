@@ -63,7 +63,11 @@ class DisplayConfig(Protocol):
 
 
 class InitLogging(Protocol):
-    """Initialize lib_log_rich runtime with the provided configuration."""
+    """Initialize lib_log_rich runtime with the provided configuration.
+
+    A refused logging setting raises ``InvalidLoggingConfigError`` only after logging has been
+    started with its defaults, so the caller never has to start it a second time.
+    """
 
     def __call__(self, config: Config) -> None: ...
 

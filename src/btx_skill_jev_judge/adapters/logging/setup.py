@@ -19,17 +19,20 @@ System Role:
 from __future__ import annotations
 
 import logging
+import os
+from contextlib import contextmanager
 from typing import TYPE_CHECKING, cast
 
 import lib_log_rich.config
 import lib_log_rich.runtime
+from lib_layered_config import Config
 from pydantic import BaseModel, ConfigDict, ValidationError
 
 from btx_skill_jev_judge import __init__conf__
 from btx_skill_jev_judge.domain.errors import ConfigurationError
 
 if TYPE_CHECKING:
-    from lib_layered_config import Config
+    from collections.abc import Generator
 
 
 class LoggingConfigModel(BaseModel):
@@ -143,17 +146,20 @@ class InvalidLoggingConfigError(ConfigurationError):
         problems: One line per refused setting.
 
     Example:
-        >>> from lib_layered_config import Config
         >>> try:
-        ...     init_logging(Config({"lib_log_rich": {"rate_limit": "100:60"}}, {}))
-        ... except InvalidLoggingConfigError as exc:
-        ...     print(exc)
+        ...     _build_runtime_config(Config({"lib_log_rich": {"rate_limit": "100:60"}}, {}))
+        ... except ValidationError as exc:
+        ...     print(InvalidLoggingConfigError(_problems(exc)))
         lib_log_rich.rate_limit: Input should be a valid tuple
     """
 
     def __init__(self, problems: list[str]) -> None:
         super().__init__("; ".join(problems))
         self.problems = problems
+
+
+#: The variables lib_log_rich reads itself, on every start.
+_LOG_VARIABLE_PREFIX = "LOG_"
 
 
 def _problems(error: BaseException) -> list[str]:
@@ -166,6 +172,41 @@ def _problems(error: BaseException) -> list[str]:
         # the setting.
         return [f"lib_log_rich: {str(error).splitlines()[0]}"]
     return [f"lib_log_rich.{'.'.join(str(part) for part in item['loc'])}: {item['msg']}" for item in cause.errors()]
+
+
+@contextmanager
+def _log_variables_hidden() -> Generator[None]:
+    """Remove every ``LOG_*`` variable from the environment for the block, then put each back.
+
+    Example:
+        >>> os.environ["LOG_HIDDEN_PROBE"] = "x"
+        >>> with _log_variables_hidden():
+        ...     "LOG_HIDDEN_PROBE" in os.environ
+        False
+        >>> os.environ.pop("LOG_HIDDEN_PROBE")
+        'x'
+    """
+    names = [name for name in os.environ if name.startswith(_LOG_VARIABLE_PREFIX)]
+    hidden = {name: os.environ.pop(name) for name in names}
+    try:
+        yield
+    finally:
+        os.environ.update(hidden)
+
+
+def _start_default_logging() -> lib_log_rich.runtime.RuntimeConfig:
+    """Start lib_log_rich with the package defaults and no ``LOG_*`` variable.
+
+    lib_log_rich reads the ``LOG_*`` variables from the environment on every init, so when one
+    of them is the refused setting, a retry with an empty configuration alone is refused again.
+
+    Returns:
+        The settings logging was started with.
+    """
+    defaults = _build_runtime_config(Config({}, {}))
+    with _log_variables_hidden():
+        lib_log_rich.runtime.init(defaults)
+    return defaults
 
 
 def init_logging(config: Config) -> None:
@@ -183,8 +224,10 @@ def init_logging(config: Config) -> None:
             settings in the [lib_log_rich] section.
 
     Raises:
-        InvalidLoggingConfigError: The ``[lib_log_rich]`` section holds a value lib_log_rich
-            refuses; logging is not started.
+        InvalidLoggingConfigError: The ``[lib_log_rich]`` section or a ``LOG_*`` variable holds
+            a value lib_log_rich refuses. Logging is started anyway, with the package defaults
+            and every ``LOG_*`` variable ignored, so the caller can record the failure and run
+            the commands that do not read the configuration.
 
     Side Effects:
         Loads .env files into the process environment on first invocation.
@@ -214,6 +257,9 @@ def init_logging(config: Config) -> None:
     except (ValidationError, ValueError) as exc:
         # The type check of the section and lib_log_rich's own range checks (which also see the
         # LOG_* variables) both refuse here; neither has started the runtime.
+        defaults = _start_default_logging()
+        lib_log_rich.runtime.attach_std_logging()
+        _quiet_http_loggers(defaults.console_level)
         raise InvalidLoggingConfigError(_problems(exc)) from exc
     lib_log_rich.runtime.attach_std_logging()
     _quiet_http_loggers(runtime_config.console_level)

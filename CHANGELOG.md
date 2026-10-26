@@ -13,6 +13,14 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   broken file: logging starts with its defaults, the commands that read the configuration (`config`,
   `run`, `summarize`) exit 78 with one `Error:` line per problem naming the key, never the value, and
   the other commands run.
+- A `LOG_*` variable lib_log_rich refuses (`LOG_CONSOLE_LEVEL=bogus`, set in the environment or in
+  the `.env` logging loads) made every command, `info`, `config-deploy` and `check-key` included,
+  exit with the OS errno (22 on POSIX, 87 on Windows) and
+  `ValueError: Invalid runtime settings: LOG_CONSOLE_LEVEL: Unknown log level: 'bogus'`. Logging now
+  falls back to its defaults with every `LOG_*` variable hidden for that start (and put back
+  afterwards), so only the commands that read the configuration (`config`, `run`, `summarize`) exit
+  78 with `Error: lib_log_rich: Invalid runtime settings: LOG_CONSOLE_LEVEL: Unknown log level:
+  'bogus'` (under `--json` also in the envelope), and the others run with exit 0.
 - `logdemo` works with lib_log_rich 7.0, which takes a `ConsoleTheme` member rather than a string
   (it failed with `AttributeError: 'str' object has no attribute 'value'`). `--theme` offers
   lib_log_rich's own theme list, so an unknown name is a usage error (exit 2) instead of the

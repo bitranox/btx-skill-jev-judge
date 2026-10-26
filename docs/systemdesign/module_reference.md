@@ -29,7 +29,7 @@ Complete (v0.2.0)
 - `src/btx_skill_jev_judge/adapters/config/deploy.py`  -  Configuration deployment
 - `src/btx_skill_jev_judge/adapters/config/display.py`  -  Configuration display (TOML/JSON output, redaction)
 - `src/btx_skill_jev_judge/adapters/config/overrides.py`  -  CLI `--set` override parsing and deep-merge
-- `src/btx_skill_jev_judge/adapters/logging/setup.py`  -  lib_log_rich initialization; raises `InvalidLoggingConfigError` for a refused `[lib_log_rich]` value
+- `src/btx_skill_jev_judge/adapters/logging/setup.py`  -  lib_log_rich initialization; raises `InvalidLoggingConfigError` for a refused `[lib_log_rich]` value or `LOG_*` variable, after starting logging with its defaults and no `LOG_*` variable
 - `src/btx_skill_jev_judge/adapters/cli/`  -  CLI adapter package:
   - `__init__.py`  -  Public facade
   - `constants.py`  -  Shared constants
@@ -82,7 +82,7 @@ Complete (v0.2.0)
 - `tests/test_permission_defaults.py`  -  `config-deploy` hands permissions to lib_layered_config
 - `tests/test_safe_console.py`  -  Legacy-codepage output tests, plus the guard forbidding direct `click.echo`
 - `tests/test_display.py`  -  Config display formatting tests
-- `tests/test_logging_config_refusal.py`  -  An invalid `[lib_log_rich]` section is a configuration failure: the commands that read the configuration exit 78 naming the key, the others run
+- `tests/test_logging_config_refusal.py`  -  An invalid `[lib_log_rich]` section or `LOG_*` variable is a configuration failure that leaves logging running: the commands that read the configuration exit 78, the others run
 - `tests/test_memory_logging.py`  -  Testing-composition logging runtime and the per-test logging reset
 - `tests/test_metadata.py`, `tests/test_metadata_sync.py`  -  Package metadata and its sync with `pyproject.toml`
 - `tests/test_module_reference_sync.py`  -  The field tables below match the models
@@ -166,7 +166,7 @@ Judge every item; one row per item is written to `--out`.
 | `--json`              | `{ok, command, data, skipped}` envelope             |
 | `--json-bare`         | Data only, also on failure                          |
 
-**Exit codes:** 0, 1 (some row failed), 2, 78
+**Exit codes:** 0, 1 (some row failed), 2, 78 (configuration not loadable or invalid, a logging setting lib_log_rich refuses included)
 
 ### summarize
 
@@ -179,7 +179,7 @@ Distribution, uncertain rows and flat questions of a run.
 | `--min-confidence`      | Override `summary.min_confidence`                   |
 | `--json`, `--json-bare` | As for `run`                                        |
 
-**Exit codes:** 0, 1 (a question looks flat), 2 (unreadable or malformed rows file, bad flag), 78
+**Exit codes:** 0, 1 (a question looks flat), 2 (unreadable or malformed rows file, bad flag), 78 (configuration not loadable or invalid, a logging setting lib_log_rich refuses included)
 
 ### check-key
 
@@ -203,7 +203,7 @@ Display merged configuration from all sources.
 | `--format [human\|json]` | Output format (default: human) |
 | `--section NAME`         | Show only specific section     |
 
-**Exit codes:** 0, 2 (usage error), 22 (section not found), 78 (configuration not loadable)
+**Exit codes:** 0, 2 (usage error), 22 (section not found), 78 (configuration not loadable, or a `[lib_log_rich]` value or `LOG_*` variable lib_log_rich refuses)
 
 ### config-deploy
 
