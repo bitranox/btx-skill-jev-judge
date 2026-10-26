@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 
 import lib_cli_exit_tools
 import pytest
+from lib_log_rich.domain import ConsoleTheme
 
 from btx_skill_jev_judge import __init__conf__
 from btx_skill_jev_judge.adapters import cli as cli_mod
@@ -213,3 +214,23 @@ def test_traceback_flag_displays_full_exception_traceback(
     assert "[TRUNCATED" not in plain_err
     assert lib_cli_exit_tools.config.traceback is False
     assert lib_cli_exit_tools.config.traceback_force_color is False
+
+
+@pytest.mark.os_agnostic
+@pytest.mark.parametrize("theme", [theme.value for theme in ConsoleTheme])
+def test_logdemo_accepts_every_theme_lib_log_rich_ships(
+    cli_runner: CliRunner, production_factory: Callable[[], Any], theme: str
+) -> None:
+    result: Result = cli_runner.invoke(cli_mod.cli, ["logdemo", "--theme", theme], obj=production_factory)
+
+    assert result.exit_code == 0, result.output
+    assert f"Log demo completed (theme: {theme})" in result.output
+
+
+@pytest.mark.os_agnostic
+def test_an_unknown_logdemo_theme_is_a_usage_error_on_every_os(capsys: pytest.CaptureFixture[str]) -> None:
+    """Exit 2 from click, not the catch-all's OS errno (22 on POSIX, 87 on Windows) for the library's ValueError."""
+    exit_code = cli_mod.main(["logdemo", "--theme", "nope"], services_factory=build_production)
+
+    assert exit_code == 2
+    assert "Invalid value for '--theme'" in capsys.readouterr().err

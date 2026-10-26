@@ -29,14 +29,6 @@ if TYPE_CHECKING:
     from lib_layered_config import Config
 
 
-@pytest.fixture
-def user_layer_in_tmp_path(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
-    """Point every OS's user-layer location at ``tmp_path`` so no host file decides a result."""
-    for name in ("HOME", "USERPROFILE", "XDG_CONFIG_HOME", "APPDATA", "LOCALAPPDATA"):
-        monkeypatch.setenv(name, str(tmp_path))
-    return tmp_path
-
-
 def _load_dotenv(directory: Path, line: str) -> Config:
     dotenv = directory / ".env"
     dotenv.write_text(f"{line}\n", encoding="utf-8")
@@ -49,9 +41,9 @@ def _load_dotenv(directory: Path, line: str) -> Config:
     [("LIB_LOG_RICH__SERVICE", "service"), ("LIB_LOG_RICH__ENVIRONMENT", "environment")],
 )
 def test_a_digit_only_logging_name_is_read_as_its_digits(
-    user_layer_in_tmp_path: Path, clear_config_cache: None, env_key: str, attr: str
+    tmp_path: Path, clear_config_cache: None, env_key: str, attr: str
 ) -> None:
-    config = _load_dotenv(user_layer_in_tmp_path, f"{env_key}=2026")
+    config = _load_dotenv(tmp_path, f"{env_key}=2026")
     # Premise: the library hands the value over as a number. Without it the test proves nothing.
     assert isinstance(config.get("lib_log_rich", {})[attr], int)
 
@@ -61,25 +53,23 @@ def test_a_digit_only_logging_name_is_read_as_its_digits(
 
 
 @pytest.mark.os_agnostic
-def test_a_digit_only_model_name_is_read_as_its_digits(user_layer_in_tmp_path: Path, clear_config_cache: None) -> None:
-    config = _load_dotenv(user_layer_in_tmp_path, "JUDGE__MODEL=4")
+def test_a_digit_only_model_name_is_read_as_its_digits(tmp_path: Path, clear_config_cache: None) -> None:
+    config = _load_dotenv(tmp_path, "JUDGE__MODEL=4")
     assert isinstance(config.get("judge", {})["model"], int)
 
     assert run_config(config).model == "4"
 
 
 @pytest.mark.os_agnostic
-def test_numeric_settings_still_read_as_numbers(user_layer_in_tmp_path: Path, clear_config_cache: None) -> None:
-    config = _load_dotenv(user_layer_in_tmp_path, "JUDGE__WORKERS=3")
+def test_numeric_settings_still_read_as_numbers(tmp_path: Path, clear_config_cache: None) -> None:
+    config = _load_dotenv(tmp_path, "JUDGE__WORKERS=3")
 
     assert run_config(config).workers == 3
 
 
 @pytest.mark.os_agnostic
-def test_an_out_of_range_digit_only_value_is_still_refused(
-    user_layer_in_tmp_path: Path, clear_config_cache: None
-) -> None:
-    config = _load_dotenv(user_layer_in_tmp_path, "SUMMARY__MIN_CONFIDENCE=5")
+def test_an_out_of_range_digit_only_value_is_still_refused(tmp_path: Path, clear_config_cache: None) -> None:
+    config = _load_dotenv(tmp_path, "SUMMARY__MIN_CONFIDENCE=5")
 
     with pytest.raises(ConfigurationError, match=r"summary\.min_confidence"):
         summary_config(config)

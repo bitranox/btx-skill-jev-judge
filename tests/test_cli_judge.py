@@ -27,11 +27,11 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Mapping, Sequence
     from contextlib import AbstractContextManager
 
-    from conftest import JevStub
     from pydantic import JsonValue
 
     from btx_skill_jev_judge.application.ports import JudgeClient
     from btx_skill_jev_judge.domain.models import Outcome, Question
+    from conftest import JevStub
 
 KEY = "tk_" + "c" * 40
 QUESTION = {"id": "dup", "type": "noul", "instructions": "Is `title` a duplicate?"}

@@ -7,7 +7,6 @@ import time
 from typing import Any
 
 import pytest
-from conftest import JevStub
 
 from btx_skill_jev_judge.adapters.jev import (
     DEFAULT_BASE_URL,
@@ -20,6 +19,7 @@ from btx_skill_jev_judge.adapters.jev import (
 from btx_skill_jev_judge.application.judge import JudgeSettings, judge_all
 from btx_skill_jev_judge.domain.errors import InputError
 from btx_skill_jev_judge.domain.models import Item, Question, Row, parse_questions
+from conftest import JevStub
 
 KEY = "tk_" + "a" * 40
 

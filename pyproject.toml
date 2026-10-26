@@ -9,7 +9,7 @@ dependencies = [
     # Imported directly (adapters/cli/main.py, commands/config.py), not only through rich-click.
     "click>=8.5.0",
     "lib_cli_exit_tools>=2.4.1",
-    "lib_log_rich>=6.5.7",
+    "lib_log_rich>=7.0.1",
     "lib_layered_config>=7.3.0",
     "pydantic>=2.14.1",
     "orjson>=3.13.0",
@@ -158,17 +158,20 @@ typeCheckingMode = "strict"
 exclude = ["**/.venv*", "**/node_modules"]
 extraPaths = [
   "src",
+  "tests",
 ]
+executionEnvironments = [{root = "tests"}]
 
 [tool.pytest.ini_options]
 addopts = ["--doctest-modules"]
 doctest_optionflags = ["ELLIPSIS", "NORMALIZE_WHITESPACE"]
-pythonpath = ["src"]
+pythonpath = ["src", "tests"]
 markers = [
   "os_agnostic: test runs on every supported operating system",
   "local_only: tests that require the local dev environment (external resources, script composition); skipped in CI",
   "integration: tests requiring external resources (databases, APIs); run via 'bmk ti' or 'mktesti.sh'",
 ]
+testpaths = ["src", "tests"]
 
 [tool.coverage.run]
 branch = true
