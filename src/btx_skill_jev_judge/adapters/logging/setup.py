@@ -7,6 +7,7 @@ eliminating duplication between module entry (__main__.py) and console script
 Contents:
     * :func:`init_logging` - idempotent logging initialization from the ``[lib_log_rich]``
       section and the ``LOG_*`` variables (the environment, plus the ``.env`` it loads).
+    * :func:`log_variables_hidden` - remove every ``LOG_*`` variable for a block, then put each back.
     * :class:`InvalidLoggingConfigError` - the ``[lib_log_rich]`` section or a ``LOG_*`` variable
       cannot configure logging.
     * :func:`_build_runtime_config` - constructs RuntimeConfig from layered sources.
@@ -180,12 +181,12 @@ def _problems(error: BaseException) -> list[str]:
 
 
 @contextmanager
-def _log_variables_hidden() -> Generator[None]:
+def log_variables_hidden() -> Generator[None]:
     """Remove every ``LOG_*`` variable from the environment for the block, then put each back.
 
     Example:
         >>> os.environ["LOG_HIDDEN_PROBE"] = "x"
-        >>> with _log_variables_hidden():
+        >>> with log_variables_hidden():
         ...     "LOG_HIDDEN_PROBE" in os.environ
         False
         >>> os.environ.pop("LOG_HIDDEN_PROBE")
@@ -214,7 +215,7 @@ def _start_default_logging() -> lib_log_rich.runtime.RuntimeConfig:
     try:
         lib_log_rich.runtime.init(defaults)
     except ValueError:  # pydantic's ValidationError is a ValueError
-        with _log_variables_hidden():
+        with log_variables_hidden():
             lib_log_rich.runtime.init(defaults)
     return defaults
 
@@ -281,4 +282,5 @@ __all__ = [
     "InvalidLoggingConfigError",
     "LoggingConfigModel",
     "init_logging",
+    "log_variables_hidden",
 ]

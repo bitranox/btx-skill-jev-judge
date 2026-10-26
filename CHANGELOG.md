@@ -23,6 +23,9 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   'bogus'` (under `--json` also in the envelope), and the others run with exit 0. A refused
   `[lib_log_rich]` value leaves every valid `LOG_*` variable in force for the fallback: only a
   refused variable hides them.
+- The testing composition (`build_testing()`) starts its quiet logging runtime with every `LOG_*`
+  variable hidden: a developer's own `LOG_CONSOLE_LEVEL=bogus` refused it and failed every command
+  run under it, and a valid one changed the test runtime.
 - `logdemo` works with lib_log_rich 7.0, which takes a `ConsoleTheme` member rather than a string
   (it failed with `AttributeError: 'str' object has no attribute 'value'`). `--theme` offers
   lib_log_rich's own theme list, so an unknown name is a usage error (exit 2) instead of the
