@@ -9,6 +9,7 @@ Contents:
       section and the ``LOG_*`` variables (the environment, plus the ``.env`` it loads).
     * :func:`check_logging_config` - refuse another configuration's logging settings without touching the runtime.
     * :func:`log_variables_hidden` - remove every ``LOG_*`` variable for a block, then put each back.
+    * :func:`run_logdemo` - lib_log_rich's demo, refusing a ``LOG_*`` variable as :func:`init_logging` does.
     * :class:`InvalidLoggingConfigError` - the ``[lib_log_rich]`` section or a ``LOG_*`` variable
       cannot configure logging.
     * :func:`_build_runtime_config` - constructs RuntimeConfig from layered sources.
@@ -27,6 +28,7 @@ import os
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, cast
 
+import lib_log_rich
 import lib_log_rich.config
 import lib_log_rich.runtime
 from lib_layered_config import Config
@@ -37,6 +39,9 @@ from btx_skill_jev_judge.domain.errors import ConfigurationError
 
 if TYPE_CHECKING:
     from collections.abc import Generator
+
+    from lib_log_rich.demo import LogDemoResult
+    from lib_log_rich.domain import ConsoleTheme
 
 
 class LoggingConfigModel(BaseModel):
@@ -328,10 +333,37 @@ def check_logging_config(config: Config) -> None:
         raise InvalidLoggingConfigError(_problems(exc)) from exc
 
 
+def run_logdemo(theme: ConsoleTheme) -> LogDemoResult:
+    """Run lib_log_rich's demo; a ``LOG_*`` variable it refuses is refused as :func:`init_logging` refuses it.
+
+    The demo needs the runtime stopped, so a running one is shut down first. It builds its own
+    runtime and reads the ``LOG_*`` variables itself, so an invalid one surfaces here as
+    lib_log_rich's ``ValueError``, which would otherwise reach ``main()``'s catch-all and exit
+    with the OS errno (22 on POSIX, 87 on Windows).
+
+    Args:
+        theme: The console theme to preview.
+
+    Returns:
+        lib_log_rich's report of the demo run.
+
+    Raises:
+        InvalidLoggingConfigError: A ``LOG_*`` variable lib_log_rich refuses, in the same line
+            :func:`init_logging` writes for it.
+    """
+    if lib_log_rich.runtime.is_initialised():
+        lib_log_rich.runtime.shutdown()
+    try:
+        return lib_log_rich.logdemo(theme=theme)
+    except ValueError as exc:  # pydantic's ValidationError is a ValueError
+        raise InvalidLoggingConfigError(_problems(exc)) from exc
+
+
 __all__ = [
     "InvalidLoggingConfigError",
     "LoggingConfigModel",
     "check_logging_config",
     "init_logging",
     "log_variables_hidden",
+    "run_logdemo",
 ]

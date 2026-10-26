@@ -146,7 +146,8 @@ directory of your choice.
 Exit 78 applies to the commands that read the configuration: `config`, `run` and `summarize`.
 `info`, `config-deploy`, `config-generate-examples` and `check-key` still work while the
 configuration is broken; under a refused logging setting they run on logging's defaults, with every
-`LOG_*` variable ignored. Under `--json-bare` these errors still print `{"error": "<reason>"}` on
+`LOG_*` variable ignored. `logdemo` reads no configuration either, but its demo reads the `LOG_*`
+variables itself, so a refused one ends it with exit 78 and the same `Error:` line as `config`. Under `--json-bare` these errors still print `{"error": "<reason>"}` on
 stdout.
 
 ## Other settings

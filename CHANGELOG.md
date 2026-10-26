@@ -23,6 +23,9 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   'bogus'` (under `--json` also in the envelope), and the others run with exit 0. A refused
   `[lib_log_rich]` value leaves every valid `LOG_*` variable in force for the fallback: only a
   refused variable hides them.
+- `logdemo` refuses a `LOG_*` variable lib_log_rich refuses (`LOG_CONSOLE_LEVEL=bogus`) with exit 78
+  and lib_log_rich's own line, as `config` does. The demo reads the variables itself, so its
+  `ValueError` reached `main()` and exited with the OS errno (22 on POSIX, 87 on Windows).
 - `config --profile NAME` refuses an invalid logging setting like `config` does. The subcommand's
   `--profile` reloads the configuration after logging has started, and that reload skipped the
   logging settings, so a `[lib_log_rich]` value or `LOG_*` variable that makes plain `config` exit

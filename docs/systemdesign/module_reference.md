@@ -29,7 +29,7 @@ Complete (v0.2.0)
 - `src/btx_skill_jev_judge/adapters/config/deploy.py`  -  Configuration deployment
 - `src/btx_skill_jev_judge/adapters/config/display.py`  -  Configuration display (TOML/JSON output, redaction)
 - `src/btx_skill_jev_judge/adapters/config/overrides.py`  -  CLI `--set` override parsing and deep-merge
-- `src/btx_skill_jev_judge/adapters/logging/setup.py`  -  lib_log_rich initialization; raises `InvalidLoggingConfigError` for a refused `[lib_log_rich]` value or `LOG_*` variable, after starting logging with its defaults (and without the `LOG_*` variables only when one of them is refused); `check_logging_config` refuses another configuration's logging settings through lib_log_rich's `validate_config`, without touching the running runtime
+- `src/btx_skill_jev_judge/adapters/logging/setup.py`  -  lib_log_rich initialization; raises `InvalidLoggingConfigError` for a refused `[lib_log_rich]` value or `LOG_*` variable, after starting logging with its defaults (and without the `LOG_*` variables only when one of them is refused); `check_logging_config` refuses another configuration's logging settings through lib_log_rich's `validate_config`, without touching the running runtime; `run_logdemo` runs lib_log_rich's demo and raises `InvalidLoggingConfigError` for a `LOG_*` variable the demo refuses
 - `src/btx_skill_jev_judge/adapters/cli/`  -  CLI adapter package:
   - `__init__.py`  -  Public facade
   - `constants.py`  -  Shared constants
@@ -239,7 +239,10 @@ Run logging demonstration.
 |----------------|----------------------------------|
 | `--theme NAME` | Logging theme (default: classic) |
 
-**Exit codes:** 0
+The demo runs lib_log_rich's own demo runtime: it does not read the configuration, so a
+`--set lib_log_rich.*` value changes nothing in it, while a `LOG_*` variable does.
+
+**Exit codes:** 0, 2 (an unknown `--theme`), 78 (a `LOG_*` variable lib_log_rich refuses, with lib_log_rich's own line, as `config` writes it)
 
 ---
 
