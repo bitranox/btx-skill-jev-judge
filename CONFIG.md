@@ -9,12 +9,13 @@ read the configuration at all.
 Highest wins:
 
 1. A command-line flag (`--rate`, `--band`, ...). A flag left out falls back to the layers below.
-2. Environment variables.
-3. `.env` files.
-4. User, host and application configuration files.
-5. The defaults shipped in the package.
+2. `--set SECTION.KEY=VALUE` (see [Command-line overrides](#command-line-overrides-and-profiles)).
+3. Environment variables.
+4. `.env` files.
+5. User, host and application configuration files.
+6. The defaults shipped in the package.
 
-Layers 2 to 5 are the ones `lib_layered_config` merges, in the order
+Layers 3 to 6 are the ones `lib_layered_config` merges, in the order
 `defaults -> app -> host -> user -> dotenv -> env`. `jev-judge config` prints the merged result;
 `--section judge` or `--section summary` narrows it and `--format json` makes it machine-readable.
 
@@ -50,14 +51,16 @@ Settings of `jev-judge summarize`.
 
 The key comes from an exported `TYPESAFE_API_KEY` variable, else from a `.env` file in the current
 directory or a parent (see [`.env` files](#env-files)), else from `~/.credentials/typesafe.key`.
-Both models behind these sections reject unknown keys, so an entry such as `judge.api_key`, or any
-other key not listed above, is refused with exit code 78 and
-`Error: judge.api_key: Extra inputs are not permitted`. This is deliberate: it keeps the key out of
-files that are copied, committed and deployed. See [SECURITY.md](SECURITY.md).
+Both models behind these sections reject unknown keys. `jev-judge run` validates `[judge]`, so an
+entry such as `judge.api_key`, or any other key not listed above, makes it exit with code 78 and
+`Error: judge.api_key: Extra inputs are not permitted`; `jev-judge summarize` validates `[summary]`
+the same way. This is deliberate: it keeps the key out of files that are copied, committed and
+deployed. See [SECURITY.md](SECURITY.md). `jev-judge config` displays both sections without
+validating them and shows an `api_key` value as `***REDACTED***`.
 
-An invalid value is refused the same way, naming the key and the reason but never the value:
-`Error: judge.rate: Input should be greater than 0`. The same range violation given as a flag
-exits 2 and names the flag.
+An invalid value is refused the same way, by the command whose section it is, naming the key and
+the reason but never the value: `Error: judge.rate: Input should be greater than 0`. The same range
+violation given as a flag exits 2 and names the flag.
 
 ## Environment variables
 
@@ -89,8 +92,15 @@ JUDGE__WORKERS=3
 SUMMARY__MIN_CONFIDENCE=0.7
 ```
 
+Only one `.env` is read for configuration values: the first found in the working directory or a
+parent. When there is none, a `.env` in the user configuration directory is read instead:
+`$XDG_CONFIG_HOME/btx-skill-jev-judge/.env` (default `~/.config/btx-skill-jev-judge/.env`) on
+Linux, `~/Library/Application Support/bitranox/btx-skill-jev-judge/.env` on macOS and
+`%APPDATA%\bitranox\btx-skill-jev-judge\.env` on Windows (under `profile/<NAME>/` with
+`--profile`). That file supplies configuration values only, never `TYPESAFE_API_KEY`.
+
 `--env-file FILE` names one `.env` file for the configuration values above, instead of searching
-upward for them. It does not apply to `TYPESAFE_API_KEY` or `JEV_JUDGE_BASE_URL`: at startup the
+for them. It does not apply to `TYPESAFE_API_KEY` or `JEV_JUDGE_BASE_URL`: at startup the
 logging setup separately loads a `.env` from the current directory or any parent into the process
 environment, without overriding variables that are already exported, and the key lookup reads that
 environment. So a `.env` there can supply the key even when `--env-file` is given, an exported
@@ -100,16 +110,22 @@ source. See [.env.example](.env.example) and [SECURITY.md](SECURITY.md).
 
 ## Configuration files
 
-Files are TOML, YAML or JSON, named `config.toml` (and so on), with an optional `config.d/`
-directory beside them whose files are merged in name order.
+The application and user layers each read `config.toml` from their directory, plus an optional
+`config.d/` beside it whose `.toml`, `.yaml`/`.yml` and `.json` files are merged in name order. A
+YAML or JSON file is read only inside `config.d/`; a `config.yaml` or `config.json` next to
+`config.toml` is ignored. The host layer is one TOML file named after the machine's hostname.
 
-| Layer       | Linux                            | macOS                                                         |
-|-------------|----------------------------------|---------------------------------------------------------------|
-| application | `/etc/xdg/btx-skill-jev-judge/`  | `/Library/Application Support/bitranox/btx-skill-jev-judge/`  |
-| user        | `~/.config/btx-skill-jev-judge/` | `~/Library/Application Support/bitranox/btx-skill-jev-judge/` |
+| Layer       | Linux                                                | macOS                                                                             | Windows                                                            |
+|-------------|------------------------------------------------------|-----------------------------------------------------------------------------------|--------------------------------------------------------------------|
+| application | `/etc/xdg/btx-skill-jev-judge/`                      | `/Library/Application Support/bitranox/btx-skill-jev-judge/`                      | `%ProgramData%\bitranox\btx-skill-jev-judge\`                      |
+| host        | `/etc/xdg/btx-skill-jev-judge/hosts/<hostname>.toml` | `/Library/Application Support/bitranox/btx-skill-jev-judge/hosts/<hostname>.toml` | `%ProgramData%\bitranox\btx-skill-jev-judge\hosts\<hostname>.toml` |
+| user        | `~/.config/btx-skill-jev-judge/`                     | `~/Library/Application Support/bitranox/btx-skill-jev-judge/`                     | `%APPDATA%\bitranox\btx-skill-jev-judge\`                          |
 
-Windows uses the equivalent per-user and machine-wide application-data directories. A file only
-needs the keys it changes:
+On Linux the application and host layers are also read from `/etc/btx-skill-jev-judge/` (and its
+`hosts/<hostname>.toml`) after the `/etc/xdg/` ones, so a key set in both takes the
+`/etc/btx-skill-jev-judge/` value, and the user directory follows `$XDG_CONFIG_HOME` when it is
+set. On Windows the user layer falls back to `%LOCALAPPDATA%\bitranox\btx-skill-jev-judge\` when
+the `%APPDATA%` directory holds no configuration. A file only needs the keys it changes:
 
 ```toml
 [judge]
@@ -124,36 +140,42 @@ band_high = 0.7
 `jev-judge config-deploy --target user` writes the shipped defaults to the user directory as a
 starting point (`--target app` and `--target host` need privileges; `--force` overwrites existing
 files). `jev-judge config-generate-examples --destination DIR` writes commented example files to a
-directory of your choice.
+directory of your choice, among them a host file as
+`xdg/btx-skill-jev-judge/hosts/your-hostname.toml`.
 
 ## Command-line overrides and profiles
 
 - `--set SECTION.KEY=VALUE` (repeatable, before the command) overrides one key for this run, for
   example `jev-judge --set judge.attempts=2 run ...`.
-- `--profile NAME` loads the configuration of a named profile (a sub-directory of each layer), for
-  example `production` or `test`. Names are ASCII letters, digits, `-` and `_`, up to 64 characters.
+- `--profile NAME` loads the configuration of a named profile, read from `profile/<NAME>/` under
+  each layer's directory (the host file from `profile/<NAME>/hosts/<hostname>.toml`), for example
+  `production` or `test`. Names are ASCII letters, digits, `-` and `_`, up to 64 characters.
 
 ## Errors
 
-| Situation                                                         | Exit | stderr                                |
-|-------------------------------------------------------------------|------|---------------------------------------|
-| A configuration file or `.env` cannot be read or parsed           | 78   | `Error: <reason>`                     |
-| An unknown key, or a value outside its constraint, in a section   | 78   | `Error: <section>.<key>: <reason>`    |
-| `band_low` is not below `band_high`                               | 78   | `Error: summary: <reason>`            |
-| A `[lib_log_rich]` value or `LOG_*` variable lib_log_rich refuses | 78   | `Error: lib_log_rich<.key>: <reason>` |
-| A flag outside its constraint                                     | 2    | `jev-judge: --<flag>: <reason>`       |
+| Situation                                                                            | Exit | stderr                                |
+|--------------------------------------------------------------------------------------|------|---------------------------------------|
+| A configuration file or `.env` cannot be read or parsed                              | 78   | `Error: <reason>`                     |
+| An unknown key, or a value outside its constraint, in `[judge]` (`run` only)         | 78   | `Error: judge.<key>: <reason>`        |
+| An unknown key, or a value outside its constraint, in `[summary]` (`summarize` only) | 78   | `Error: summary.<key>: <reason>`      |
+| `band_low` is not below `band_high` (`summarize` only)                               | 78   | `Error: summary: <reason>`            |
+| A `[lib_log_rich]` value or `LOG_*` variable lib_log_rich refuses                    | 78   | `Error: lib_log_rich<.key>: <reason>` |
+| A flag outside its constraint                                                        | 2    | `jev-judge: --<flag>: <reason>`       |
 
-Exit 78 applies to the commands that read the configuration: `config`, `run` and `summarize`.
-`info`, `config-deploy`, `config-generate-examples` and `check-key` still work while the
-configuration is broken; under a refused logging setting they run on logging's defaults, with every
-`LOG_*` variable ignored. `logdemo` reads no configuration either, but its demo reads the `LOG_*`
-variables itself, so a refused one ends it with exit 78 and the same `Error:` line as `config`. Under `--json-bare` these errors still print `{"error": "<reason>"}` on
-stdout.
+The file and logging rows apply to the commands that read the configuration: `config`, `run` and
+`summarize`. A `[judge]` problem stops only `run` and a `[summary]` problem only `summarize`;
+`config` displays both sections without validating them. `info`, `config-deploy`,
+`config-generate-examples` and `check-key` still work while the configuration is broken; under a
+refused logging setting they run on logging's defaults, and only when the refused setting is a
+`LOG_*` variable are all `LOG_*` variables ignored for that start. `logdemo` reads no configuration
+either, but its demo reads the `LOG_*` variables itself, so a refused one ends it with exit 78 and
+the same `Error:` line as `config`. Under `--json-bare` these errors still print
+`{"error": "<reason>"}` on stdout.
 
 ## Other settings
 
-- `JEV_JUDGE_BASE_URL` points the client at another API root, but only when its host is
-  loopback (`localhost`, `127.0.0.1`, `::1`). Any other value is ignored and the public endpoint is
+- `JEV_JUDGE_BASE_URL` points the client at another API root, but only for a loopback host
+  (`localhost`, any `127.x` address, `::1`). Any other value is ignored and the public endpoint is
   used. It exists so tests can talk to a local stub; it is not a configuration key.
 - The `[lib_log_rich]` section configures logging. Every key, with its default, is documented in
   `src/btx_skill_jev_judge/adapters/config/defaultconfig.d/90-logging.toml` and `.env.example`.

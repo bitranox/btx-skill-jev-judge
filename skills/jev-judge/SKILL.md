@@ -28,12 +28,15 @@ limit, retries and secret redaction.
 ## Procedure
 
 1. `check-key`. Exit 1: tell the user how to set up a key (Setup), and say so if you judge by
-   hand instead.
-2. **Extract in code** to `items.jsonl`, one line per item: `{"id": ..., "state": {...}}`. One
-   item, one state, one request; never pack many items into one state. Put each piece of evidence
-   in its own named field, only what the question needs. Anything that depends on OTHER items or
-   lines (a retry later succeeded, how often a value occurs) is computed in code and passed as a
-   field.
+   hand instead. It only finds a key and never tests it: pilot rows that all fail with `http 401`
+   mean a wrong key.
+2. **Extract in code** to `items.jsonl`, one line per item: `{"id": ..., "state": {...}}`, ids
+   unique. Rows carry the id as a string (`7` comes back as `"7"`): look them up by `str(id)`.
+   One item, one state, one request; never pack many items into one state. Put each piece of
+   evidence in its own named field, only what the question needs. A string over 60,000
+   characters (`run --cap`) is cut to its head and tail with no flag on the row, so trim long text
+   in code to what the question needs. Anything that depends on OTHER items or lines (a retry later
+   succeeded, how often a value occurs) is computed in code and passed as a field.
 3. **Write `questions.json`** (Question design). Several questions about the same item share one
    request.
 4. **Pilot.** Before it, name the fact the judgment must decide and the state field that carries
@@ -49,6 +52,9 @@ limit, retries and secret redaction.
    must still separate from a known no. Read the ten rows against their items. If you would have
    answered more than one differently, fix the question or the state, not the threshold. If two
    rewrites still fail the pilot, Jev is the wrong tool here: say so and judge another way.
+   The pilot's reported cost times items / 10 roughly estimates the full run (cost grows with
+   item length); every request carries every question's instructions and criteria, so a long
+   `choice` raises the cost per item.
 5. **Run everything, then `summarize`.** Exit 1 means a FLAT question (every item got about the
    same answer): a broken question until you have shown the items really are alike, or that the
    state lacks the deciding signal (step 4).
@@ -61,8 +67,10 @@ limit, retries and secret redaction.
 
 ## Question design
 
-- Three types: `noul` (yes/no; `value` is the probability of yes), `choice` (`value` is the chosen
-  `criteria` key) and `score` (a position on the ordered `criteria` list).
+- Three types: `noul` (yes/no; `value` is the probability of yes; `criteria` takes only the keys
+  `true` and `false`), `choice` (`value` is the chosen `criteria` key) and `score` (2-10 ordered
+  `criteria` levels; `value` is the expected level, counted from 0 and possibly between two:
+  1.7 on three levels; `probabilities` is keyed by level as a string, `"0"`, `"1"`, ...).
 - `instructions` carries the whole question; the question `id` is never shown to the model. Refer
   to state fields as backticked paths (`title`, `candidates[0]`), and only to fields every item has.
   A question naming a field an item lacks does not fail: Jev hedges toward the middle (measured:
@@ -76,10 +84,11 @@ limit, retries and secret redaction.
   ALWAYS include a no-match option such as `"none"`.
 - **Matching against a large target list** (a 900-item catalog): shortlist the top 5-10 targets
   per item in code (exact keys like SKU or EAN first), then make one item per (source, candidate)
-  PAIR, id `"<source>|<candidate>"`, asked a 3-level `score`; pick the best pair per source in code,
-  and send a source with two "same" pairs, or none, to the read-by-hand list. Check on a few
-  hand-matched sources that the true target made the shortlist: a target never shortlisted can
-  never be chosen, so widen the shortlist rather than trust the answers.
+  PAIR, id `"<source>|<candidate>"`, asked a 3-level `score`; a pair is "same" when
+  `probabilities["2"]` is its largest. Pick the best pair per source in code, and send a source
+  with two "same" pairs, or none, to the read-by-hand list. Check on a few hand-matched sources
+  that the true target made the shortlist: a target never shortlisted can never be chosen, so
+  widen the shortlist rather than trust the answers.
 - Several labels can apply at once: one `noul` per label, not one `choice`.
 
 ```json
@@ -106,15 +115,25 @@ uvx --from 'btx-skill-jev-judge>=0.3.3' jev-judge run --items items.jsonl --ques
 uvx --from 'btx-skill-jev-judge>=0.3.3' jev-judge summarize --rows rows.jsonl
 ```
 
-`run` overwrites `--out` and reports answered, failed ids and cost. `<command> --help` lists every
-option (`--rate`, `--workers`, `--band`, ...); `--json` gives an `{ok, command, data, skipped}`
-envelope and `--json-bare` the `data` alone, on exit 1 too. Exit codes: 0 yes, 1 no (a row failed /
-a question is flat / no key), 2 usage, input or IO error, 78 broken configuration: stderr names the
-setting, and `config --section judge` shows the layer each value came from (`defaults`, `user`,
-`dotenv`, `env`, with the file); fix it there, not on the command line. A row: `id`, `ok`, `answers`
-(`{qid: {type, value, probabilities, confidence}}`), and `reason` when it failed. The `summarize`
-data: `rows`, `answered`, `failed` (ids), `flat` (question ids) and `questions` (`{qid: {type, n,
-flat, uncertain, ...}}`); `uncertain` is that question's read-by-hand ids.
+`run` reports answered, failed ids, cost and the `models` that answered. It overwrites `--out` and
+never resumes: to retry failed rows, write their items to a new file, run that with a new `--out`
+and merge the rows in code. The default model `jev-latest` moves when a release ships; to keep the
+full run on the pilot's model, pass it `--model` with the version id the pilot reported in
+`models` (`jev-x.y.z`). `<command> --help` lists every option (`--rate`, `--workers`, `--band`,
+...); `--json` gives an `{ok, command, data, skipped}` envelope and `--json-bare` the `data` alone,
+on every exit (on 2 and 78 it is `{"error": "<message>"}`).
+
+Exit codes: 0 yes; 1 no (`run`: a row failed; `summarize`: a question is flat; `check-key`: no
+key); 2 usage, input or IO error (`run` without a key included); 78 broken configuration, and
+stderr names the setting. A `LOG_*` name is an environment variable or a `.env` line: unset or
+correct it there (`config` exits 78 too while one is broken). For a `judge.*` or `summary.*` name,
+`config --section judge` (or `summary`) shows the layer each value came from (`defaults`, `app`,
+`host`, `user`, `dotenv`, `env`, with the file); fix it there, not on the command line.
+
+A row: `id`, `ok`, `answers` (`{qid: {type, value, probabilities, confidence}}`), `model`, and
+`reason` when it failed. The `summarize` data: `rows`, `answered`, `failed` (ids), `flat`
+(question ids) and `questions` (`{qid: {type, n, flat, uncertain, ...}}`); `uncertain` is that
+question's read-by-hand ids.
 
 ## Setup
 
@@ -127,12 +146,16 @@ run this, then paste the key in with an editor; never ask for it in chat and nev
 mkdir -p -m 700 ~/.credentials && install -m 600 /dev/null ~/.credentials/typesafe.key
 ```
 
-Per-machine defaults (e.g. a lower `rate`): `uvx --from 'btx-skill-jev-judge>=0.3.3' jev-judge
-config-deploy --target user` prints the files it writes; edit `[judge]` / `[summary]` in the one
-named `60-judge.toml`. Or set `BTX_SKILL_JEV_JUDGE___JUDGE__RATE=5` in the environment. A flag
-always wins.
+Per-machine defaults (e.g. a lower `rate`): this prints the files it writes; edit `[judge]` /
+`[summary]` in the one named `60-judge.toml`.
+
+```bash
+uvx --from 'btx-skill-jev-judge>=0.3.3' jev-judge config-deploy --target user
+```
+
+Or set `BTX_SKILL_JEV_JUDGE___JUDGE__RATE=5` in the environment. A flag always wins.
 
 ## Related
 
-`typesafe:typesafe-ai` covers building Jev INTO an application. Jev's known weak spots:
-https://docs.typesafe.ai/model-jaggedness/jev-1.13.md
+`typesafe:typesafe-ai` covers building Jev INTO an application. Jev's known weak spots, as
+documented for `jev-1.13.0`: https://docs.typesafe.ai/model-jaggedness/jev-1.13.md

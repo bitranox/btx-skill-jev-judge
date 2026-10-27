@@ -22,8 +22,8 @@ You can expect an initial response within 72 hours.
 - **The API key** is looked up in this order: an exported `TYPESAFE_API_KEY` variable, then a `.env`
   file in the current directory or any parent (loaded at startup; it never overrides a variable
   that is already exported), then `~/.credentials/typesafe.key`. `--env-file` does not feed this
-  lookup. It is never a configuration value: a `judge.api_key` entry in any
-  configuration layer is refused with exit 78.
+  lookup. It is never a configuration value: a `judge.api_key` entry in any configuration layer
+  makes `run` exit 78 (`config` displays it masked as `***REDACTED***`).
 - **The key file** is refused when its group or other permission bits are set (POSIX; the check is
   skipped on Windows), when it is empty, and when its content is not printable ASCII. The refusal
   names the reason, never the key.
@@ -41,10 +41,15 @@ You can expect an initial response within 72 hours.
   Redaction is pattern based, so it is a safety net, not a licence to send data that is not cleared
   for a third party.
 - **Loopback-only base URL.** `JEV_JUDGE_BASE_URL` redirects the client only to a loopback host
-  (`localhost`, `127.0.0.1`, `::1`), so a hostile environment cannot send the bearer token to
-  another server. Any other value is ignored.
-- **Error messages** about configuration and flags name the key and the reason and never echo the
-  offending value.
+  (`localhost`, any `127.x` address, `::1`), so a hostile environment cannot send the bearer token
+  to another server. Any other value is ignored.
+- **Error messages** for a refused `[judge]` or `[summary]` value or a `[lib_log_rich]` type or
+  range check (`Error: <section>.<key>: <reason>`), and for a flag outside its range
+  (`jev-judge: --<flag>: <reason>`), name the key and the reason and never echo the offending
+  value. Other errors quote what they refuse: click's type errors (`--rate abc` gives
+  `Invalid value for '--rate': 'abc' is not a valid float.`), an invalid profile name, a log level
+  lib_log_rich does not know (from `[lib_log_rich]` or a `LOG_*` variable) and a `config-deploy`
+  permission mode lib_layered_config refuses.
 
 ## Security tooling
 
@@ -53,8 +58,10 @@ CI runs:
 - **Bandit**: static analysis for common Python security issues
 - **CodeQL**: GitHub code scanning (weekly schedule)
 - **pip-audit**: dependency vulnerability scanning against the OSV database
-- **Snyk**: continuous dependency monitoring
 - **Ruff security rules**: the S (flake8-bandit) and B (flake8-bugbear) rule sets
+
+The `.snyk` file in the repository is a Snyk policy file (it excludes `scripts/` and `tests/`); no
+CI workflow runs Snyk.
 
 ## Dependency policy
 

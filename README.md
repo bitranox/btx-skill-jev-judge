@@ -184,12 +184,12 @@ jev-judge summarize --rows rows.jsonl
 `run`, `summarize` and `check-key` take `--json` for an `{ok, command, data, skipped}` envelope on stdout, or
 `--json-bare` for the data alone (also on failure). Diagnostics always go to stderr.
 
-| Exit code | Meaning                                                                                                        |
-|-----------|----------------------------------------------------------------------------------------------------------------|
-| 0         | Yes: every item answered, no flat question, a key is present                                                   |
-| 1         | No: some row failed, a question looks flat, or `check-key` found no key                                        |
-| 2         | Usage, input or IO error (also an out-of-range flag); stderr says `jev-judge: <reason>`                        |
-| 78        | Broken configuration, such as `attempts` above 10 or a refused `LOG_*` variable; stderr says `Error: <reason>` |
+| Exit code | Meaning                                                                                                                                                                |
+|-----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0         | Yes: every item answered (`run`), no flat question (`summarize`), a key is present (`check-key`)                                                                       |
+| 1         | No: some row failed (`run`), a question looks flat (`summarize`), or no key was found (`check-key`)                                                                    |
+| 2         | Usage, input or IO error (also an out-of-range flag); stderr says `jev-judge: <reason>`                                                                                |
+| 78        | Broken configuration, such as `judge.attempts` above 10 (`run`) or a refused `LOG_*` variable (`config`, `run`, `summarize`, `logdemo`); stderr says `Error: <reason>` |
 
 A click usage error (a bad option type, an unknown option, `--json` together with `--json-bare`)
 exits 2 and prints no JSON, even under `--json-bare`.
@@ -197,9 +197,10 @@ exits 2 and prints no JSON, even under `--json-bare`.
 Before any item leaves the machine, every string in its state is redacted: common secret formats
 such as tokens, private keys and passwords in URLs, plus the API key itself. Requests share one
 rate limiter; the default 20 requests per second stays under Jev's documented 40, and `rate`
-is configurable. Transient failures (rate
-limits, overloads, 5xx errors, timeouts, dropped connections) are retried with backoff, and
-`Retry-After` is respected. Any other failure becomes a row that records the reason.
+is configurable. HTTP 429, 500, 502, 503, 504 and 529 responses, timeouts and dropped connections
+are retried with backoff (2, 4, 8 ... seconds, at most 60). A `Retry-After` header given in
+seconds replaces the backoff for that wait, also capped at 60 seconds; an HTTP-date value falls
+back to the backoff. Any other failure becomes a row that records the reason.
 `<command> --help` lists every option.
 
 ## Configuration
@@ -208,7 +209,7 @@ Defaults for `run` and `summarize` live in the `[judge]` and `[summary]` section
 configuration (files, `.env`, environment variables). A command-line flag always wins. The API key
 (exported `TYPESAFE_API_KEY`, else a `.env` in the current directory or a parent, else
 `~/.credentials/typesafe.key`; see [SECURITY.md](SECURITY.md)) is never a configuration value: a
-`judge.api_key` entry is refused with exit 78. Environment variables look like
+`judge.api_key` entry makes `run` exit 78. Environment variables look like
 `BTX_SKILL_JEV_JUDGE___JUDGE__RATE=5`. Every key, default and layer is in [CONFIG.md](CONFIG.md).
 
 ## Architecture
@@ -237,7 +238,7 @@ HTTP stub stands in for Jev, `CliRunner` drives the CLI, and a fake client drive
 - [CONTRIBUTING.md](CONTRIBUTING.md): how to send a change
 - [SECURITY.md](SECURITY.md): key handling, redaction and reporting a vulnerability
 - [docs/systemdesign/module_reference.md](docs/systemdesign/module_reference.md): module map
-- [docs/measurements.md](docs/measurements.md): one live check against the real API
+- [docs/measurements.md](docs/measurements.md): two live checks against the real API
 - [CHANGELOG.md](CHANGELOG.md): what changed in each release
 - [ai-stance.md](ai-stance.md) and [ai-transparency.md](ai-transparency.md): why and where AI was used here
 

@@ -5,7 +5,40 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+### Fixed
+- Documentation: `[judge]` and `[summary]` are validated only by the command that uses them. `run`
+  refuses an unknown key or out-of-range value in `[judge]` with exit 78, `summarize` one in
+  `[summary]`; `config` displays both without validating them and masks an `api_key` value as
+  `***REDACTED***`. CONFIG.md, README.md, SECURITY.md and the module reference said every
+  configuration-reading command refused them.
+- Documentation: a configuration layer reads only `config.toml`; YAML and JSON files are read only
+  inside its `config.d/`. CONFIG.md said a layer file could be TOML, YAML or JSON.
+- Documentation: a refused `[lib_log_rich]` value leaves valid `LOG_*` variables in force; only a
+  refused `LOG_*` variable makes the others be ignored. CONFIG.md said every `LOG_*` variable was
+  ignored under any refused logging setting.
+- Documentation: SECURITY.md said no error message echoes the offending value. That holds for the
+  `[judge]`, `[summary]` and `[lib_log_rich]` validation messages and the flag range errors; click
+  type errors, profile name errors, unknown log levels and refused permission modes quote it.
+- Documentation: SECURITY.md listed Snyk among the CI scans; no workflow runs it.
+- Documentation: the precedence list in CONFIG.md omitted `--set`, which beats environment
+  variables.
+- Documentation: CONFIG.md now names the `.env` in the user configuration directory, which supplies
+  configuration values (never the API key) when no `.env` is found in the working directory or a
+  parent.
+- Documentation: CONFIG.md lists the host layer (`hosts/<hostname>.toml`), the Linux
+  `/etc/btx-skill-jev-judge/` application directory, the Windows paths and the `profile/<NAME>/`
+  directory a profile reads.
+- Skill `jev-judge`: `run` without a key exits 2 (only `check-key` exits 1 for it); a refused
+  `LOG_*` variable is fixed where it is set, since `config` exits 78 too while one is broken; and it
+  covers what an agent had to guess before: ids come back as strings, what a `score` value and its
+  `probabilities` mean, the `score` and `noul` limits, that `check-key` does not test the key,
+  retrying failed rows without reusing `--out`, the 60,000-character cut, a cost estimate from the
+  pilot, and pinning `--model` to the pilot's model.
+
 ## [0.3.3] 2026-10-27 00:08:16
+
+### Changed
+- Requires `lib_log_rich>=8.0.1` (was `>=6.5.6`).
 
 ### Fixed
 
@@ -13,8 +46,8 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   one of its own range checks, such as `queue_maxsize = 0`) made every command exit with the OS
   errno (22 on POSIX, 87 on Windows) and pydantic's report. It is now a configuration failure like a
   broken file: logging starts with its defaults, the commands that read the configuration (`config`,
-  `run`, `summarize`) exit 78 with one `Error:` line per problem naming the key, never the value, and
-  the other commands run.
+  `run`, `summarize`) exit 78 with one `Error:` line per problem naming the key (a type or range
+  refusal never quotes the value; an unknown level name does), and the other commands run.
 - A `LOG_*` variable lib_log_rich refuses (`LOG_CONSOLE_LEVEL=bogus`, set in the environment or in
   the `.env` logging loads) made every command, `info`, `config-deploy` and `check-key` included,
   exit with the OS errno (22 on POSIX, 87 on Windows) and
@@ -22,7 +55,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   falls back to its defaults with every `LOG_*` variable hidden for that start (and put back
   afterwards) when one of them is the refused setting, so only the commands that read the configuration (`config`, `run`, `summarize`) exit
   78 with `Error: lib_log_rich: Invalid runtime settings: LOG_CONSOLE_LEVEL: Unknown log level:
-  'bogus'` (under `--json` also in the envelope), and the others run with exit 0. A refused
+  'bogus'` (under `--json` also in the envelope), and the others run normally. A refused
   `[lib_log_rich]` value leaves every valid `LOG_*` variable in force for the fallback: only a
   refused variable hides them.
 - `logdemo` refuses a `LOG_*` variable lib_log_rich refuses (`LOG_CONSOLE_LEVEL=bogus`) with exit 78
@@ -56,9 +89,6 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   `tests` (which keeps the root `conftest.py` out of doctest collection), adds `tests` to `pythonpath`
   and pyright's `extraPaths`, and gives pyright an execution environment rooted at `tests/`. A test
   checks that every doctest collected from `src/` gets both redirects.
-
-
-### Fixed
 - The test suite no longer reads the app and host configuration layers of the machine it runs on.
   An autouse fixture points lib_layered_config's three app-root variables (`LIB_LAYERED_CONFIG_ETC`,
   `_MAC_APP_ROOT`, `_PROGRAMDATA`) at an empty directory under `tmp_path`, so a system-wide deploy

@@ -2,7 +2,7 @@
 
 ## Status
 
-Complete (v0.2.0)
+Complete
 
 ---
 
@@ -67,6 +67,9 @@ Complete (v0.2.0)
 - `src/btx_skill_jev_judge/adapters/config/defaultconfig.d/90-logging.toml`  -  Logging defaults
 
 ### Tests
+- `conftest.py` (repository root)  -  The two autouse layer redirects, kept here so the doctests under `src/` get them too
+- `tests/conftest.py`  -  Shared fixtures, the loopback Jev stub among them (see [Test Fixtures](#test-fixtures-conftestpy))
+- `tests/layer_roots.py`  -  The environment variables that place lib_layered_config's layers, for the redirects and for tests that build a subprocess environment
 - `tests/test_application_judge.py`  -  The use case with a fake client
 - `tests/test_jev_client.py`  -  The client against a loopback HTTP stub: retries, redaction, base URL
 - `tests/test_key.py`  -  Key lookup, keyfile permissions and secrecy
@@ -88,6 +91,20 @@ Complete (v0.2.0)
 - `tests/test_module_reference_sync.py`  -  The field tables below match the models
 - `tests/test_module_entry.py`  -  `python -m` entry tests
 - `tests/test_ports.py`  -  Protocol conformance tests
+- `tests/test_cache_effectiveness.py`  -  `get_config()` and `get_default_config_path()` return consistent results across calls
+- `tests/test_cli_config.py`  -  config, config-deploy and config-generate-examples: display, JSON, sections, profiles, redaction
+- `tests/test_cli_core.py`  -  Traceback state, main entry, help, info, logdemo and the unknown command
+- `tests/test_cli_env_file.py`  -  `--env-file`: path passing, validation and value override
+- `tests/test_cli_overrides.py`  -  `--set` through the CLI
+- `tests/test_config_layer_isolation.py`  -  The suite never reads the app, host or user layer of the machine it runs on
+- `tests/test_declared_dependencies.py`  -  Every third-party module imported at run time is a declared dependency
+- `tests/test_deploy_permissions.py`  -  `config-deploy` permission options are parsed and reach `deploy_configuration`
+- `tests/test_enums.py`, `tests/test_errors.py`  -  Domain enums and error types
+- `tests/test_key_dotenv_subprocess.py`  -  A `.env` supplies the API key, through the real process start-up in a subprocess
+- `tests/test_logging.py`  -  The logging configuration model
+- `tests/test_property_overrides.py`  -  Property-based (hypothesis) tests of `--set` parsing and value coercion
+- `tests/test_run_stderr_subprocess.py`  -  A real `run` leaves a summary on stderr, never one line per request
+- `tests/test_settings_dotenv_numbers.py`  -  Digit-only `.env` values reach text settings as the digits written
 
 ---
 
@@ -122,8 +139,8 @@ Run `lint-imports` to verify compliance.
 
 | Code | Meaning                                                                                                   |
 |------|-----------------------------------------------------------------------------------------------------------|
-| 0    | Yes: every item answered, no flat question, a key is present                                              |
-| 1    | No: a row failed, a question looks flat, or `check-key` found no key                                      |
+| 0    | Yes: every item answered (`run`), no flat question (`summarize`), a key is present (`check-key`)          |
+| 1    | No: a row failed (`run`), a question looks flat (`summarize`), or no key was found (`check-key`)          |
 | 2    | Usage, input or IO error, also an out-of-range flag; stderr `jev-judge: <reason>`; click usage errors too |
 | 78   | Broken configuration; stderr `Error: <reason>`                                                            |
 
@@ -158,7 +175,7 @@ Judge every item; one row per item is written to `--out`.
 | `--items PATH`        | JSONL of `{"id": ..., "state": {...}}`  -  required |
 | `--questions PATH`    | JSON list of questions  -  required                 |
 | `--out PATH`          | JSONL rows, written as they arrive  -  required     |
-| `--pilot N`           | Judge only the first N items                        |
+| `--pilot N`           | Judge only the first N items (0 or less: all)       |
 | `--rate`, `--workers` | Override `judge.rate`, `judge.workers`              |
 | `--attempts`          | Override `judge.attempts`                           |
 | `--timeout`, `--cap`  | Override `judge.timeout`, `judge.cap`               |
@@ -198,10 +215,11 @@ Print resolved package metadata.
 
 Display merged configuration from all sources.
 
-| Option                   | Description                    |
-|--------------------------|--------------------------------|
-| `--format [human\|json]` | Output format (default: human) |
-| `--section NAME`         | Show only specific section     |
+| Option                   | Description                        |
+|--------------------------|------------------------------------|
+| `--format [human\|json]` | Output format (default: human)     |
+| `--section NAME`         | Show only specific section         |
+| `--profile NAME`         | Override profile from root command |
 
 **Exit codes:** 0, 2 (usage error), 22 (section not found), 78 (configuration not loadable, or a `[lib_log_rich]` value or `LOG_*` variable lib_log_rich refuses)
 
@@ -229,7 +247,7 @@ Generate example configuration files.
 | `--destination DIR` | Target directory  -  required |
 | `--force`           | Overwrite existing files      |
 
-**Exit codes:** 0, 1
+**Exit codes:** 0, 1, 2 (usage error)
 
 ### logdemo
 
@@ -284,7 +302,9 @@ Raises `ValueError` with a descriptive message on invalid input.
 
 `adapters/config/judge_settings.py` reads the `[judge]` and `[summary]` sections into two frozen
 Pydantic models that reject unknown keys (which keeps the API key out of configuration: a
-`judge.api_key` entry is refused with exit 78). A CLI flag wins over every configuration layer.
+`judge.api_key` entry makes `run` exit 78). `run` validates only `[judge]` and `summarize` only
+`[summary]`; `config` displays both without validating them. A CLI flag wins over every
+configuration layer.
 `tests/test_module_reference_sync.py` keeps the two tables below in step with the models.
 
 ### RunConfig
@@ -325,12 +345,28 @@ the developer's own key.
 
 ### Test Fixtures (conftest.py)
 
-| Fixture                   | Purpose                                                                                                               |
-|---------------------------|-----------------------------------------------------------------------------------------------------------------------|
-| `config_factory`          | Creates real `Config` instances from test data                                                                        |
-| `inject_config`           | Injects config into CLI path                                                                                          |
-| `cli_runner`              | Fresh `CliRunner` per test                                                                                            |
-| `strip_ansi`              | Strips ANSI escape codes from output                                                                                  |
-| `clear_config_cache`      | Clears LRU cache before tests                                                                                         |
-| `managed_traceback_state` | Resets/restores traceback configuration                                                                               |
-| `isolated_logging_state`  | Autouse: after every test, shuts the lib_log_rich runtime down and restores the root logger; yields that restore step |
+| Fixture                              | Purpose                                                                                                               |
+|--------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| `config_factory`                     | Creates real `Config` instances from test data                                                                        |
+| `inject_config`                      | Injects config into CLI path                                                                                          |
+| `cli_runner`                         | Fresh `CliRunner` per test                                                                                            |
+| `strip_ansi`                         | Strips ANSI escape codes from output                                                                                  |
+| `clear_config_cache`                 | Clears LRU cache before tests                                                                                         |
+| `managed_traceback_state`            | Resets/restores traceback configuration                                                                               |
+| `isolated_logging_state`             | Autouse: after every test, shuts the lib_log_rich runtime down and restores the root logger; yields that restore step |
+| `user_layer_in_tmp_path`             | Autouse, rootdir `conftest.py`: points the user layer of every OS at an empty directory under `tmp_path`              |
+| `system_layers_in_tmp_path`          | Autouse, rootdir `conftest.py`: points the app and host layers at an empty directory under `tmp_path`                 |
+| `deterministic_cli_output`           | Autouse: uncoloured, fixed-width (120 columns) rich-click output on every machine                                     |
+| `app_layer_config_file`              | The app layer's `config.toml` path under the redirect, its directory created                                          |
+| `user_layer_config_file`             | The user layer's `config.toml` path under the redirect, its directory created                                         |
+| `production_factory`                 | `build_production`, with the key variable empty, no base URL and an empty temporary home                              |
+| `source_info_factory`                | Creates `SourceInfo` dicts for provenance tests                                                                       |
+| `inject_config_with_profile_capture` | Like `inject_config`, recording the profile each `get_config` call receives                                           |
+| `inject_deploy_with_profile_capture` | A fake `deploy_configuration` that records the profile it receives                                                    |
+| `inject_deploy_configuration`        | Services with a caller-supplied `deploy_configuration`                                                                |
+| `inject_test_services`               | Returns the `build_testing` factory                                                                                   |
+| `config_cli_context`                 | Services built from a config dict in one step                                                                         |
+| `failing_command`                    | Adds a command that raises an unexpected error to the real root group for one test                                    |
+| `jev`                                | A real `http.server` on 127.0.0.1 standing in for Jev; records each request and answers through a `reply` callback    |
+
+Fixtures live in `tests/conftest.py`; the two layer redirects live in the rootdir `conftest.py`.

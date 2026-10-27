@@ -4,8 +4,8 @@
 
 Twenty synthetic one-line changelog entries, labelled by hand (bug fix or not) and written to a
 file before the run; one noul question with `true`/`false` criteria; one entry carried a fake
-GitHub token. Run through `uv run skills/jev-judge/scripts/jev_judge.py run` with default settings
-(8 workers, 20 requests/s).
+GitHub token. Run through `uv run skills/jev-judge/scripts/jev_judge.py run` (the pre-package
+script; today `jev-judge run`) with default settings (8 workers, 20 requests/s).
 
 | Measured                   | Value                                                          |
 |----------------------------|----------------------------------------------------------------|

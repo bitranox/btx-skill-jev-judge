@@ -95,8 +95,9 @@ freshly created empty keyfile then produced the unhelpful reason "keyfile"; `che
 
 ## Length
 
-The body is about 960 words, over the 500-word target for a technique skill. Each section closes a
-gap a probe reported, and the body loads only when the skill is invoked; the always-loaded
+The body is about 1,700 words (whitespace split, code blocks included), over the 500-word target
+for a technique skill. Each section closes a gap a probe reported or states a CLI fact a reader
+otherwise guesses, and the body loads only when the skill is invoked; the always-loaded
 description is 425 characters.
 
 ## Re-check for the switch to uvx (0.2.1)
@@ -266,3 +267,54 @@ A quote-back probe on haiku and opus, given a question naming an optional field 
 drops when empty, quoted the new Question design sentence and the Pilot clause on both tiers; the
 same question on the pre-edit text quoted only the rule to name fields every item has and the
 generic pilot advice.
+
+## Re-check of the CLI facts (0.3.4, 2026-10-27)
+
+No code changes. SKILL.md is corrected to describe what the 0.3.3 CLI does, after a reader given
+only the 0.3.3 text and the CLI found 13 places where the text was wrong or silent. That list is
+the RED.
+
+| Finding                                                    | Text now                                                                                                                         |
+|------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
+| "1 no ... no key" was wrong for `run`                      | Exit 1 per command (`run` row failed, `summarize` flat, `check-key` no key); `run` without a key is exit 2                       |
+| Exit 78 told the reader to use `config --section judge`    | A `LOG_*` name is fixed in the environment or `.env` (`config` exits 78 too); `config --section` for `judge.*`/`summary.*`       |
+| Integer ids                                                | Ids unique; rows carry the id as a string, look up by `str(id)`                                                                  |
+| `score` value and the "same" rule                          | Expected level from 0, possibly fractional, `probabilities` keyed `"0"`, `"1"`, ...; "same" when `probabilities["2"]` is largest |
+| Question limits                                            | `score` 2-10 levels; `noul` `criteria` keys only `true` and `false`                                                              |
+| `check-key` only finds a key                               | Stated; all pilot rows failing with `http 401` mean a wrong key                                                                  |
+| Retrying failed rows                                       | New items file, new `--out`, merge in code                                                                                       |
+| Long strings                                               | Cut to head and tail at 60,000 characters (`run --cap`) with no row flag; trim in code                                           |
+| Cost before the full run                                   | Pilot cost times items / 10, roughly                                                                                             |
+| Jaggedness page is for `jev-1.13.0`; `jev-latest` moves    | The link names its model; the full run takes `--model` with the version the pilot reported in `models`                           |
+| Layer list, `config-deploy` line, `--json-bare` on failure | Six layers; command in a fenced block; `--json-bare` prints `{"error": ...}` on exit 2 and 78                                    |
+
+### Executed
+
+Every fact was checked against the source or by running the 0.3.3 CLI in an empty home with no
+key, and against a loopback stub API with a dummy key: `run` without a key exits 2 (`--json-bare`
+prints `{"error": ...}`); `LOG_CONSOLE_LEVEL=bogus` makes `config --section judge` and `run` exit
+78 while `check-key` runs; a bad `judge.attempts` exits 78 naming `judge.attempts`; `{"id": 1}`
+comes back as `"1"`; a repeated id, an 11-level `score` and a `noul` `criteria` key `yes` exit 2;
+a 200,000-character string reaches the API as 60,000 with no row flag; a 401 fails every row in
+one attempt with exit 1; the run data lists `models`. Both typesafe.ai URLs were fetched: the
+`jev-1.13` jaggedness page answers 200, a `jev-1.14` one 404, and the models page maps
+`jev-latest` to `jev-1.14.0`.
+
+### GREEN
+
+Text-only probes on opus and haiku got the edited SKILL.md and ten questions, one per finding,
+each to be answered by a direct quote or NONE: 10 of 10 quoted on both tiers.
+
+| Gap reported                                                                 | Decision                                                                         |
+|------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| Where the concrete `jev-x.y.z` comes from (both)                             | Closed: the version the pilot reported in `models`                               |
+| Pilot cost may not represent the full run (both)                             | Closed: "roughly", and cost grows with item length                               |
+| `--cap` named without its command (haiku)                                    | Closed: `run --cap`                                                              |
+| No command shows a `LOG_*` value's source; valid log levels unnamed (both)   | Declined: the text says where a `LOG_*` value lives, and stderr names the value  |
+| The "same" rule covers only the 3-level pair (both)                          | Declined: the threshold for other scales is a task-specific choice               |
+| What `check-key` prints; score `criteria` format; cap head/tail split (opus) | Declined: `--help` and the JSON example answer them; the split changes no action |
+
+The three questions those fixes touched (cut limit, cost estimate, model id), asked again on the
+final text: 3 of 3 quoted on both tiers, the model id read from the pilot's `models`. Their new
+gaps are declined as detail a run settles: the head/tail split, a pilot reporting two models, and
+whether retry runs also take `--model`.

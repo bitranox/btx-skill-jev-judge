@@ -9,24 +9,27 @@ release tasks are run by [bmk](https://pypi.org/project/bmk/) through a generate
 `make help` is the authoritative list; it is generated from the Makefile itself. The ones you
 use most:
 
-| Target                 | What it does                                                           |
-|------------------------|------------------------------------------------------------------------|
-| `make test`            | The whole gate: format, lint, types, import contracts, tests, coverage |
-| `make test-all`        | Tests and types on every supported Python version                      |
-| `make testintegration` | Only the tests marked `integration`                                    |
-| `make push`            | Run the gate, commit, push                                             |
-| `make bump-patch`      | Bump the version (`bump-minor`, `bump-major` likewise)                 |
-| `make release`         | Tag the current version and create the release                         |
-| `make run`             | Run the CLI                                                            |
+| Target                 | What it does                                                                           |
+|------------------------|----------------------------------------------------------------------------------------|
+| `make test`            | The whole gate: format, lint, types, import contracts, tests, coverage, security scans |
+| `make test-all`        | Tests and types on every supported Python version                                      |
+| `make testintegration` | Only the tests marked `integration`                                                    |
+| `make push`            | Run the gate, commit, push                                                             |
+| `make bump-patch`      | Bump the version (`bump-minor`, `bump-major` likewise)                                 |
+| `make release`         | Tag the current version and create the release                                         |
+| `make run`             | Run the CLI                                                                            |
 
 The Makefile is rewritten by bmk on every run, so do not edit it. `bmk --help` documents the CLI
 behind it.
 
 ## The gate
 
-`make test` runs ruff (lint and format check, Markdown included), pyright in strict mode,
-`import-linter`, and pytest with branch coverage. It must pass before every push. Unset a stray
-`VIRTUAL_ENV` first (`env -u VIRTUAL_ENV make test`) so bmk uses the project `.venv`.
+`make test` first raises the dependency floors, relocks, and applies `ruff format` and ruff's
+fixes, so it can rewrite files in the working tree. It then runs ruff (lint and format check,
+Markdown included), pyright in strict mode, `import-linter`, bandit, pip-audit, shellcheck and
+PSScriptAnalyzer (on any `.sh` and `.ps1` files), and pytest with branch coverage. It must pass
+before every push. Unset a stray `VIRTUAL_ENV` first (`env -u VIRTUAL_ENV make test`) so bmk uses
+the project `.venv`.
 
 Pytest markers: `os_agnostic` is a label only and skips nothing; a test that needs one platform
 uses `pytest.mark.skipif` with a condition that exists everywhere (`os.name`, `sys.platform`).
@@ -53,7 +56,8 @@ pure domain. `docs/systemdesign/module_reference.md` maps every module.
 Tests drive real seams instead of patching internals:
 
 - The Jev client talks to a loopback HTTP stub server. `JEV_JUDGE_BASE_URL` is honoured only for a
-  loopback host, which is what makes this possible without touching the real API.
+  loopback host (`localhost`, any `127.x` address, `::1`), which is what makes this possible
+  without touching the real API.
 - The CLI is driven with `click.testing.CliRunner`.
 - The judge use case receives a fake `JudgeClient`.
 - `composition.build_testing(env=..., home=...)` wires the in-memory configuration and logging

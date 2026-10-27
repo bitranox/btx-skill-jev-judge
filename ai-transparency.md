@@ -15,7 +15,8 @@ work on its merits. The reasoning behind working this way is in [ai-stance.md](a
   behind it instead of a throwaway script, redaction of secrets before anything is sent, a request
   rate limiter, a pilot mode, and a check that flags a question whose answers never move.
 - The key handling is theirs: the key is never a configuration value, never printed, and read only
-  from the environment or a mode-600 file.
+  from the environment, a `.env` file in the working directory or a parent, or a key file with no
+  group or other permission bits (600 or 400).
 - The repository doubles as its own plugin marketplace and as a PyPI package; that packaging and the
   release order are the human's decisions.
 - The human reviewed and corrected the work at each step. Commits go out under the human's name
@@ -25,7 +26,7 @@ work on its merits. The reasoning behind working this way is in [ai-stance.md](a
 
 As a tool, under that direction, it typed the code, the tests (including the loopback stub of the
 API), these documents and the plugin manifests to the human's design, and laid out options at each
-fork for the human to choose from. It also ran the live check against the real API recorded in
+fork for the human to choose from. It also ran the live checks against the real API recorded in
 [docs/measurements.md](docs/measurements.md) with a key the human supplied, and it played the part
 of the throwaway agents in [docs/skill-review.md](docs/skill-review.md), which tested whether an
 agent following the skill behaves correctly. None of the decisions, and none of the
@@ -35,8 +36,9 @@ accountability, were the AI's.
 
 Checked: the test suite runs against a local HTTP stub that stands in for Jev, never against the
 real API, and the gate (ruff, pyright in strict mode, import-linter, pytest with coverage) runs on
-every push in CI on Linux, macOS and Windows. One live run against the real API (20 short items)
-agreed with hand labels; it is a smoke test of the client, not an accuracy figure.
+every push in CI on Linux, macOS and Windows. Two live runs against the real API (20 short items
+each, one of them through the published skill) each agreed with hand labels on all 20 items; they
+are a smoke test of the client, not an accuracy figure.
 
 Not checked: how well Jev judges your items. Run `--pilot`, read the rows against their items, and
 treat a probability as a hint, never as permission to do anything destructive.

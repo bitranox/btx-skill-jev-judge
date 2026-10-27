@@ -23,15 +23,17 @@ checks a change must pass. The development loop itself is in [DEVELOPMENT.md](DE
 - Small, single-purpose functions and modules; type hints everywhere (pyright strict).
 - Free functions and modules use `snake_case`, classes `PascalCase`.
 - Keep runtime dependencies minimal and prefer the standard library.
-- Every tracked text file is ASCII. Write a character that needs it in a test as a `\u` escape.
+- Every file you write is ASCII (the generated `Makefile` and the template-owned `.github/`
+  excepted). Write a character that needs it in a test as a `\u` escape.
 
 ## Tests
 
-- `make test` runs ruff (lint and format check), pyright, import-linter and pytest with coverage.
+- `make test` applies `ruff format` and ruff's fixes, then runs ruff (lint and format check),
+  pyright, import-linter, bandit, pip-audit, shellcheck, PSScriptAnalyzer and pytest with coverage.
 - Tests drive real seams: the loopback HTTP stub for Jev, `CliRunner` for the CLI, a fake client
   for the use case. Do not monkeypatch the package's own internals.
-- Name tests `test_when_<condition>_<outcome>` and mark OS constraints (`@pytest.mark.os_agnostic`,
-  `@pytest.mark.os_windows`, ...).
+- Name tests `test_when_<condition>_<outcome>`, mark them `@pytest.mark.os_agnostic`, and restrict
+  a test to one platform with `pytest.mark.skipif` on `os.name` or `sys.platform`.
 - A change to CLI behaviour or to configuration needs a test in the matching `tests/test_cli_*.py`
   or `tests/test_judge_config.py`.
 
