@@ -51,6 +51,7 @@ Issues = "https://github.com/bitranox/btx-skill-jev-judge/issues"
 dev = [
   "pytest>=9.1.1",
   "pytest-cov>=7.1.0",
+  "pytest-xdist>=3.8.0",
   "hypothesis>=6.168.5",
   "ruff>=0.17.2",
   "pyright[nodejs]>=1.1.414",
