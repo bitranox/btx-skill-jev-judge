@@ -5,6 +5,8 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+## [0.3.4] 2026-10-27 10:23:20
+
 ### Fixed
 - Documentation: `[judge]` and `[summary]` are validated only by the command that uses them. `run`
   refuses an unknown key or out-of-range value in `[judge]` with exit 78, `summarize` one in
