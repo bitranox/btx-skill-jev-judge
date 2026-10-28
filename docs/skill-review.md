@@ -318,3 +318,32 @@ The three questions those fixes touched (cut limit, cost estimate, model id), as
 final text: 3 of 3 quoted on both tiers, the model id read from the pilot's `models`. Their new
 gaps are declined as detail a run settles: the head/tail split, a pilot reporting two models, and
 whether retry runs also take `--model`.
+
+## Re-check for the items-are-billed paragraph (0.3.6, 2026-10-28)
+
+The new paragraph under Commands says `run` sends and bills every non-blank line of `--items`
+(with `--pilot N`, the first N), that a top-level key other than `id` and `state` refuses the whole
+run (exit 2) before anything is sent, and that an annotation put inside `state` is sent with the
+item.
+
+### Executed
+
+The four `run`/`check-key`/`summarize` lines of the Commands block were run verbatim against 0.3.6
+from PyPI, in an empty home with a dummy key and `JEV_JUDGE_BASE_URL` pointing at a loopback stub
+that logged every request body and answered 400 (not retried). The items file held three items, two
+blank lines between them, and an `expected` and a `note` annotation inside the second item's
+`state`:
+
+| Command                           | Exit | Requests | Note                                               |
+|-----------------------------------|------|----------|----------------------------------------------------|
+| `check-key`                       | 0    | 0        | finds the key, does not call the API               |
+| `run ... --pilot 10`              | 1    | 3        | blank lines skipped; every row failed at the stub  |
+| `run ... --out rows.jsonl`        | 1    | 3        | the annotated item's body carried both annotations |
+| `summarize --rows rows.jsonl`     | 0    | 0        | reads the rows file only                           |
+| `run ... --pilot 2`               | 1    | 2        | the first two items, in file order                 |
+| `run` with a top-level `expected` | 2    | 0        | `Extra inputs are not permitted`, nothing sent     |
+
+### GREEN
+
+The paragraph was written in the bitranox-skills twin first and checked there: a text-only quote-back
+on opus and haiku against the edited file quoted it in full on both tiers.
