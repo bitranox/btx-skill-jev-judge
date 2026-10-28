@@ -109,11 +109,17 @@ included: unquoted, the shell reads `>=` as a redirection, and stored in a varia
 reach `uvx` and it refuses the name.
 
 ```bash
-uvx --from 'btx-skill-jev-judge>=0.3.5' jev-judge check-key
-uvx --from 'btx-skill-jev-judge>=0.3.5' jev-judge run --items items.jsonl --questions questions.json --out pilot.jsonl --pilot 10
-uvx --from 'btx-skill-jev-judge>=0.3.5' jev-judge run --items items.jsonl --questions questions.json --out rows.jsonl
-uvx --from 'btx-skill-jev-judge>=0.3.5' jev-judge summarize --rows rows.jsonl
+uvx --from 'btx-skill-jev-judge>=0.3.6' jev-judge check-key
+uvx --from 'btx-skill-jev-judge>=0.3.6' jev-judge run --items items.jsonl --questions questions.json --out pilot.jsonl --pilot 10
+uvx --from 'btx-skill-jev-judge>=0.3.6' jev-judge run --items items.jsonl --questions questions.json --out rows.jsonl
+uvx --from 'btx-skill-jev-judge>=0.3.6' jev-judge summarize --rows rows.jsonl
 ```
+
+`run` sends and bills every non-blank line of `--items` (with `--pilot N`, the first N); nothing in
+a line marks it to skip. A top-level key other than `id` and `state` refuses the whole run (exit 2)
+before anything is sent, and an annotation of your own (an expected answer, a note) put inside
+`state` is sent to Jev with the item. Keep your annotations in a separate file keyed by id, and
+filter `items.jsonl` in code before `run` to cut what is sent and billed.
 
 `run` reports answered, failed ids, cost and the `models` that answered. It overwrites `--out` and
 never resumes: to retry failed rows, write their items to a new file, run that with a new `--out`
@@ -151,7 +157,7 @@ Per-machine defaults (e.g. a lower `rate`): this prints the files it writes; edi
 `[summary]` in the one named `60-judge.toml`.
 
 ```bash
-uvx --from 'btx-skill-jev-judge>=0.3.5' jev-judge config-deploy --target user
+uvx --from 'btx-skill-jev-judge>=0.3.6' jev-judge config-deploy --target user
 ```
 
 Or set `BTX_SKILL_JEV_JUDGE___JUDGE__RATE=5` in the environment. A flag always wins.

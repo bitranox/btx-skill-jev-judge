@@ -5,6 +5,15 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+## [0.3.6] 2026-10-28 23:48:41
+
+### Changed
+- Skill: `run` sends and bills every non-blank line of `--items` (with `--pilot N`, the first
+  N), and nothing in a line marks it to skip. The skill now says so, says that a top-level key
+  other than `id` and `state` refuses the whole run (exit 2) before anything is sent, and that an
+  annotation put inside `state` is sent to Jev with the item. It recommends keeping annotations
+  in a separate file keyed by id and filtering the items file before `run`.
+
 ## [0.3.5] 2026-10-28 21:05:31
 
 ### Changed
