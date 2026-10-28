@@ -109,10 +109,10 @@ included: unquoted, the shell reads `>=` as a redirection, and stored in a varia
 reach `uvx` and it refuses the name.
 
 ```bash
-uvx --from 'btx-skill-jev-judge>=0.3.4' jev-judge check-key
-uvx --from 'btx-skill-jev-judge>=0.3.4' jev-judge run --items items.jsonl --questions questions.json --out pilot.jsonl --pilot 10
-uvx --from 'btx-skill-jev-judge>=0.3.4' jev-judge run --items items.jsonl --questions questions.json --out rows.jsonl
-uvx --from 'btx-skill-jev-judge>=0.3.4' jev-judge summarize --rows rows.jsonl
+uvx --from 'btx-skill-jev-judge>=0.3.5' jev-judge check-key
+uvx --from 'btx-skill-jev-judge>=0.3.5' jev-judge run --items items.jsonl --questions questions.json --out pilot.jsonl --pilot 10
+uvx --from 'btx-skill-jev-judge>=0.3.5' jev-judge run --items items.jsonl --questions questions.json --out rows.jsonl
+uvx --from 'btx-skill-jev-judge>=0.3.5' jev-judge summarize --rows rows.jsonl
 ```
 
 `run` reports answered, failed ids, cost and the `models` that answered. It overwrites `--out` and
@@ -151,7 +151,7 @@ Per-machine defaults (e.g. a lower `rate`): this prints the files it writes; edi
 `[summary]` in the one named `60-judge.toml`.
 
 ```bash
-uvx --from 'btx-skill-jev-judge>=0.3.4' jev-judge config-deploy --target user
+uvx --from 'btx-skill-jev-judge>=0.3.5' jev-judge config-deploy --target user
 ```
 
 Or set `BTX_SKILL_JEV_JUDGE___JUDGE__RATE=5` in the environment. A flag always wins.

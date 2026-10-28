@@ -5,6 +5,8 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+## [0.3.5] 2026-10-28 21:05:31
+
 ### Changed
 - `config` checks `[judge]` and `[summary]` by the rules `run` and `summarize` use. It shows the
   configuration exactly as before (stdout is unchanged in both formats), then writes one
