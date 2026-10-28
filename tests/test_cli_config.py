@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING, Any
 
 import pytest
@@ -813,3 +814,116 @@ def test_when_config_subcommand_has_no_profile_it_uses_stored_config_with_overri
     assert result.exit_code == 0
     assert "overridden" in result.stdout
     assert '"original"' not in result.stdout
+
+
+# --- config shows [judge] and [summary], then refuses a problem in them --------------------------
+#
+# `run` and `summarize` each validate only their own section, and before this check `config` showed
+# both unvalidated with exit 0, so a typo stayed silent until the first run. `config` now shows the
+# configuration exactly as before (stdout is unchanged in both formats, so a JSON consumer keeps its
+# tree), then writes one `Error:` line per problem to stderr and exits 78, as `run` does.
+
+
+def _errors(result: Result) -> list[str]:
+    return [line for line in result.stderr.splitlines() if line.startswith("Error: ")]
+
+
+@pytest.mark.os_agnostic
+def test_config_shows_an_unknown_judge_key_then_refuses_it_with_78(
+    cli_runner: CliRunner,
+    config_cli_context: Callable[[dict[str, Any]], Callable[[], Any]],
+) -> None:
+    result: Result = cli_runner.invoke(cli_mod.cli, ["--set", "judge.api_key=x", "config"], obj=config_cli_context({}))
+
+    assert result.exit_code == 78, result.output
+    assert "api_key" in result.stdout and "***REDACTED***" in result.stdout
+    assert _errors(result) == ["Error: judge.api_key: Extra inputs are not permitted"]
+
+
+@pytest.mark.os_agnostic
+def test_config_in_json_keeps_stdout_the_configuration_tree_and_reports_on_stderr(
+    cli_runner: CliRunner,
+    config_cli_context: Callable[[dict[str, Any]], Callable[[], Any]],
+) -> None:
+    result: Result = cli_runner.invoke(
+        cli_mod.cli, ["--set", "judge.workers=0", "config", "--format", "json"], obj=config_cli_context({})
+    )
+
+    assert result.exit_code == 78, result.output
+    assert json.loads(result.stdout)["judge"] == {"workers": 0}
+    assert _errors(result) == ["Error: judge.workers: Input should be greater than or equal to 1"]
+
+
+@pytest.mark.os_agnostic
+def test_config_reports_every_problem_of_both_sections_one_line_each(
+    cli_runner: CliRunner,
+    config_cli_context: Callable[[dict[str, Any]], Callable[[], Any]],
+) -> None:
+    sets = ["judge.workers=0", "judge.api_key=x", "summary.band_low=0.9", "summary.band_high=0.1"]
+    args = [arg for value in sets for arg in ("--set", value)]
+
+    result: Result = cli_runner.invoke(cli_mod.cli, [*args, "config"], obj=config_cli_context({}))
+
+    assert result.exit_code == 78, result.output
+    assert sorted(_errors(result)) == [
+        "Error: judge.api_key: Extra inputs are not permitted",
+        "Error: judge.workers: Input should be greater than or equal to 1",
+        "Error: summary: Value error, band_low must be below band_high",
+    ]
+
+
+@pytest.mark.os_agnostic
+def test_config_never_echoes_the_offending_value(
+    cli_runner: CliRunner,
+    config_cli_context: Callable[[dict[str, Any]], Callable[[], Any]],
+) -> None:
+    result: Result = cli_runner.invoke(
+        cli_mod.cli, ["--set", "judge.api_key=sk-not-a-real-key-123", "config"], obj=config_cli_context({})
+    )
+
+    assert result.exit_code == 78, result.output
+    assert "sk-not-a-real-key-123" not in result.output
+
+
+@pytest.mark.os_agnostic
+def test_config_with_a_section_still_refuses_a_broken_section_it_does_not_show(
+    cli_runner: CliRunner,
+    config_cli_context: Callable[[dict[str, Any]], Callable[[], Any]],
+) -> None:
+    result: Result = cli_runner.invoke(
+        cli_mod.cli,
+        ["--set", "judge.workers=0", "config", "--section", "service"],
+        obj=config_cli_context({"service": {"name": "shown"}}),
+    )
+
+    assert result.exit_code == 78, result.output
+    assert "shown" in result.stdout
+    assert _errors(result) == ["Error: judge.workers: Input should be greater than or equal to 1"]
+
+
+@pytest.mark.os_agnostic
+def test_config_with_its_own_profile_checks_the_reloaded_sections(
+    cli_runner: CliRunner,
+    config_cli_context: Callable[[dict[str, Any]], Callable[[], Any]],
+) -> None:
+    result: Result = cli_runner.invoke(
+        cli_mod.cli, ["--set", "judge.workers=0", "config", "--profile", "prod"], obj=config_cli_context({})
+    )
+
+    assert result.exit_code == 78, result.output
+    assert _errors(result) == ["Error: judge.workers: Input should be greater than or equal to 1"]
+
+
+@pytest.mark.os_agnostic
+def test_config_exits_0_when_both_sections_are_valid(
+    cli_runner: CliRunner,
+    config_cli_context: Callable[[dict[str, Any]], Callable[[], Any]],
+) -> None:
+    result: Result = cli_runner.invoke(
+        cli_mod.cli,
+        ["--set", "judge.workers=3", "--set", "summary.min_confidence=0.5", "config"],
+        obj=config_cli_context({}),
+    )
+
+    assert result.exit_code == 0, result.output
+    assert _errors(result) == []

@@ -23,7 +23,7 @@ You can expect an initial response within 72 hours.
   file in the current directory or any parent (loaded at startup; it never overrides a variable
   that is already exported), then `~/.credentials/typesafe.key`. `--env-file` does not feed this
   lookup. It is never a configuration value: a `judge.api_key` entry in any configuration layer
-  makes `run` exit 78 (`config` displays it masked as `***REDACTED***`).
+  makes `run` and `config` exit 78 (`config` shows it masked as `***REDACTED***` first).
 - **The key file** is refused when its group or other permission bits are set (POSIX; the check is
   skipped on Windows), when it is empty, and when its content is not printable ASCII. The refusal
   names the reason, never the key.

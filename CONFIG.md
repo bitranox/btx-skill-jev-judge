@@ -55,8 +55,9 @@ Both models behind these sections reject unknown keys. `jev-judge run` validates
 entry such as `judge.api_key`, or any other key not listed above, makes it exit with code 78 and
 `Error: judge.api_key: Extra inputs are not permitted`; `jev-judge summarize` validates `[summary]`
 the same way. This is deliberate: it keeps the key out of files that are copied, committed and
-deployed. See [SECURITY.md](SECURITY.md). `jev-judge config` displays both sections without
-validating them and shows an `api_key` value as `***REDACTED***`.
+deployed. See [SECURITY.md](SECURITY.md). `jev-judge config` checks both sections: it shows the
+configuration first, an `api_key` value as `***REDACTED***`, then exits 78 with the same
+`Error:` line for each problem.
 
 An invalid value is refused the same way, by the command whose section it is, naming the key and
 the reason but never the value: `Error: judge.rate: Input should be greater than 0`. The same range
@@ -153,18 +154,20 @@ directory of your choice, among them a host file as
 
 ## Errors
 
-| Situation                                                                            | Exit | stderr                                |
-|--------------------------------------------------------------------------------------|------|---------------------------------------|
-| A configuration file or `.env` cannot be read or parsed                              | 78   | `Error: <reason>`                     |
-| An unknown key, or a value outside its constraint, in `[judge]` (`run` only)         | 78   | `Error: judge.<key>: <reason>`        |
-| An unknown key, or a value outside its constraint, in `[summary]` (`summarize` only) | 78   | `Error: summary.<key>: <reason>`      |
-| `band_low` is not below `band_high` (`summarize` only)                               | 78   | `Error: summary: <reason>`            |
-| A `[lib_log_rich]` value or `LOG_*` variable lib_log_rich refuses                    | 78   | `Error: lib_log_rich<.key>: <reason>` |
-| A flag outside its constraint                                                        | 2    | `jev-judge: --<flag>: <reason>`       |
+| Situation                                                                                 | Exit | stderr                                |
+|-------------------------------------------------------------------------------------------|------|---------------------------------------|
+| A configuration file or `.env` cannot be read or parsed                                   | 78   | `Error: <reason>`                     |
+| An unknown key, or a value outside its constraint, in `[judge]` (`run`, `config`)         | 78   | `Error: judge.<key>: <reason>`        |
+| An unknown key, or a value outside its constraint, in `[summary]` (`summarize`, `config`) | 78   | `Error: summary.<key>: <reason>`      |
+| `band_low` is not below `band_high` (`summarize`, `config`)                               | 78   | `Error: summary: <reason>`            |
+| A `[lib_log_rich]` value or `LOG_*` variable lib_log_rich refuses                         | 78   | `Error: lib_log_rich<.key>: <reason>` |
+| A flag outside its constraint                                                             | 2    | `jev-judge: --<flag>: <reason>`       |
 
 The file and logging rows apply to the commands that read the configuration: `config`, `run` and
-`summarize`. A `[judge]` problem stops only `run` and a `[summary]` problem only `summarize`;
-`config` displays both sections without validating them. `info`, `config-deploy`,
+`summarize`. A `[judge]` problem stops `run` and a `[summary]` problem `summarize`; `config`
+shows the configuration first, with stdout unchanged in both formats, then writes an `Error:`
+line for every problem in either section, whatever `--section` shows, and exits 78. `info`,
+`config-deploy`,
 `config-generate-examples` and `check-key` still work while the configuration is broken; under a
 refused logging setting they run on logging's defaults, and only when the refused setting is a
 `LOG_*` variable are all `LOG_*` variables ignored for that start. `logdemo` reads no configuration

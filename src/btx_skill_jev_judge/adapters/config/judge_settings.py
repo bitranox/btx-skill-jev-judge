@@ -79,7 +79,7 @@ class SummaryConfig(BaseModel):
         return self
 
 
-def _describe(section: str, error: ValidationError) -> str:
+def _problems(section: str, error: ValidationError) -> list[str]:
     """One ``<section>.<key>: <reason>`` per problem; never the offending value.
 
     Args:
@@ -87,13 +87,18 @@ def _describe(section: str, error: ValidationError) -> str:
         error: The validation error to render.
 
     Returns:
-        The problems joined with ``"; "``.
+        The problems in the order the model reported them.
     """
-    parts: list[str] = []
+    problems: list[str] = []
     for problem in error.errors(include_input=False):
         where = ".".join([section, *(str(p) for p in problem["loc"])])
-        parts.append(f"{where}: {problem['msg']}")
-    return "; ".join(parts)
+        problems.append(f"{where}: {problem['msg']}")
+    return problems
+
+
+def _describe(section: str, error: ValidationError) -> str:
+    """The problems of :func:`_problems` joined with ``"; "``, for a single error message."""
+    return "; ".join(_problems(section, error))
 
 
 def _section(config: Config, name: str) -> dict[str, Any]:
@@ -145,4 +150,42 @@ def summary_config(config: Config) -> SummaryConfig:
         raise ConfigurationError(_describe("summary", exc)) from exc
 
 
-__all__ = ["RunConfig", "SummaryConfig", "run_config", "summary_config"]
+#: Each section with the model ``run`` or ``summarize`` validates it with, so ``config`` judges a
+#: section by exactly the rules of the command that uses it.
+_SECTION_MODELS: tuple[tuple[str, type[BaseModel]], ...] = (("judge", RunConfig), ("summary", SummaryConfig))
+
+
+def section_problems(config: Config) -> list[str]:
+    """Every problem in the ``[judge]`` and ``[summary]`` sections, without raising.
+
+    Unlike :func:`run_config` and :func:`summary_config`, which stop at the section their
+    command needs, this checks both and keeps each problem separate, so a caller can report
+    one line per problem.
+
+    Args:
+        config: The loaded configuration.
+
+    Returns:
+        One ``<section>.<key>: <reason>`` per problem, ``[judge]`` first; empty when both
+        sections are valid. The offending value is never included.
+
+    Example:
+        >>> from lib_layered_config import Config
+        >>> section_problems(Config({"judge": {"workers": 0}}, {}))
+        ['judge.workers: Input should be greater than or equal to 1']
+        >>> section_problems(Config({}, {}))
+        []
+    """
+    return [problem for name, model in _SECTION_MODELS for problem in _problems_of(config, name, model)]
+
+
+def _problems_of(config: Config, name: str, model: type[BaseModel]) -> list[str]:
+    """The problems :func:`_problems` renders for one section, or none when it validates."""
+    try:
+        model.model_validate(_section(config, name))
+    except ValidationError as exc:
+        return _problems(name, exc)
+    return []
+
+
+__all__ = ["RunConfig", "SummaryConfig", "run_config", "section_problems", "summary_config"]

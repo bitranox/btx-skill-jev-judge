@@ -5,6 +5,14 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+### Changed
+- `config` checks `[judge]` and `[summary]` by the rules `run` and `summarize` use. It shows the
+  configuration exactly as before (stdout is unchanged in both formats), then writes one
+  `Error: <section>.<key>: <reason>` line per problem to stderr, never the value, and exits 78.
+  Both sections are checked whatever `--section` shows, and `config --profile` checks the
+  reloaded configuration. Before, `config` exited 0 on an unknown key such as `judge.api_key`
+  or an out-of-range value, so a typo stayed silent until the first `run`.
+
 ## [0.3.4] 2026-10-27 10:23:20
 
 ### Fixed

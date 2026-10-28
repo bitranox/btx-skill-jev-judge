@@ -27,6 +27,7 @@ from lib_layered_config import (
 )
 
 from btx_skill_jev_judge import __init__conf__
+from btx_skill_jev_judge.adapters.config.judge_settings import section_problems
 from btx_skill_jev_judge.adapters.config.loader import validate_profile
 from btx_skill_jev_judge.adapters.config.overrides import nest_overrides
 from btx_skill_jev_judge.domain.enums import DeployTarget, OutputFormat
@@ -73,6 +74,9 @@ def cli_config(ctx: click.Context, output_format: str, section: str | None, prof
 
     Precedence: defaults -> app -> host -> user -> dotenv -> env
 
+    After the display, a problem in [judge] or [summary] is written to stderr,
+    one Error line each, and the command exits 78.
+
     Example:
         >>> from click.testing import CliRunner
         >>> from unittest.mock import MagicMock
@@ -97,6 +101,32 @@ def cli_config(ctx: click.Context, output_format: str, section: str | None, prof
         except ValueError as exc:
             safe_console.echo(f"\nError: {exc}", err=True)
             ctx.exit(ExitCode.INVALID_ARGUMENT)
+        _refuse_section_problems(ctx, effective_config)
+
+
+def _refuse_section_problems(ctx: click.Context, config: Config) -> None:
+    """After the display, exit 78 with one ``Error:`` line per ``[judge]``/``[summary]`` problem.
+
+    The configuration is shown first and stdout stays exactly the display in both formats: the
+    display is how a reader finds which layer set the bad value, and a JSON consumer keeps
+    parsing the same tree, telling broken from fine by the exit code as with ``run``. Both
+    sections are checked whatever ``--section`` shows, because the exit code answers whether
+    the configuration ``run`` and ``summarize`` would read is valid.
+
+    Args:
+        ctx: The running command's click context.
+        config: The configuration that was displayed.
+
+    Raises:
+        click.exceptions.Exit: At least one section has a problem; exit code 78.
+    """
+    problems = section_problems(config)
+    if not problems:
+        return
+    logger.error("Refused configuration sections", extra={"problems": problems})
+    for problem in problems:
+        safe_console.echo(f"Error: {problem}", err=True)
+    ctx.exit(ExitCode.CONFIG_ERROR)
 
 
 def _get_effective_profile(cli_ctx: CLIContext, profile_override: str | None) -> str | None:

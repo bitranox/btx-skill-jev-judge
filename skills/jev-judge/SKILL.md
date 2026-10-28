@@ -128,7 +128,8 @@ key); 2 usage, input or IO error (`run` without a key included); 78 broken confi
 stderr names the setting. A `LOG_*` name is an environment variable or a `.env` line: unset or
 correct it there (`config` exits 78 too while one is broken). For a `judge.*` or `summary.*` name,
 `config --section judge` (or `summary`) shows the layer each value came from (`defaults`, `app`,
-`host`, `user`, `dotenv`, `env`, with the file); fix it there, not on the command line.
+`host`, `user`, `dotenv`, `env`, with the file), then exits 78 naming the problem; fix it there,
+not on the command line.
 
 A row: `id`, `ok`, `answers` (`{qid: {type, value, probabilities, confidence}}`), `model`, and
 `reason` when it failed. The `summarize` data: `rows`, `answered`, `failed` (ids), `flat`

@@ -92,7 +92,7 @@ Complete
 - `tests/test_module_entry.py`  -  `python -m` entry tests
 - `tests/test_ports.py`  -  Protocol conformance tests
 - `tests/test_cache_effectiveness.py`  -  `get_config()` and `get_default_config_path()` return consistent results across calls
-- `tests/test_cli_config.py`  -  config, config-deploy and config-generate-examples: display, JSON, sections, profiles, redaction
+- `tests/test_cli_config.py`  -  config, config-deploy and config-generate-examples: display, JSON, sections, profiles, redaction, the `[judge]`/`[summary]` check
 - `tests/test_cli_core.py`  -  Traceback state, main entry, help, info, logdemo and the unknown command
 - `tests/test_cli_env_file.py`  -  `--env-file`: path passing, validation and value override
 - `tests/test_cli_overrides.py`  -  `--set` through the CLI
@@ -221,7 +221,7 @@ Display merged configuration from all sources.
 | `--section NAME`         | Show only specific section         |
 | `--profile NAME`         | Override profile from root command |
 
-**Exit codes:** 0, 2 (usage error), 22 (section not found), 78 (configuration not loadable, or a `[lib_log_rich]` value or `LOG_*` variable lib_log_rich refuses)
+**Exit codes:** 0, 2 (usage error), 22 (section not found), 78 (configuration not loadable, a `[lib_log_rich]` value or `LOG_*` variable lib_log_rich refuses, or a problem in `[judge]` or `[summary]`, reported after the display)
 
 ### config-deploy
 
@@ -303,7 +303,8 @@ Raises `ValueError` with a descriptive message on invalid input.
 `adapters/config/judge_settings.py` reads the `[judge]` and `[summary]` sections into two frozen
 Pydantic models that reject unknown keys (which keeps the API key out of configuration: a
 `judge.api_key` entry makes `run` exit 78). `run` validates only `[judge]` and `summarize` only
-`[summary]`; `config` displays both without validating them. A CLI flag wins over every
+`[summary]`; `config` shows both, then refuses a problem in either with exit 78
+(`section_problems`). A CLI flag wins over every
 configuration layer.
 `tests/test_module_reference_sync.py` keeps the two tables below in step with the models.
 

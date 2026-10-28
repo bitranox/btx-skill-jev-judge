@@ -184,12 +184,12 @@ jev-judge summarize --rows rows.jsonl
 `run`, `summarize` and `check-key` take `--json` for an `{ok, command, data, skipped}` envelope on stdout, or
 `--json-bare` for the data alone (also on failure). Diagnostics always go to stderr.
 
-| Exit code | Meaning                                                                                                                                                                |
-|-----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0         | Yes: every item answered (`run`), no flat question (`summarize`), a key is present (`check-key`)                                                                       |
-| 1         | No: some row failed (`run`), a question looks flat (`summarize`), or no key was found (`check-key`)                                                                    |
-| 2         | Usage, input or IO error (also an out-of-range flag); stderr says `jev-judge: <reason>`                                                                                |
-| 78        | Broken configuration, such as `judge.attempts` above 10 (`run`) or a refused `LOG_*` variable (`config`, `run`, `summarize`, `logdemo`); stderr says `Error: <reason>` |
+| Exit code | Meaning                                                                                                                                                                          |
+|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0         | Yes: every item answered (`run`), no flat question (`summarize`), a key is present (`check-key`)                                                                                 |
+| 1         | No: some row failed (`run`), a question looks flat (`summarize`), or no key was found (`check-key`)                                                                              |
+| 2         | Usage, input or IO error (also an out-of-range flag); stderr says `jev-judge: <reason>`                                                                                          |
+| 78        | Broken configuration, such as `judge.attempts` above 10 (`run`, `config`) or a refused `LOG_*` variable (`config`, `run`, `summarize`, `logdemo`); stderr says `Error: <reason>` |
 
 A click usage error (a bad option type, an unknown option, `--json` together with `--json-bare`)
 exits 2 and prints no JSON, even under `--json-bare`.
