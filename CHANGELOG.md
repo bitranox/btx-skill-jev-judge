@@ -5,6 +5,12 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+### Fixed
+
+- Three config display tests now compare the shown hosts exactly (the parsed JSON value, and the whole
+  `hosts = [...]` line of the text display) instead of searching the output for a host substring,
+  which also passed on a wrong host such as `xhost.test.com:5870`.
+
 ## [0.3.6] - 2026-10-28
 
 ### Changed

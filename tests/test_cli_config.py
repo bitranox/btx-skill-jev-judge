@@ -98,9 +98,7 @@ def test_when_config_is_invoked_with_json_format_and_section_it_shows_section(
     result: Result = cli_runner.invoke(cli_mod.cli, ["config", "--format", "json", "--section", "service"], obj=factory)
 
     assert result.exit_code == 0
-    assert "service" in result.output
-    assert "hosts" in result.output
-    assert "host.test.com:587" in result.output
+    assert json.loads(result.output)["service"]["hosts"] == ["host.test.com:587"]
 
 
 @pytest.mark.os_agnostic
@@ -146,9 +144,8 @@ def test_when_config_is_invoked_with_section_showing_complex_values(
 
     assert result.exit_code == 0
     assert "[service]" in result.output
-    assert "hosts" in result.output
-    assert "host1.test.com:587" in result.output
-    assert "host2.test.com:587" in result.output
+    hosts_line = next(line.strip() for line in result.output.splitlines() if line.strip().startswith("hosts ="))
+    assert hosts_line == 'hosts = ["host1.test.com:587", "host2.test.com:587"]'
     assert "metadata" in result.output
     assert '"test@example.com"' in result.output
     assert "60.0" in result.output
@@ -527,8 +524,9 @@ def test_when_config_displays_password_in_list_of_dicts_it_redacts(
     assert result.exit_code == 0
     assert "secret123" not in result.stdout
     assert "secret456" not in result.stdout
-    assert "db.example.com" in result.stdout
-    assert "REDACTED" in result.stdout
+    servers = json.loads(result.stdout)["connections"]["servers"]
+    assert [server["host"] for server in servers] == ["db.example.com", "backup.example.com"]
+    assert [server["password"] for server in servers] == ["***REDACTED***", "***REDACTED***"]
 
 
 @pytest.mark.os_agnostic
