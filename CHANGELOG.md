@@ -5,7 +5,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
-## [0.3.6] 2026-10-28 23:48:41
+## [0.3.6] - 2026-10-28
 
 ### Changed
 - Skill: `run` sends and bills every non-blank line of `--items` (with `--pilot N`, the first
@@ -14,7 +14,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   annotation put inside `state` is sent to Jev with the item. It recommends keeping annotations
   in a separate file keyed by id and filtering the items file before `run`.
 
-## [0.3.5] 2026-10-28 21:05:31
+## [0.3.5] - 2026-10-28
 
 ### Changed
 - `config` checks `[judge]` and `[summary]` by the rules `run` and `summarize` use. It shows the
@@ -24,7 +24,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   reloaded configuration. Before, `config` exited 0 on an unknown key such as `judge.api_key`
   or an out-of-range value, so a typo stayed silent until the first `run`.
 
-## [0.3.4] 2026-10-27 10:23:20
+## [0.3.4] - 2026-10-27
 
 ### Fixed
 - Documentation: `[judge]` and `[summary]` are validated only by the command that uses them. `run`
@@ -56,7 +56,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   retrying failed rows without reusing `--out`, the 60,000-character cut, a cost estimate from the
   pilot, and pinning `--model` to the pilot's model.
 
-## [0.3.3] 2026-10-27 00:08:16
+## [0.3.3] - 2026-10-27
 
 ### Changed
 - Requires `lib_log_rich>=8.0.1` (was `>=6.5.6`).
@@ -116,7 +116,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   (for example a `/etc/xdg/<slug>/config.d/99-*.toml`) can no longer fail tests locally while CI stays
   green.
 
-## [0.3.2] 2026-10-22 12:10:35
+## [0.3.2] - 2026-10-22
 
 ### Changed
 - SKILL.md, Question design: a question naming a state field an item lacks does not fail, Jev
@@ -124,7 +124,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   variant that does not name it. The Pilot step includes the item with the fewest state fields.
 - SKILL.md's version floors name 0.3.2.
 
-## [0.3.1] 2026-10-21 00:04:23
+## [0.3.1] - 2026-10-21
 
 ### Changed
 - SKILL.md, Pilot step: before piloting, name the fact the judgment must decide and the state
@@ -135,7 +135,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 ### Security
 - The dev environment requires `certifi>=2026.10.19` (GHSA-6q48-6c7w-9gw2).
 
-## [0.3.0] 2026-10-16 23:42:10
+## [0.3.0] - 2026-10-16
 
 ### Changed
 - The project is named `btx-skill-jev-judge` everywhere the name is not a Python import: the
@@ -150,7 +150,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 - The `btx_skill_jev_judge` command. The package installs `jev-judge` and `btx-skill-jev-judge`,
   which run the same program; use either instead.
 
-## [0.2.6] 2026-10-13 15:42:05
+## [0.2.6] - 2026-10-13
 
 ### Added
 - Python 3.15 is a supported version: declared in the classifiers, so CI and `make test-all` run it.
@@ -162,7 +162,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 - The install section explains why installing with uv protects against supply-chain attacks and why
   a plain `pip install` from PyPI does not.
 
-## [0.2.5] 2026-10-12 18:59:45
+## [0.2.5] - 2026-10-12
 
 ### Fixed
 - **A digit-only `.env` value no longer stops the program.** lib_layered_config 7.1 reads an
@@ -177,7 +177,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   environment layer, so `ENABLED=false` arrives as the boolean `false`; the permission-defaults
   test reads it that way. A `.env` setting still never reaches a deploy.
 
-## [0.2.4] 2026-10-01
+## [0.2.4] - 2026-10-01
 
 ### Changed
 - The `jev-judge` skill documents the `summarize` data (`rows`, `answered`, `failed`, `flat`,
@@ -185,7 +185,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   `--json-bare` prints that data without the `{ok, command, data, skipped}` envelope, on exit 1
   too.
 
-## [0.2.3] 2026-10-01
+## [0.2.3] - 2026-10-01
 
 ### Changed
 - The `jev-judge` skill's `uvx --from 'btx-skill-jev-judge>=X.Y.Z'` floor is now the release
@@ -194,7 +194,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   skill before stayed on 0.2.1 and never got the 0.2.2 fix. A test now fails when a floor in a
   shipped `SKILL.md` or the plugin version differs from the package version.
 
-## [0.2.2] 2026-10-01
+## [0.2.2] - 2026-10-01
 
 ### Fixed
 - `run` no longer prints one `HTTP Request: POST ...` line per item on stderr. The `httpx2`
@@ -205,7 +205,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 - Every "no usable key" message names the `.env` source as well as the environment variable and
   the keyfile.
 
-## [0.2.1] 2026-10-01
+## [0.2.1] - 2026-10-01
 
 ### Changed
 - The `jev-judge` skill now runs the published CLI through
@@ -218,7 +218,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 ### Removed
 - The bundled script `skills/jev-judge/scripts/jev_judge.py`; the package replaces it.
 
-## [0.2.0] 2026-10-01
+## [0.2.0] - 2026-10-01
 
 ### Added
 - The Python package `btx-skill-jev-judge` (import `btx_skill_jev_judge`) with the console scripts
