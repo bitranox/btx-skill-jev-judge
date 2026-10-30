@@ -5,6 +5,13 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+## [0.3.7] - 2026-10-30
+
+### Docs
+
+- The `jev-judge` skill shows how to check what `run` sends without paying, against a loopback stub
+  (`JEV_JUDGE_BASE_URL` plus a dummy key).
+
 ### Fixed
 
 - Three config display tests now compare the shown hosts exactly (the parsed JSON value, and the whole

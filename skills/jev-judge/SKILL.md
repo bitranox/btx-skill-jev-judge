@@ -121,6 +121,15 @@ before anything is sent, and an annotation of your own (an expected answer, a no
 `state` is sent to Jev with the item. Keep your annotations in a separate file keyed by id, and
 filter `items.jsonl` in code before `run` to cut what is sent and billed.
 
+To see what a `run` would send without paying, point it at a stand-in: start a small HTTP stub on
+a loopback port that appends each request body to a log and answers 400, then run the command
+lines above verbatim with `JEV_JUDGE_BASE_URL=http://127.0.0.1:<port>` and a dummy
+`TYPESAFE_API_KEY` in the environment. Each item reaches the stub exactly once (a 400 is not
+retried; 429 and 5xx are), every row fails with `http 400`, and the log holds the exact state and
+questions each item would send. The override is honoured only for a loopback host (`localhost` or
+a loopback address); any other value is ignored without a message and the run goes to the real
+API, which is why the key must be the dummy one.
+
 `run` reports answered, failed ids, cost and the `models` that answered. It overwrites `--out` and
 never resumes: to retry failed rows, write their items to a new file, run that with a new `--out`
 and merge the rows in code. The default model `jev-latest` moves when a release ships; to keep the
