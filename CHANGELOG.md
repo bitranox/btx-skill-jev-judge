@@ -5,9 +5,11 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+## [0.3.8] - 2026-11-12
+
 ### Changed
 
-- lib_log_rich floor raised to 8.2.0, which backs off from an unreachable Graylog instead of
+- lib_log_rich floor raised to 8.2.1, which backs off from an unreachable Graylog instead of
   stalling the logging queue.
 
 ### Fixed
