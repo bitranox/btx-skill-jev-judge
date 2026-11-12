@@ -347,3 +347,21 @@ blank lines between them, and an `expected` and a `note` annotation inside the s
 
 The paragraph was written in the bitranox-skills twin first and checked there: a text-only quote-back
 on opus and haiku against the edited file quoted it in full on both tiers.
+
+## Release check (0.3.8, 2026-11-12)
+
+The only SKILL.md change is the five `uvx --from` floors, 0.3.7 to 0.3.8. After PyPI's JSON API
+and Simple index both served 0.3.8, the four Commands lines were run verbatim in an empty home with
+a dummy `TYPESAFE_API_KEY` and `JEV_JUDGE_BASE_URL` pointing at a loopback stub that answered 400.
+uvx resolved 0.3.8. The items file held three items:
+
+| Command                       | Exit | Requests | Note                                               |
+|-------------------------------|------|----------|----------------------------------------------------|
+| `check-key`                   | 0    | 0        | finds the key, does not call the API               |
+| `run ... --pilot 10`          | 1    | 3        | three items, each sent once                        |
+| `run ... --out rows.jsonl`    | 1    | 3        | every row `http 400` with `attempts: 1` (no retry) |
+| `summarize --rows rows.jsonl` | 0    | 0        | reads the rows file only                           |
+
+### GREEN
+
+The run matches the 0.3.6 table above line for line, against the released package.
