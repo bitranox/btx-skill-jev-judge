@@ -57,7 +57,9 @@ limit, retries and secret redaction.
    `choice` raises the cost per item.
 5. **Run everything, then `summarize`.** Exit 1 means a FLAT question (every item got about the
    same answer): a broken question until you have shown the items really are alike, or that the
-   state lacks the deciding signal (step 4).
+   state lacks the deciding signal (step 4). Before rewording one, count the items in the run that
+   should be a yes: a rare label with 0 or 1 positives in the sample reads FLAT because the sample
+   is, so add known positives and run again before touching the wording.
 6. **Decide with a band, not one cut.** `summarize` lists as "read by hand" every noul between 0.2
    and 0.8 and every choice or score with confidence below 0.6 (`--band`, `--min-confidence`).
    Take the rest as decided and read those yourself, or hand them to the user. A probability is
@@ -89,7 +91,15 @@ limit, retries and secret redaction.
   with two "same" pairs, or none, to the read-by-hand list. Check on a few hand-matched sources
   that the true target made the shortlist: a target never shortlisted can never be chosen, so
   widen the shortlist rather than trust the answers.
-- Several labels can apply at once: one `noul` per label, not one `choice`.
+- Several labels can apply at once: one `noul` per label, not one `choice`. Sparse multi-label
+  tagging (each label true for a few percent of items, labels whose meaning is abstract) is a
+  weak spot, and a 10-item pilot cannot show it: before relying on it, label 50 or more items for
+  reference (by hand or with a model), adding items until each label has several known positives,
+  and compare exact label sets and per-label hits. Measured on 25 labels over 60 short rules
+  (title and one-line summary): 38/60 exact sets and 14 of 24 reference labels found at 0.5,
+  against 57/60 and 21/24 for a model given the same text; a lower threshold found more labels
+  only by adding wrong ones (0.2: 31/60 exact). Jev gave a broad label to generic items and missed
+  narrow ones.
 
 ```json
 [{"id": "bug", "type": "choice",
@@ -109,10 +119,10 @@ included: unquoted, the shell reads `>=` as a redirection, and stored in a varia
 reach `uvx` and it refuses the name.
 
 ```bash
-uvx --from 'btx-skill-jev-judge>=0.3.8' jev-judge check-key
-uvx --from 'btx-skill-jev-judge>=0.3.8' jev-judge run --items items.jsonl --questions questions.json --out pilot.jsonl --pilot 10
-uvx --from 'btx-skill-jev-judge>=0.3.8' jev-judge run --items items.jsonl --questions questions.json --out rows.jsonl
-uvx --from 'btx-skill-jev-judge>=0.3.8' jev-judge summarize --rows rows.jsonl
+uvx --from 'btx-skill-jev-judge>=0.3.9' jev-judge check-key
+uvx --from 'btx-skill-jev-judge>=0.3.9' jev-judge run --items items.jsonl --questions questions.json --out pilot.jsonl --pilot 10
+uvx --from 'btx-skill-jev-judge>=0.3.9' jev-judge run --items items.jsonl --questions questions.json --out rows.jsonl
+uvx --from 'btx-skill-jev-judge>=0.3.9' jev-judge summarize --rows rows.jsonl
 ```
 
 `run` sends and bills every non-blank line of `--items` (with `--pilot N`, the first N); nothing in
@@ -166,7 +176,7 @@ Per-machine defaults (e.g. a lower `rate`): this prints the files it writes; edi
 `[summary]` in the one named `60-judge.toml`.
 
 ```bash
-uvx --from 'btx-skill-jev-judge>=0.3.8' jev-judge config-deploy --target user
+uvx --from 'btx-skill-jev-judge>=0.3.9' jev-judge config-deploy --target user
 ```
 
 Or set `BTX_SKILL_JEV_JUDGE___JUDGE__RATE=5` in the environment. A flag always wins.

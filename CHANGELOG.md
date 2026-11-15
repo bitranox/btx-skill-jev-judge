@@ -5,6 +5,15 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+## [0.3.9] - 2026-11-15
+
+### Docs
+
+- The `jev-judge` skill names sparse multi-label tagging (rare, abstract labels) as a weak spot to
+  check against a reference labelling of 50 or more items before relying on it, and says to count a
+  FLAT label's positives in the sample before rewording its question.
+- The skill's `uvx` lines name `btx-skill-jev-judge>=0.3.9`.
+
 ## [0.3.8] - 2026-11-12
 
 ### Changed
