@@ -14,6 +14,10 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
   FLAT label's positives in the sample before rewording its question.
 - The skill's `uvx` lines name `btx-skill-jev-judge>=0.3.9`.
 
+### Changed
+
+- Dependency floors raised: click 8.5.1, and in the dev extra ruff 0.17.4 and virtualenv 21.15.6.
+
 ## [0.3.8] - 2026-11-12
 
 ### Changed
