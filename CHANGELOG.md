@@ -5,6 +5,11 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 ## [Unreleased]
 
+### Changed
+
+- `lib_layered_config>=8.1.0`: `DeployAction` (and `DeployResult`) are imported from the package
+  root instead of the `lib_layered_config.examples` shim, which lib_layered_config 9.0.0 removes.
+
 ## [0.3.9] - 2026-11-15
 
 ### Docs
