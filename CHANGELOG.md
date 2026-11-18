@@ -11,6 +11,7 @@ the [Keep a Changelog](https://keepachangelog.com/) format.
 
 - `lib_layered_config>=8.1.0`: `DeployAction` (and `DeployResult`) are imported from the package
   root instead of the `lib_layered_config.examples` shim, which lib_layered_config 9.0.0 removes.
+- The skill's `uvx --from` floor names `btx-skill-jev-judge>=0.3.10`, the version this release ships.
 
 ## [0.3.9] - 2026-11-15
 
